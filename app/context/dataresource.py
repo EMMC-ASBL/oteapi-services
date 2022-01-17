@@ -9,10 +9,10 @@ from aioredis import Redis
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_plugins import depends_redis
 
-from app.models.resourceconfig import ResourceConfig
-from app.strategy.idownloadstrategy import create_download_strategy
-from app.strategy.iparsestrategy import create_parse_strategy
-from app.strategy.iresourcestrategy import create_resource_strategy
+from oteapi.models.resourceconfig import ResourceConfig
+from oteapi.strategy.idownloadstrategy import create_download_strategy
+from oteapi.strategy.iparsestrategy import create_parse_strategy
+from oteapi.strategy.iresourcestrategy import create_resource_strategy
 
 from .session import _update_session, _update_session_list_item
 

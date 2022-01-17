@@ -9,8 +9,8 @@ from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
 
-from app.models.transformationconfig import TransformationConfig
-from app.strategy.itransformationstrategy import create_transformation_strategy
+from oteapi.models.transformationconfig import TransformationConfig
+from oteapi.strategy.itransformationstrategy import create_transformation_strategy
 
 from .session import _update_session, _update_session_list_item
 

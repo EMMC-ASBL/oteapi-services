@@ -9,8 +9,8 @@ from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
 
-from app.models.mappingconfig import MappingConfig
-from app.strategy.imappingstrategy import create_mapping_strategy
+from oteapi.models.mappingconfig import MappingConfig
+from oteapi.strategy.imappingstrategy import create_mapping_strategy
 
 from .session import _update_session, _update_session_list_item
 
