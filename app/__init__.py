@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi_plugins import RedisSettings, redis_plugin
-from oteapi.strategies import loader
+from oteapi.plugins import load_plugins
 from yaml import safe_load
 
 from app.context import (
@@ -28,14 +28,6 @@ class AppSettings(RedisSettings):
 
 
 PREFIX = "/api/v1"
-
-
-def load_plugins():
-    """Load plugins as specified in the plugin.yml file"""
-    plugins_file = Path(__file__).parent.parent / "plugins.yml"
-    with open(plugins_file, "r", encoding="utf_8") as file:
-        data = safe_load(file)
-        loader.load_plugins(data["plugins"])
 
 
 def create_app():

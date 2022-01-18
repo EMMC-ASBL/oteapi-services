@@ -8,8 +8,8 @@ from uuid import uuid4
 from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
-from oteapi.interfaces.ifilterstrategy import create_filter_strategy
 from oteapi.models.filterconfig import FilterConfig
+from oteapi.plugins.factories import create_filter_strategy
 
 from .session import _update_session, _update_session_list_item
 

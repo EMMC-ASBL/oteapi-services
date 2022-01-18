@@ -23,7 +23,10 @@ RUN apt-get install -y -f /tmp/dlite.deb \
 # Install requirements
 COPY ./requirements.txt .
 RUN pip install -q --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip
-RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
+RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host github.com -r requirements.txt
+
+# git+https://github.com/EMMC-ASBL/oteapi-core.git@master#egg=oteapi-core PyYAML
+# -r requirements.txt
 
 ENV DLITE_ROOT=/usr
 ENV DLITE_STORAGES=/app/entities/*.json
@@ -35,11 +38,12 @@ FROM base as development
 COPY . .
 
 # Run static security check and linters
+RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
 RUN pre-commit run --all-files  \
-  && safety check -r requirements.txt
+  && safety check -r requirements.txt -r requirements_dev.txt
 
 # Run pytest with code coverage
-RUN pytest --cov app
+# RUN pytest --cov app
 
 # Run with reload option
 CMD hypercorn wsgi:app --bind 0.0.0.0:8080 --reload
@@ -49,7 +53,7 @@ EXPOSE 8080
 ################# PRODUCTION ####################################
 FROM base as production
 COPY . .
-
+RUN pip install hypercorn
 # Run app
 CMD hypercorn wsgi:app --bind 0.0.0.0:80
 EXPOSE 80
