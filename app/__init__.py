@@ -16,7 +16,7 @@ from app.context import (
     session,
     transformation,
 )
-from oteapi.strategy import loader
+from oteapi.strategies import loader
 
 
 class AppSettings(RedisSettings):

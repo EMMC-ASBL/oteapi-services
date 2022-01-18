@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
 
 from oteapi.models.transformationconfig import TransformationConfig
-from oteapi.strategy.itransformationstrategy import create_transformation_strategy
+from oteapi.interfaces.itransformationstrategy import create_transformation_strategy
 
 from .session import _update_session, _update_session_list_item
 

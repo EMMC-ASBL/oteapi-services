@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
 
 from oteapi.models.mappingconfig import MappingConfig
-from oteapi.strategy.imappingstrategy import create_mapping_strategy
+from oteapi.interfaces.imappingstrategy import create_mapping_strategy
 
 from .session import _update_session, _update_session_list_item
 

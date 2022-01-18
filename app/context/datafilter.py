@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
 
 from oteapi.models.filterconfig import FilterConfig
-from oteapi.strategy.ifilterstrategy import create_filter_strategy
+from oteapi.interfaces.ifilterstrategy import create_filter_strategy
 
 from .session import _update_session, _update_session_list_item
 
