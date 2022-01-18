@@ -8,11 +8,12 @@ from uuid import uuid4
 from aioredis import Redis
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_plugins import depends_redis
-
 from oteapi.models.resourceconfig import ResourceConfig
-from oteapi.strategy.idownloadstrategy import create_download_strategy
-from oteapi.strategy.iparsestrategy import create_parse_strategy
-from oteapi.strategy.iresourcestrategy import create_resource_strategy
+from oteapi.plugins.factories import (
+    create_download_strategy,
+    create_parse_strategy,
+    create_resource_strategy,
+)
 
 from .session import _update_session, _update_session_list_item
 
