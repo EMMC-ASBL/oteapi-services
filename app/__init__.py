@@ -6,6 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi_plugins import RedisSettings, redis_plugin
+from oteapi.strategies import loader
 from yaml import safe_load
 
 from app.context import (
@@ -16,7 +17,6 @@ from app.context import (
     session,
     transformation,
 )
-from oteapi.strategies import loader
 
 
 class AppSettings(RedisSettings):

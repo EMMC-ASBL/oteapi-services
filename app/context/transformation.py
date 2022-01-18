@@ -8,9 +8,8 @@ from uuid import uuid4
 from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
-
-from oteapi.models.transformationconfig import TransformationConfig
 from oteapi.interfaces.itransformationstrategy import create_transformation_strategy
+from oteapi.models.transformationconfig import TransformationConfig
 
 from .session import _update_session, _update_session_list_item
 
