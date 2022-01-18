@@ -24,10 +24,6 @@ RUN apt-get install -y -f /tmp/dlite.deb \
 COPY ./requirements.txt .
 RUN pip install -q --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip
 RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host github.com -r requirements.txt
-
-# git+https://github.com/EMMC-ASBL/oteapi-core.git@master#egg=oteapi-core PyYAML
-# -r requirements.txt
-
 ENV DLITE_ROOT=/usr
 ENV DLITE_STORAGES=/app/entities/*.json
 ENV PYTHONPATH=/usr/lib64/python3.9/site-packages
@@ -53,7 +49,6 @@ EXPOSE 8080
 ################# PRODUCTION ####################################
 FROM base as production
 COPY . .
-RUN pip install hypercorn
 # Run app
 CMD hypercorn wsgi:app --bind 0.0.0.0:80
 EXPOSE 80
