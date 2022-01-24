@@ -9,7 +9,7 @@ from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
 
-router = APIRouter()
+router = APIRouter(prefix="/session")
 
 IDPREFIX = "session-"
 

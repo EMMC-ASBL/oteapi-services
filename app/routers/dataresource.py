@@ -17,7 +17,7 @@ from oteapi.plugins.factories import (
 
 from .session import _update_session, _update_session_list_item
 
-router = APIRouter()
+router = APIRouter(prefix="/dataresource")
 
 IDPREDIX = "dataresource-"
 

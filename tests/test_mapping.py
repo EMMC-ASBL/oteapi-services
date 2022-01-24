@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.context import mapping
+from app.routers import mapping
 from app.strategy import loader
 
 from .dummycache import DummyCache

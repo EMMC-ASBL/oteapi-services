@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.context import datafilter
+from app.routers import datafilter
 from app.strategy import loader
 
 from .dummycache import DummyCache

@@ -13,7 +13,7 @@ from oteapi.plugins.factories import create_filter_strategy
 
 from .session import _update_session, _update_session_list_item
 
-router = APIRouter()
+router = APIRouter(prefix="/filter")
 
 IDPREDIX = "filter-"
 

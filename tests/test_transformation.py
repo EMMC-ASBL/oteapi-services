@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from app.context import transformation
+from app.routers import transformation
 from app.models.transformationconfig import TransformationStatus
 from app.strategy import loader
 
