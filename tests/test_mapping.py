@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from oteapi.plugins import load_plugins
 
 from app.routers import mapping
-from app.strategy import loader
 
 from .dummycache import DummyCache
 
@@ -11,7 +11,7 @@ app = FastAPI()
 app.include_router(mapping.router, prefix="/mapping")
 client = TestClient(app)
 
-loader.load_plugins(["plugins.mapping_strategy.demo_mapping"])
+load_plugins(["plugins.mapping_strategy.demo_mapping"])
 
 
 async def override_depends_redis() -> DummyCache:

@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from oteapi.plugins import load_plugins
 
 from app.routers import datafilter
-from app.strategy import loader
 
 from .dummycache import DummyCache
 
@@ -10,7 +10,7 @@ app = FastAPI()
 
 app.include_router(datafilter.router, prefix="/filter")
 client = TestClient(app)
-loader.load_plugins(["plugins.filter_strategy.demo_filter"])
+load_plugins(["plugins.filter_strategy.demo_filter"])
 
 
 async def override_depends_redis() -> DummyCache:
