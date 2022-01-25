@@ -31,20 +31,27 @@ RUN mkdir -p /app/entities
 
 ################# DEVELOPMENT ####################################
 FROM base as development
-COPY wsgi.py requirements.txt requirements_dev.txt plugins.yml ./
-COPY app app
-COPY entities entities
-COPY python_mapping_plugins python_mapping_plugins
+COPY requirements_dev.txt ./
 
 # Run static security check and linters
 RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
+
+COPY wsgi.py ./
+COPY app app
+
+# TODO: move these to a plugin for the compevo case
+COPY entities entities
+COPY python_mapping_plugins python_mapping_plugins
+
+
 #RUN pre-commit run --all-files  \
 #  && safety check -r requirements.txt -r requirements_dev.txt
 
 # Run pytest with code coverage
 # RUN pytest --cov app
 
-# For debugging: install oteapi locally
+# Hack for debugging of oteapi-core togeter with oteapi-services:
+# This requires to install oteapi locally
 #COPY oteapi-core oteapi-core
 #RUN pip install -U /app/oteapi-core
 #RUN rm -r /usr/local/lib/python3.9/dist-packages/oteapi
