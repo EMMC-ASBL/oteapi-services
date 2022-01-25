@@ -1,6 +1,4 @@
-"""
-Data Source context
-"""
+"""Data Filter."""
 import json
 from typing import Optional
 from uuid import uuid4
@@ -40,7 +38,7 @@ async def get_filter(
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
 ) -> dict:
-    """Run and return data from a   filter (data operation)"""
+    """Run and return data from a filter (data operation)"""
 
     filter_info_json = json.loads(await cache.get(filter_id))
     filter_info = FilterConfig(**filter_info_json)

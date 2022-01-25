@@ -1,6 +1,4 @@
-"""
-Data Source context
-"""
+"""Data Resource."""
 import json
 from typing import Dict, Literal, Optional
 from uuid import uuid4

@@ -1,6 +1,4 @@
-"""
-Microservice Session
-"""
+"""Microservice Session."""
 import json
 from typing import Any, Dict, List, Literal, Union
 from uuid import uuid4
