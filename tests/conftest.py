@@ -1,10 +1,10 @@
 """Fixtures and configuration for PyTest."""
-import json
+# pylint: disable=invalid-name,redefined-builtin,unused-argument,comparison-with-callable
+from pathlib import Path
 from typing import TYPE_CHECKING
 
-from fastapi.testclient import TestClient
-
 import pytest
+from fastapi.testclient import TestClient
 
 if TYPE_CHECKING:
     from typing import Dict, List
@@ -15,8 +15,8 @@ class DummyCache:
 
     obj = {}
 
-    def __init__(self, o={}):
-        self.obj = o
+    def __init__(self, o=None):
+        self.obj = o or {}
 
     async def set(self, id, data) -> None:
         """Mock `set()` method."""
@@ -25,6 +25,8 @@ class DummyCache:
 
     async def get(self, id) -> dict:
         """Mock `get()` method."""
+        import json
+
         return json.dumps(self.obj[id])
 
     async def keys(self, pattern: str) -> "List[str]":
@@ -40,12 +42,19 @@ def pytest_configure(config):
 
 
 @pytest.fixture(scope="session")
+def top_dir() -> Path:
+    """Resolved path to repository directory."""
+    return Path(__file__).resolve().parent.parent.resolve()
+
+
+@pytest.fixture(scope="session")
 def test_data() -> "Dict[str, dict]":
+    """Test data stored in DummyCache."""
     return {
         # filter
         "filter-961f5314-9e8e-411e-a216-ba0eb8e8bc6e": {
             "filterType": "filter/demo",
-            "configuration": {"demoData": [1, 2]},
+            "configuration": {"demo_data": [1, 2]},
         },
         # mapping
         "mapping-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": {
@@ -62,15 +71,13 @@ def test_data() -> "Dict[str, dict]":
             "transformation_type": "script/demo",
             "name": "script/dummy",
             "configuration": {},
-        }
+        },
     }
 
 
 @pytest.fixture(scope="session")
-def client(test_data: "Dict[str, dict]") -> TestClient:
+def client(test_data: "Dict[str, dict]", top_dir: Path) -> TestClient:
     """Return a test client."""
-    from pathlib import Path
-
     from fastapi_plugins import depends_redis
     from oteapi.plugins.plugins import import_module, load_plugins
 
@@ -88,8 +95,13 @@ def client(test_data: "Dict[str, dict]") -> TestClient:
         if func == load_plugins:
             app.router.on_startup.pop(index)
 
-    TOP_DIR = Path(__file__).resolve().parent.parent.resolve()
-    for strategy_file in (TOP_DIR / "tests" / "static" / "test_strategies").glob("*.py"):
-        import_module(str(strategy_file.resolve().with_suffix("").relative_to(TOP_DIR)).replace("/", "."))
+    for strategy_file in (top_dir / "tests" / "static" / "test_strategies").glob(
+        "*.py"
+    ):
+        import_module(
+            str(strategy_file.resolve().with_suffix("").relative_to(top_dir)).replace(
+                "/", "."
+            )
+        )
 
     return TestClient(app)

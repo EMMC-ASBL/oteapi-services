@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
+
 def test_create_mapping(client: "TestClient") -> None:
     """Test creating a mapping."""
     response = client.post(

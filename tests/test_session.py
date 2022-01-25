@@ -6,6 +6,7 @@ if TYPE_CHECKING:
 
     from fastapi.testclient import TestClient
 
+
 def test_list_session(client: "TestClient", test_data: "Dict[str, dict]") -> None:
     """Test listing sessions."""
     response = client.get("/session")

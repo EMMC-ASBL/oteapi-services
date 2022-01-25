@@ -1,39 +1,38 @@
-# pylint: disable=W0613, W0511
-"""
-Demo transformation strategy class
-"""
+"""Demo transformation strategy class."""
+# pylint: disable=no-self-use,unused-argument
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING
 
-from oteapi.models.transformationconfig import (
-    TransformationConfig,
-    TransformationStatus,
-)
+from oteapi.models.transformationconfig import TransformationStatus
 from oteapi.plugins.factories import StrategyFactory
+
+if TYPE_CHECKING:
+    from typing import Any, Dict, Optional
+
+    from oteapi.models.transformationconfig import TransformationConfig
 
 
 @dataclass
 @StrategyFactory.register(("transformation_type", "script/demo"))
 class DummyTransformationStrategy:
-    """Testing the API"""
+    """Transformation Strategy."""
 
-    transformation_config: TransformationConfig
+    transformation_config: "TransformationConfig"
 
-    def run(self, session: Optional[Dict[str, Any]] = None) -> Dict:
+    def run(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Run a job, return a jobid"""
-        print("Running sim...")
-        return dict(result="a01d")
+        return {"result": "a01d"}
 
-    def initialize(self, session: Optional[Dict[str, Any]] = None) -> Dict:
+    def initialize(
+        self, session: "Optional[Dict[str, Any]]" = None
+    ) -> "Dict[str, Any]":
         """Initialize a job"""
-        print("Initializing")
-        # TODO: update with necessary data
-        return dict(result="collection id")
+        return {"result": "collection id"}
 
     def status(self, task_id: str) -> TransformationStatus:
         """Get job status"""
-        ts = TransformationStatus(
+        return TransformationStatus(
             id=task_id,
             status="wip",
             messages=[],
@@ -44,10 +43,7 @@ class DummyTransformationStrategy:
             secret=None,
             configuration={},
         )
-        return ts
 
-    def get(self, session: Optional[Dict[str, Any]] = None) -> Dict:
+    def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """get transformation"""
-
-        # TODO: update and return global state
         return {}

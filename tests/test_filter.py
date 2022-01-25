@@ -34,4 +34,6 @@ def test_initialize_filter(client: "TestClient") -> None:
     response = client.post(
         "/filter/filter-961f5314-9e8e-411e-a216-ba0eb8e8bc6e/initialize", json={}
     )
-    assert response.status_code == 200, f"Response:\n{json.dumps(response.json())}\nResponse URL: {response.url}"
+    assert (
+        response.status_code == 200
+    ), f"Response:\n{json.dumps(response.json())}\nResponse URL: {response.url}"

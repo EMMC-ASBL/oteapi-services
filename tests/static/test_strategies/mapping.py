@@ -1,31 +1,29 @@
-# pylint: disable=W0511, W0613
-"""
-Demo mapping strategy class
-"""
+"""Demo mapping strategy class."""
+# pylint: disable=no-self-use,unused-argument
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING
 
-from oteapi.models.mappingconfig import MappingConfig
 from oteapi.plugins.factories import StrategyFactory
+
+if TYPE_CHECKING:
+    from typing import Any, Dict, Optional
+
+    from oteapi.models.mappingconfig import MappingConfig
 
 
 @dataclass
 @StrategyFactory.register(("mappingType", "mapping/demo"))
 class DemoMappingStrategy:
-    """Mapping Interface"""
+    """Mapping Strategy."""
 
-    mapping_config: MappingConfig
+    mapping_config: "MappingConfig"
 
-    def initialize(self, session: Optional[Dict[str, Any]] = None) -> Dict:
+    def initialize(
+        self, session: "Optional[Dict[str, Any]]" = None
+    ) -> "Dict[str, Any]":
         """Initialize mapping"""
-
-        # TODO: Add initializing logic
-
         return {}
 
-    def get(self, session: Optional[Dict[str, Any]] = None) -> Dict:
+    def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Manage mapping and return shared map"""
-
-        # TODO: Add mapping logic
-
         return {}

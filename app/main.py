@@ -24,11 +24,14 @@ if TYPE_CHECKING:
 class AppSettings(RedisSettings):
     """Redis settings."""
 
-    api_name: str = Field("oteapi_services", description="Application-specific name for Redis cache.")
+    api_name: str = Field(
+        "oteapi_services", description="Application-specific name for Redis cache."
+    )
     prefix: str = Field("/api/v1", description="Application route prefix.")
 
     class Config:
         """OTE-API Services application configuration."""
+
         env_prefix = "OTEAPI_"
 
 
