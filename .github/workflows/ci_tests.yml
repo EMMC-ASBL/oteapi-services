@@ -86,20 +86,19 @@ jobs:
       run: |
         docker build \
           -f Dockerfile \
-          --tag "oteapi-${{ mastrix.docker-target }}:latest" \
+          --tag "oteapi-${{ matrix.docker-target }}:latest" \
           --target ${{ matrix.docker-target }} \
           .
 
     - name: Start the Docker app
       run: |
         docker run \
-          --detach \
           --volume ${PWD}:/app \
-          --publish 8080:8080 \
           --env REDIS_TYPE=redis \
-          --env REDIS_HOST=localhost \
+          --env REDIS_HOST=redis \
           --env REDIS_PORT=6379 \
-          "oteapi-${{ mastrix.docker-target }}:latest"
-        .github/utils/wait_for_it.sh localhost:8080 -t 120
+          --network host \
+          "oteapi-${{ matrix.docker-target }}:latest" &
+        .github/utils/wait_for_it.sh localhost:5000 -t 60
         sleep 5
-        curl -X "GET" "http://localhost:8080/api/v1/session"
+        curl -X "GET" -i "http://localhost:5000/api/v1/session"
