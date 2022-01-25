@@ -1,33 +1,13 @@
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from oteapi.plugins import load_plugins
+"""Test data filter."""
+import json
+from typing import TYPE_CHECKING
 
-from app.routers import datafilter
-
-from .dummycache import DummyCache
-
-app = FastAPI()
-
-app.include_router(datafilter.router, prefix="/filter")
-client = TestClient(app)
-load_plugins(["plugins.filter_strategy.demo_filter"])
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient
 
 
-async def override_depends_redis() -> DummyCache:
-    return DummyCache(
-        {
-            "filter-961f5314-9e8e-411e-a216-ba0eb8e8bc6e": {
-                "filterType": "filter/demo",
-                "configuration": {},
-            }
-        }
-    )
-
-
-app.dependency_overrides[datafilter.depends_redis] = override_depends_redis
-
-
-def test_create_filter():
+def test_create_filter(client: "TestClient") -> None:
+    """Test creating a filter."""
     response = client.post(
         "/filter/",
         json={
@@ -40,16 +20,18 @@ def test_create_filter():
     )
     # Ensure that session returns with a session id
     assert "filter_id" in response.json()
-    assert response.status_code == 200
+    assert response.status_code == 200, f"Response:\n{json.dumps(response.json())}"
 
 
-def test_get_filter():
+def test_get_filter(client: "TestClient") -> None:
+    """Test getting a filter."""
     response = client.get("/filter/filter-961f5314-9e8e-411e-a216-ba0eb8e8bc6e")
-    assert response.status_code == 200
+    assert response.status_code == 200, f"Response:\n{json.dumps(response.json())}"
 
 
-def test_initialize_filter():
+def test_initialize_filter(client: "TestClient") -> None:
+    """Test initializing a filter."""
     response = client.post(
         "/filter/filter-961f5314-9e8e-411e-a216-ba0eb8e8bc6e/initialize", json={}
     )
-    assert response.status_code == 200
+    assert response.status_code == 200, f"Response:\n{json.dumps(response.json())}\nResponse URL: {response.url}"

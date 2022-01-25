@@ -1,36 +1,14 @@
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-from oteapi.models.transformationconfig import TransformationStatus
-from oteapi.plugins import load_plugins
+"""Test transformation."""
+from typing import TYPE_CHECKING
 
-from app.routers import transformation
+import pytest
 
-from .dummycache import DummyCache
-
-app = FastAPI()
-
-app.include_router(transformation.router, prefix="/transformation")
-client = TestClient(app)
-
-load_plugins(["plugins.transformation_strategy.dummyplugin"])
+if TYPE_CHECKING:
+    from fastapi.testclient import TestClient
 
 
-async def override_depends_redis() -> DummyCache:
-    return DummyCache(
-        {
-            "transformation-f752c613-fde0-4d43-a7f6-c50f68642daa": {
-                "transformation_type": "script/dummy",
-                "name": "script/dummy",
-                "configuration": {},
-            }
-        }
-    )
-
-
-app.dependency_overrides[transformation.depends_redis] = override_depends_redis
-
-
-def test_create_transformation():
+def test_create_transformation(client: "TestClient") -> None:
+    """Test creating a transformation."""
     response = client.post(
         "/transformation/",
         json={
@@ -39,42 +17,45 @@ def test_create_transformation():
             "configuration": {},
         },
     )
-
-    print("test_create_transformation response:", response.text)
     assert response.status_code == 200
 
 
-def test_get_transformation():
+def test_get_transformation(client: "TestClient") -> None:
+    """Test getting a transformation."""
     response = client.get(
         "/transformation/transformation-f752c613-fde0-4d43-a7f6-c50f68642daa"
     )
-    print("test_get_transformation", response.text)
     assert response.status_code == 200
 
 
-def test_initialize_transformation():
+def test_initialize_transformation(client: "TestClient") -> None:
+    """Test initializing a transformation."""
     response = client.post(
         "/transformation/transformation-f752c613-fde0-4d43-a7f6-c50f68642daa/execute",
         json={},
     )
-    print("test_initialize_transformation response", response.text)
     assert response.status_code == 200
 
 
-def test_get_transformation_status():
+def test_get_transformation_status(client: "TestClient") -> None:
+    """Test getting a transformation status."""
+    from oteapi.models.transformationconfig import TransformationStatus
+    from pydantic import ValidationError
+
     response = client.get(
         "/transformation/transformation-f752c613-fde0-4d43-a7f6-c50f68642daa/status?task_id="
     )
-    tr = TransformationStatus(**response.json())
-    print(response.json())
-    print("test_get_transformation_status response:", response.text)
+    try:
+        TransformationStatus(**response.json())
+    except ValidationError as exc:
+        pytest.fail(f"Failed to validate as a `TransformationStatus`. Exc: {exc}")
     assert response.status_code == 200
 
 
-def test_execute_transformation():
+def test_execute_transformation(client: "TestClient") -> None:
+    """Test executing a transformation."""
     response = client.post(
         "/transformation/transformation-f752c613-fde0-4d43-a7f6-c50f68642daa/execute",
         json={},
     )
-    print("test_execute_transformation response:", response.text)
     assert response.status_code == 200

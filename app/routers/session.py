@@ -2,7 +2,7 @@
 Microservice Session
 """
 import json
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Literal, Union
 from uuid import uuid4
 
 from aioredis import Redis
@@ -18,7 +18,7 @@ IDPREFIX = "session-"
 async def create_session(
     session: Dict[str, Any],
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, str]:
+) -> Dict[Literal["session_id"], str]:
     """
     Create a new session
     --------------------
@@ -51,33 +51,34 @@ async def create_session(
 @router.get("/")
 async def list_sessions(
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, List[str]]:
+) -> Dict[Literal["keys"], List[str]]:
     """Get all session keys"""
     keylist = []
     for key in await cache.keys(pattern=f"{IDPREFIX}*"):
         keylist.append(key)
-    return dict(keys=keylist)
+    return {"keys": keylist}
 
 
 @router.delete("/")
 async def delete_all_sessions(
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, str]:
-    """Delete all session keys
+) -> Dict[str, Union[str, int]]:
+    """Delete all session keys.
 
-    WARNING: Data stored in sessions cannot be recovered after
-    calling this endpoint.
+    Warning:
+        Data stored in sessions cannot be recovered after calling this endpoint.
+
     """
     keylist = await cache.keys(pattern=f"{IDPREFIX}*")
 
     await cache.delete(*keylist)
-    return dict(status="ok", number_of_deleted_rows=len(keylist))
+    return {"status": "ok", "number_of_deleted_rows": len(keylist)}
 
 
 async def _get_session(
     session_id: str,
     redis: Redis = Depends(depends_redis),
-) -> Dict:
+) -> Dict[str, Any]:
     """Return the session contents given a session_id"""
     session = json.loads(await redis.get(session_id))
     return session
@@ -87,9 +88,9 @@ async def _update_session(
     session_id: str,
     updated_session: Dict[str, Any],
     redis: Redis,
-) -> Dict:
+) -> Dict[str, Any]:
     """Update an existing session (to be called internally)."""
-    session = json.loads(await redis.get(session_id))
+    session: Dict[str, Any] = json.loads(await redis.get(session_id))
     session.update(updated_session)
     await redis.set(session_id, json.dumps(session).encode("utf-8"))
     return session
@@ -100,7 +101,7 @@ async def _update_session_list_item(
     list_key: str,
     list_items: List[Any],
     redis: Redis,
-) -> Dict:
+) -> Dict[str, Any]:
     """Append or create list items to an existing session"""
     session = json.loads(await redis.get(session_id))
     if list_key in session:
@@ -116,9 +117,9 @@ async def update_session(
     session_id: str,
     updatet_session: Dict[str, Any],
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> Dict[str, Any]:
     """Update session object"""
-    session = json.loads(await cache.get(session_id))
+    session: Dict[str, Any] = json.loads(await cache.get(session_id))
     session.update(updatet_session)
     await cache.set(session_id, json.dumps(session).encode("utf-8"))
     return session
@@ -128,7 +129,7 @@ async def update_session(
 async def get_session(
     session_id: str,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> Dict[str, Any]:
     """Fetch the entire session object"""
     session = json.loads(await cache.get(session_id))
     return session
@@ -138,7 +139,7 @@ async def get_session(
 async def delete_session(
     session_id: str,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> Dict[Literal["status"], Literal["ok"]]:
     """Delete a session object"""
     await cache.delete(session_id)
-    return dict(status="ok")
+    return {"status": "ok"}

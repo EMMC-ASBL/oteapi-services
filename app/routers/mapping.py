@@ -2,7 +2,7 @@
 Data Source context
 """
 import json
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 from uuid import uuid4
 
 from aioredis import Redis
@@ -23,7 +23,7 @@ async def create_mapping(
     config: MappingConfig,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> Dict[Literal["mapping_id"], str]:
     """Define a new mapping configuration (ontological representation)
     Mapping (ontology alignment), is the process of defining
     relationships between concepts in ontologies.
@@ -33,7 +33,7 @@ async def create_mapping(
     await cache.set(mapping_id, config.json())
     if session_id:
         await _update_session_list_item(session_id, "mapping_info", [mapping_id], cache)
-    return dict(mapping_id=mapping_id)
+    return {"mapping_id": mapping_id}
 
 
 @router.get("/{mapping_id}")
@@ -41,7 +41,7 @@ async def get_mapping(
     mapping_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> dict:
     """Run and return data"""
     mapping_info_json = json.loads(await cache.get(mapping_id))
     mapping_info = MappingConfig(**mapping_info_json)
@@ -60,7 +60,7 @@ async def initialize_mapping(
     mapping_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> dict:
     """Initialize and update session"""
     mapping_info_json = json.loads(await cache.get(mapping_id))
     mapping_info = MappingConfig(**mapping_info_json)

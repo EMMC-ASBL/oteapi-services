@@ -1,31 +1,20 @@
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
+"""Test session."""
+from typing import TYPE_CHECKING
 
-from app.routers import session
+if TYPE_CHECKING:
+    from typing import Dict
 
-from .dummycache import DummyCache
+    from fastapi.testclient import TestClient
 
-app = FastAPI()
-
-app.include_router(session.router, prefix="/session")
-client = TestClient(app)
-
-
-async def override_depends_redis() -> DummyCache:
-    return DummyCache({"1": {"foo": "bar"}, "2": {"foo": "bar"}})
-
-
-app.dependency_overrides[session.depends_redis] = override_depends_redis
-
-
-def test_list_session():
+def test_list_session(client: "TestClient", test_data: "Dict[str, dict]") -> None:
+    """Test listing sessions."""
     response = client.get("/session")
-    print("output", response.text)
-    assert response.json() == {"keys": ["1", "2"]}
+    assert response.json() == {"keys": list(test_data)}
     assert response.status_code == 200
 
 
-def test_create_session():
+def test_create_session(client: "TestClient") -> None:
+    """Test creating a session."""
     response = client.post(
         "/session/",
         headers={"accept": "application/json", "Content-Type": "application/json"},

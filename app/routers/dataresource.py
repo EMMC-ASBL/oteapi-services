@@ -2,7 +2,7 @@
 Data Source context
 """
 import json
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 from uuid import uuid4
 
 from aioredis import Redis
@@ -27,7 +27,7 @@ async def create_dataresource(
     config: ResourceConfig,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> Dict[Literal["resource_id"], str]:
     """
     Register an external data resource.
     -----------------------------------
@@ -50,19 +50,19 @@ async def create_dataresource(
         await _update_session_list_item(
             session_id, "resource_info", [resource_id], cache
         )
-    return dict(resource_id=resource_id)
+    return {"resource_id": resource_id}
 
 
 @router.get("/{resource_id}/info")
 async def info_dataresource(
     resource_id: str,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> dict:
     """Get data resource info"""
     resource_info_json = json.loads(await cache.get(resource_id))
     resource_info = ResourceConfig(**resource_info_json)
 
-    return resource_info.dict()  # resource_info = resource_info)
+    return resource_info.dict()
 
 
 @router.get("/{resource_id}/read")
@@ -71,7 +71,7 @@ async def read_dataresource(
     resource_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> dict:
     """
     Read data from dataresource using the appropriate download strategy.
     Parse data information using the appropriate parser
@@ -112,9 +112,8 @@ async def initialize_dataresource(
     resource_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> dict:
     """Initialize data resource"""
-
     resource_info_json = json.loads(await cache.get(resource_id))
     resource_config = ResourceConfig(**resource_info_json)
 

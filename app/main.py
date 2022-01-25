@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi_plugins import RedisSettings, redis_plugin
 from oteapi.plugins import load_plugins
+from pydantic import Field
 
 from app import __version__
 from app.routers import (
@@ -20,13 +21,15 @@ if TYPE_CHECKING:
     from typing import Any, Dict
 
 
-PREFIX = "/api/v1"
-
-
 class AppSettings(RedisSettings):
     """Redis settings."""
 
-    api_name: str = "oteapi_services"
+    api_name: str = Field("oteapi_services", description="Application-specific name for Redis cache.")
+    prefix: str = Field("/api/v1", description="Application route prefix.")
+
+    class Config:
+        """OTE-API Services application configuration."""
+        env_prefix = "OTEAPI_"
 
 
 def create_app() -> FastAPI:
@@ -52,11 +55,15 @@ This service is based on:
 
         """,
     )
-    for router_module in (session, dataresource, transformation, datafilter, mapping, redisadmin):
-        app.include_router(router_module.router, prefix=f"{PREFIX}{router_module.router.prefix}")
-
-    print("# Loading plugins")
-    load_plugins()
+    for router_module in (
+        session,
+        dataresource,
+        transformation,
+        datafilter,
+        mapping,
+        redisadmin,
+    ):
+        app.include_router(router_module.router, prefix=CONFIG.prefix)
 
     return app
 
@@ -95,3 +102,8 @@ async def terminate_redis() -> None:
 CONFIG = AppSettings()
 _APP = create_app()
 _APP.openapi = custom_openapi
+
+# Events
+_APP.add_event_handler("startup", init_redis)
+_APP.add_event_handler("shutdown", terminate_redis)
+_APP.add_event_handler("startup", load_plugins)
