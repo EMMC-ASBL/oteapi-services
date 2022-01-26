@@ -42,13 +42,13 @@ RUN pre-commit run --all-files  \
 RUN pytest --cov app
 
 # Run with reload option
-CMD hypercorn asgi:app --bind 0.0.0.0:5000 --reload
-EXPOSE 5000
+CMD hypercorn asgi:app --bind 0.0.0.0:8080 --reload
+EXPOSE 8080
 
 
 ################# PRODUCTION ####################################
 FROM base as production
 COPY . .
 # Run app
-CMD hypercorn asgi:app --bind 0.0.0.0:5000
-EXPOSE 5000
+CMD hypercorn asgi:app --bind 0.0.0.0:8080
+EXPOSE 8080
