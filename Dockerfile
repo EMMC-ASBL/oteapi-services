@@ -31,7 +31,7 @@ RUN mkdir -p /app/entities
 
 ################# DEVELOPMENT ####################################
 FROM base as development
-COPY requirements_dev.txt ./
+COPY . .
 
 # Run static security check and linters
 RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
