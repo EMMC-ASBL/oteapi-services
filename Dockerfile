@@ -35,21 +35,11 @@ COPY . .
 
 # Run static security check and linters
 RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
-
 RUN pre-commit run --all-files  \
- && safety check -r requirements.txt -r requirements_dev.txt
+  && safety check -r requirements.txt -r requirements_dev.txt
 
 # Run pytest with code coverage
 RUN pytest --cov app
-
-# Hack for debugging of oteapi-core togeter with oteapi-services:
-# This requires to install oteapi locally
-#COPY oteapi-core oteapi-core
-#RUN pip install -U /app/oteapi-core
-#RUN rm -r /usr/local/lib/python3.9/dist-packages/oteapi
-#RUN ln -s /app/oteapi-core/oteapi /usr/local/lib/python3.9/dist-packages/oteapi
-#RUN python3 -c "import oteapi; oteapi.load_plugins()"  # Quick check
-
 
 # Run with reload option
 CMD hypercorn asgi:app --bind 0.0.0.0:8080 --reload
