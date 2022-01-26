@@ -1,8 +1,6 @@
-"""
-Data Source context
-"""
+"""Transformation."""
 import json
-from typing import Dict, Optional
+from typing import Dict, Literal, Optional
 from uuid import uuid4
 
 from aioredis import Redis
@@ -13,7 +11,7 @@ from oteapi.plugins.factories import create_transformation_strategy
 
 from .session import _update_session, _update_session_list_item
 
-router = APIRouter()
+router = APIRouter(prefix="/transformation")
 
 IDPREDIX = "transformation-"
 
@@ -23,7 +21,7 @@ async def create_transformation(
     config: TransformationConfig,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> Dict[Literal["transformation_id"], str]:
     """Create a new transformation configuration"""
     transformation_id = IDPREDIX + str(uuid4())
 
@@ -32,7 +30,7 @@ async def create_transformation(
         await _update_session_list_item(
             session_id, "transformation_info", [transformation_id], cache
         )
-    return dict(transformation_id=transformation_id)
+    return {"transformation_id": transformation_id}
 
 
 @router.get("/{transformation_id}/status")
@@ -42,7 +40,7 @@ async def get_transformation_status(
     transformation_id: str,
     task_id: str,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> dict:
     """Get the current status of a defined transformation"""
     # Fetch transformation info from cache and populate the pydantic model
     json_doc = await cache.get(transformation_id)
@@ -61,7 +59,7 @@ async def get_transformation(
     transformation_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> dict:
     """Get transformation"""
 
     # Fetch transformation info from cache and populate the pydantic model
@@ -85,7 +83,7 @@ async def execute_transformation(
     transformation_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> dict:
     """Execute (run) a transformation"""
     # Fetch transformation info from cache
     transformation_info = json.loads(await cache.get(transformation_id))
@@ -110,7 +108,7 @@ async def initialize_transformation(
     transformation_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict:
+) -> dict:
     """Initialize a transformation"""
     # Fetch transformation info from cache
     transformation_info = json.loads(await cache.get(transformation_id))

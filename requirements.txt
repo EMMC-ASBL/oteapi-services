@@ -17,7 +17,7 @@ cryptography==36.0.1
 diskcache==5.4.0
 et-xmlfile==1.1.0
 fastapi==0.72.0
-fastapi-plugins==0.8.2
+fastapi-plugins==0.9.0
 h11==0.12.0
 h2==4.1.0
 hiredis==2.0.0

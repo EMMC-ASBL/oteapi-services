@@ -1,0 +1,139 @@
+name: CI - Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - 'master'
+      - 'push-action/**'  # Allow pushing to protected branches (using CasperWA/push-protected)
+
+jobs:
+
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -U setuptools wheel
+
+        while IFS="" read -r line || [ -n "${line}" ]; do
+          if [[ "${line}" =~ ^pre-commit.*$ ]]; then
+            pre_commit="${line}"
+          fi
+        done < requirements_dev.txt
+
+        pip install ${pre_commit}
+
+    - name: Test with pre-commit
+      run: SKIP=pylint,pylint-tests pre-commit run --all-files
+
+  pylint-safety:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install dependencies
+      run: |
+        python -m pip install -U pip
+        pip install -U setuptools wheel
+        pip install -U -r requirements.txt -r requirements_dev.txt
+        pip install safety
+
+    - name: Run pylint
+      run: pylint --rcfile=.pylintrc --ignore-paths=tests/ --extension-pkg-whitelist='pydantic' -- *.py app
+
+    - name: Run pylint - tests
+      run: pylint --rcfile=.pylintrc --extension-pkg-whitelist='pydantic' --disable=C0415,W0621 -- tests
+
+    - name: Run safety
+      run: pip freeze | safety check --stdin
+
+  docker:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        docker-target: ["development", "production"]
+
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build Dockerfile
+      run: |
+        docker build \
+          -f Dockerfile \
+          --tag "oteapi-${{ matrix.docker-target }}:latest" \
+          --target ${{ matrix.docker-target }} \
+          .
+
+    - name: Start the Docker app
+      run: |
+        docker run \
+          --volume ${PWD}:/app \
+          --env REDIS_TYPE=redis \
+          --env REDIS_HOST=redis \
+          --env REDIS_PORT=6379 \
+          --network host \
+          "oteapi-${{ matrix.docker-target }}:latest" &
+        .github/utils/wait_for_it.sh localhost:8080 -t 60
+        sleep 5
+        curl -X "GET" -i "http://localhost:8080/api/v1/session"
+
+  pytest:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10"]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+
+    - name: Set up Python ${{ matrix.python-version}}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version}}
+
+    - name: Install python dependencies
+      run: |
+        python -m pip install -U pip
+        pip install -U setuptools wheel
+        pip install -r requirements.txt -r requirements_dev.txt
+
+    - name: Test with pytest
+      run: pytest -vvv --cov-report=xml --cov=app
+
+    - name: Upload coverage to Codecov
+      if: matrix.python-version == 3.9 && github.repository == 'EMMC-ASBL/oteapi-services'
+      uses: codecov/codecov-action@v2
+      with:
+        name: oteapi-services
+        files: ./coverage.xml
+        flags: pytest

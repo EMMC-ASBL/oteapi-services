@@ -1,6 +1,4 @@
-"""
-Helper service for viewing redis objects
-"""
+"""Helper service for viewing redis objects."""
 import json
 from typing import Dict, List
 
@@ -8,7 +6,7 @@ from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
 
-router = APIRouter()
+router = APIRouter(prefix="/redis")
 
 
 @router.get("/{key}")
@@ -19,5 +17,4 @@ async def get_gey(
     """Low-level cache interface to retrieve the object-value
     stored with key 'key'
     """
-    value = json.loads(await cache.get(key))
-    return value
+    return json.loads(await cache.get(key))
