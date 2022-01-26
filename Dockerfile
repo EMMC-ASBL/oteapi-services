@@ -39,10 +39,6 @@ RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org
 COPY wsgi.py ./
 COPY app app
 
-# TODO: move these to a plugin for the compevo case
-COPY entities entities
-COPY python_mapping_plugins python_mapping_plugins
-
 
 #RUN pre-commit run --all-files  \
 #  && safety check -r requirements.txt -r requirements_dev.txt
