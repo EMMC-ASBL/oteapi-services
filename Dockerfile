@@ -36,12 +36,8 @@ COPY requirements_dev.txt ./
 # Run static security check and linters
 RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
 
-COPY wsgi.py ./
-COPY app app
-
-
-#RUN pre-commit run --all-files  \
-#  && safety check -r requirements.txt -r requirements_dev.txt
+RUN pre-commit run --all-files  \
+ && safety check -r requirements.txt -r requirements_dev.txt
 
 # Run pytest with code coverage
 RUN pytest --cov app
