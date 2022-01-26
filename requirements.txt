@@ -29,7 +29,7 @@ invoke==1.6.0
 kombu==5.2.3
 numpy==1.22.1
 openpyxl==3.0.9
-oteapi-core @ git+https://github.com/EMMC-ASBL/oteapi-core.git@90961930b7c1f83466c28a7e03dc04122a98e812
+oteapi-core @ git+https://github.com/EMMC-ASBL/oteapi-core.git@master
 paramiko==2.9.2
 Pillow==9.0.0
 priority==2.0.0
