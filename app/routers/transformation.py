@@ -8,6 +8,13 @@ from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
 from oteapi.models import TransformationConfig
 from oteapi.plugins import create_strategy
+from starlette.status import HTTP_404_NOT_FOUND
+
+from app.models.response import (
+    HTTPNotFoundError,
+    Status,
+    httpexception_404_item_id_does_not_exist,
+)
 
 from .session import _update_session, _update_session_list_item
 
@@ -16,7 +23,14 @@ router = APIRouter(prefix="/transformation")
 IDPREDIX = "transformation-"
 
 
-@router.post("/")
+@router.post(
+    "/",
+    response_model=Status,
+    response_model_exclude_unset=True,
+    responses={
+        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+    },
+)
 async def create_transformation(
     config: TransformationConfig,
     session_id: Optional[str] = None,
@@ -27,13 +41,22 @@ async def create_transformation(
 
     await cache.set(transformation_id, config.json())
     if session_id:
+        if not await cache.exists(session_id):
+            raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
         await _update_session_list_item(
             session_id, "transformation_info", [transformation_id], cache
         )
     return {"transformation_id": transformation_id}
 
 
-@router.get("/{transformation_id}/status")
+@router.get(
+    "/{transformation_id}/status",
+    response_model=Status,
+    response_model_exclude_unset=True,
+    responses={
+        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+    },
+)
 async def get_transformation_status(
     # transformation_id might be removed in the future
     # but is needed to create the strategy
@@ -43,6 +66,10 @@ async def get_transformation_status(
 ) -> dict:
     """Get the current status of a defined transformation"""
     # Fetch transformation info from cache and populate the pydantic model
+    if not await cache.exists(transformation_id):
+        raise httpexception_404_item_id_does_not_exist(
+            transformation_id, "transformation_id"
+        )
     json_doc = await cache.get(transformation_id)
     transformation_info_json = json.loads(json_doc)
     transformation_info = TransformationConfig(**transformation_info_json)
@@ -54,7 +81,14 @@ async def get_transformation_status(
     return status
 
 
-@router.get("/{transformation_id}")
+@router.get(
+    "/{transformation_id}",
+    response_model=Status,
+    response_model_exclude_unset=True,
+    responses={
+        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+    },
+)
 async def get_transformation(
     transformation_id: str,
     session_id: Optional[str] = None,
@@ -63,6 +97,10 @@ async def get_transformation(
     """Get transformation"""
 
     # Fetch transformation info from cache and populate the pydantic model
+    if not await cache.exists(transformation_id):
+        raise httpexception_404_item_id_does_not_exist(
+            transformation_id, "transformation_id"
+        )
     json_doc = await cache.get(transformation_id)
     transformation_info_json = json.loads(json_doc)
     transformation_info = TransformationConfig(**transformation_info_json)
@@ -78,7 +116,14 @@ async def get_transformation(
     return result
 
 
-@router.post("/{transformation_id}/execute")
+@router.post(
+    "/{transformation_id}/execute",
+    response_model=Status,
+    response_model_exclude_unset=True,
+    responses={
+        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+    },
+)
 async def execute_transformation(
     transformation_id: str,
     session_id: Optional[str] = None,
@@ -86,6 +131,10 @@ async def execute_transformation(
 ) -> dict:
     """Execute (run) a transformation"""
     # Fetch transformation info from cache
+    if not await cache.exists(transformation_id):
+        raise httpexception_404_item_id_does_not_exist(
+            transformation_id, "transformation_id"
+        )
     transformation_info = json.loads(await cache.get(transformation_id))
 
     # Apply the appropriate transformation strategy (plugin) using the factory
@@ -104,7 +153,14 @@ async def execute_transformation(
     return run_result
 
 
-@router.post("/{transformation_id}/initialize")
+@router.post(
+    "/{transformation_id}/initialize",
+    response_model=Status,
+    response_model_exclude_unset=True,
+    responses={
+        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+    },
+)
 async def initialize_transformation(
     transformation_id: str,
     session_id: Optional[str] = None,
@@ -112,6 +168,10 @@ async def initialize_transformation(
 ) -> dict:
     """Initialize a transformation"""
     # Fetch transformation info from cache
+    if not await cache.exists(transformation_id):
+        raise httpexception_404_item_id_does_not_exist(
+            transformation_id, "transformation_id"
+        )
     transformation_info = json.loads(await cache.get(transformation_id))
 
     # Apply the appropriate transformation strategy (plugin) using the factory

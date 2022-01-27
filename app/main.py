@@ -6,8 +6,10 @@ from fastapi.openapi.utils import get_openapi
 from fastapi_plugins import RedisSettings, redis_plugin
 from oteapi.plugins import load_strategies
 from pydantic import Field
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from app import __version__
+from app.models.response import HTTPValidationError
 from app.routers import (
     datafilter,
     dataresource,
@@ -63,7 +65,16 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
         mapping,
         redisadmin,
     ):
-        app.include_router(router_module.router, prefix=CONFIG.prefix)
+        app.include_router(
+            router_module.router,
+            prefix=CONFIG.prefix,
+            responses={
+                HTTP_422_UNPROCESSABLE_ENTITY: {
+                    "description": "Validation Error",
+                    "model": HTTPValidationError,
+                },
+            },
+        )
 
     return app
 

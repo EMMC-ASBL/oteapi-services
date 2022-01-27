@@ -29,15 +29,18 @@ class DummyCache:
 
         return json.dumps(self.obj[id])
 
-    async def keys(self, pattern: str) -> "List[str]":
+    async def keys(self, pattern: str) -> "List[bytes]":
         """Mock `keys()` method."""
-        return self.obj.keys()
+        # https://stackoverflow.com/questions/44026515/python-redis-keys-returns-list-of-bytes-objects-instead-of-strings
+        return [str.encode(item) for item in self.obj.keys()]
+
+    async def exists(self, key: str) -> bool:
+        """Mock `exists()` method."""
+        return key in self.obj.keys()
 
 
 def pytest_configure(config):
     """Method that runs before pytest collects tests so no modules are imported"""
-    import os
-
     os.environ["OTEAPI_prefix"] = ""
 
 

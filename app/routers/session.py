@@ -6,17 +6,30 @@ from uuid import uuid4
 from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
+from starlette.status import HTTP_404_NOT_FOUND
+
+from app.models.parameter import Session
+from app.models.response import (
+    HTTPNotFoundError,
+    SessionKeys,
+    Status,
+    httpexception_404_item_id_does_not_exist,
+)
 
 router = APIRouter(prefix="/session")
 
 IDPREFIX = "session-"
 
 
-@router.post("/")
+@router.post(
+    "/",
+    response_model=Status,
+    response_model_exclude_unset=True,
+)
 async def create_session(
-    session: Dict[str, Any],
+    session: Session,
     cache: Redis = Depends(depends_redis),
-) -> Dict[Literal["session_id"], str]:
+) -> Dict[str, Any]:
     """
     Create a new session
     --------------------
@@ -42,22 +55,30 @@ async def create_session(
 
     session_id = f"{IDPREFIX}{str(uuid4())}"
     new_session = session.copy()
-    await cache.set(session_id, json.dumps(new_session).encode("utf-8"))
-    return {"session_id": session_id}
+    await cache.set(session_id, new_session.json())
+    return dict(session_id=session_id)
 
 
-@router.get("/")
+@router.get(
+    "/",
+    response_model=SessionKeys,
+    response_model_exclude_unset=True,
+)
 async def list_sessions(
     cache: Redis = Depends(depends_redis),
-) -> Dict[Literal["keys"], List[str]]:
+) -> Dict[str, List[str]]:
     """Get all session keys"""
     keylist = []
     for key in await cache.keys(pattern=f"{IDPREFIX}*"):
-        keylist.append(key)
-    return {"keys": keylist}
+        keylist.append(key.decode())
+    return dict(keys=keylist)
 
 
-@router.delete("/")
+@router.delete(
+    "/",
+    response_model=Status,
+    response_model_exclude_unset=True,
+)
 async def delete_all_sessions(
     cache: Redis = Depends(depends_redis),
 ) -> Dict[str, Union[str, int]]:
@@ -78,8 +99,9 @@ async def _get_session(
     redis: Redis = Depends(depends_redis),
 ) -> Dict[str, Any]:
     """Return the session contents given a session_id"""
-    session = json.loads(await redis.get(session_id))
-    return session
+    if not await redis.exists(session_id):
+        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
+    return json.loads(await redis.get(session_id))
 
 
 async def _update_session(
@@ -88,7 +110,7 @@ async def _update_session(
     redis: Redis,
 ) -> Dict[str, Any]:
     """Update an existing session (to be called internally)."""
-    session: Dict[str, Any] = json.loads(await redis.get(session_id))
+    session = await _get_session(session_id, redis)
     session.update(updated_session)
     await redis.set(session_id, json.dumps(session).encode("utf-8"))
     return session
@@ -101,7 +123,7 @@ async def _update_session_list_item(
     redis: Redis,
 ) -> Dict[str, Any]:
     """Append or create list items to an existing session"""
-    session = json.loads(await redis.get(session_id))
+    session = await _get_session(session_id, redis)
     if list_key in session:
         session[list_key].append(list_items)
     else:
@@ -110,34 +132,61 @@ async def _update_session_list_item(
     return session
 
 
-@router.put("/{session_id}")
+@router.put(
+    "/{session_id}",
+    response_model=Session,
+    response_model_exclude_unset=True,
+    responses={
+        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+    },
+)
 async def update_session(
     session_id: str,
-    updatet_session: Dict[str, Any],
+    updated_session: Dict[str, Any],
     cache: Redis = Depends(depends_redis),
 ) -> Dict[str, Any]:
     """Update session object"""
+    if not await cache.exists(session_id):
+        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
     session: Dict[str, Any] = json.loads(await cache.get(session_id))
-    session.update(updatet_session)
+    session.update(updated_session)
     await cache.set(session_id, json.dumps(session).encode("utf-8"))
     return session
 
 
-@router.get("/{session_id}")
+@router.get(
+    "/{session_id}",
+    response_model=Session,
+    response_model_exclude_unset=True,
+    responses={
+        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+    },
+)
 async def get_session(
     session_id: str,
     cache: Redis = Depends(depends_redis),
 ) -> Dict[str, Any]:
     """Fetch the entire session object"""
+    if not await cache.exists(session_id):
+        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
     session = json.loads(await cache.get(session_id))
     return session
 
 
-@router.delete("/{session_id}")
+@router.delete(
+    "/{session_id}",
+    response_model=Status,
+    response_model_exclude_unset=True,
+    responses={
+        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+    },
+)
 async def delete_session(
     session_id: str,
     cache: Redis = Depends(depends_redis),
 ) -> Dict[Literal["status"], Literal["ok"]]:
     """Delete a session object"""
+    if not await cache.exists(session_id):
+        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
     await cache.delete(session_id)
     return {"status": "ok"}
