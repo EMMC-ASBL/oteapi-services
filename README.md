@@ -54,9 +54,9 @@ docker run \
     --detach \
     --volume ${PWD}:/app \
     --publish 8080:8080 \
-    --env REDIS_TYPE=redis \
-    --env REDIS_HOST=redis \
-    --env REDIS_PORT=6379 \
+    --env OTEAPI_REDIS_TYPE=redis \
+    --env OTEAPI_REDIS_HOST=redis \
+    --env OTEAPI_REDIS_PORT=6379 \
     ontotrans/oteapi-development:latest
 ```
 
