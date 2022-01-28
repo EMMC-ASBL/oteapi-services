@@ -29,14 +29,6 @@ ENV DLITE_STORAGES=/app/entities/*.json
 ENV PYTHONPATH=/usr/lib64/python3.9/site-packages
 RUN mkdir -p /app/entities
 
-################# PRODUCTION ####################################
-FROM base as production
-COPY . .
-# Run app
-CMD hypercorn asgi:app --bind 0.0.0.0:8080
-EXPOSE 8080
-
-
 ################# DEVELOPMENT ####################################
 FROM base as development
 COPY . .
@@ -51,4 +43,12 @@ RUN pytest --cov app
 
 # Run with reload option
 CMD hypercorn asgi:app --bind 0.0.0.0:8080 --reload
+EXPOSE 8080
+
+
+################# PRODUCTION ####################################
+FROM base as production
+COPY . .
+# Run app
+CMD hypercorn asgi:app --bind 0.0.0.0:8080
 EXPOSE 8080
