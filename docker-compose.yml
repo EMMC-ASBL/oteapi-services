@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  oteapi:
+    build:
+      context: "."
+      target: "${DOCKER_OTEAPI_TARGET:-production}"
+    ports:
+      - "${PORT:-80}:8080"
+    environment:
+      OTEAPI_REDIS_TYPE: redis
+      OTEAPI_REDIS_HOST: redis
+      OTEAPI_REDIS_PORT: 6379
+      OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
+    depends_on:
+      - redis
+    networks:
+      - otenet
+
+  redis:
+    image: redis:latest
+    expose:
+      - "6379"
+    volumes:
+      - redis-persist:/data
+    networks:
+      - otenet
+
+  sftp:
+    image: atmoz/sftp
+    volumes:
+      - sftp-storage:/home/foo/upload
+    expose:
+      - "22"
+    command: foo:pass:1001
+    networks:
+      - otenet
+
+volumes:
+  redis-persist:
+  sftp-storage:
+
+networks:
+  otenet:
