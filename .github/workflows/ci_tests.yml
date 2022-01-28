@@ -137,3 +137,32 @@ jobs:
         name: oteapi-services
         files: ./coverage.xml
         flags: pytest
+
+  docker-compose:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        docker-target: ["development", "production"]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build OTEAPI Services Dockerfile
+      run: |
+        # Need to re-install docker-compose from pip:
+        # https://github.com/docker/compose/issues/7686
+        sudo apt-get update && sudo pip install docker-compose
+        docker-compose -f docker-compose.yml --verbose -- build
+
+    - name: Start the Docker services
+      run: |
+        docker-compose -f docker-compose.yml  --verbose -- up &
+        .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
+        sleep 5
+        curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
+      env:
+        PORT: 8123
+        OTEAPI_prefix: /api/ci/v1
+        DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
