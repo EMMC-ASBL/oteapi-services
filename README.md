@@ -24,7 +24,9 @@ To build and run the production target from the command line:
 ```shell
 docker build --rm -q -f Dockerfile \
     --label "ontotrans.oteapi=production" \
+    --target production \
     -t "ontotrans/oteapi:latest" .
+
 ```
 
 ### Run redis
@@ -61,6 +63,24 @@ docker run \
 ```
 
 Open the following URL in a browser [http://localhost:8080/redoc](http://localhost:8080/redoc).
+
+### Run oteapi (production)
+
+Run the services by attaching to the otenet network and set the environmental variables for connecting to Redis.
+
+```shell
+docker run \
+    --rm \
+    --network otenet \
+    --detach \
+    --publish 80:8080 \
+    --env OTEAPI_REDIS_TYPE=redis \
+    --env OTEAPI_REDIS_HOST=redis \
+    --env OTEAPI_REDIS_PORT=6379 \
+    ontotrans/oteapi:latest
+```
+
+Open the following URL in a browser [http://localhost:80/redoc](http://localhost:80/redoc).
 
 ### Run the Atmoz SFTP Server
 
