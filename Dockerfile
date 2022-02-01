@@ -35,8 +35,10 @@ COPY . .
 
 # Run static security check and linters
 RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
+# Ignore ID 44715 for now.
+# See this NumPy issue for more information: https://github.com/numpy/numpy/issues/19038
 RUN pre-commit run --all-files  \
-  && safety check -r requirements.txt -r requirements_dev.txt
+  && safety check -r requirements.txt -r requirements_dev.txt --ignore 44715
 
 # Run pytest with code coverage
 RUN pytest --cov app
