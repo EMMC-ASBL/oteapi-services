@@ -95,3 +95,11 @@ docker run \
     --publish 2222:22 \
     atmoz/sftp foo:pass:1001
 ```
+
+## Run with Docker Compose
+
+```shell
+docker-compose pull  # Pull the latest images
+docker-compose build  # Build the central OTE service (from Dockerfile)
+docker-compose up -d  # Run the OTE Services (detached)
+```
