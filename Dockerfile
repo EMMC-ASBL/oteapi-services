@@ -46,7 +46,7 @@ EXPOSE 8080
 
 ################# PRODUCTION ####################################
 FROM base as production
-COPY app asgi.py ./
+COPY . .
 
 # Run app
 CMD hypercorn asgi:app --bind 0.0.0.0:8080
