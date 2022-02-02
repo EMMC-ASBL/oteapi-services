@@ -1,4 +1,4 @@
-FROM ubuntu:21.04 as base
+FROM python:3.9-slim as base
 
 # Prevent writing .pyc files on the import of source modules
 # and set unbuffered mode to ensure logging outputs
@@ -8,49 +8,31 @@ ENV PYTHONUNBUFFERED 1
 # Set working directory
 WORKDIR /app
 
-RUN apt-get -qq update
-RUN DEBIAN_FRONTEND="noninteractive" apt-get install -qq -y --fix-missing \
-    python3-dev \
-    python3-pip \
-    curl \
-    git
-
-RUN curl -L -o /tmp/dlite.deb https://github.com/SINTEF/dlite/releases/download/0.3.1/dlite-0.3.1-x86_64.deb
-
-RUN apt-get install -y -f /tmp/dlite.deb \
-  && rm -rf /var/lib/apt/lists/*
-
 # Install requirements
 COPY ./requirements.txt .
-RUN pip install -q --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip
-RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host github.com -r requirements.txt
-ENV DLITE_ROOT=/usr
-ENV DLITE_STORAGES=/app/entities/*.json
-ENV PYTHONPATH=/usr/lib64/python3.9/site-packages
-RUN mkdir -p /app/entities
+RUN pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip \
+  && pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org --trusted-host github.com -r requirements.txt
 
 ################# DEVELOPMENT ####################################
 FROM base as development
 COPY . .
 
-# Run static security check and linters
-RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
+# Run static security check, linters, and pytest with code coverage
+RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt \
 # Ignore ID 44715 for now.
 # See this NumPy issue for more information: https://github.com/numpy/numpy/issues/19038
-RUN pre-commit run --all-files  \
-  && safety check -r requirements.txt -r requirements_dev.txt --ignore 44715
+  && pre-commit run --all-files \
+  && safety check -r requirements.txt -r requirements_dev.txt --ignore 44715 \
+  && pytest --cov app
 
-# Run pytest with code coverage
-RUN pytest --cov app
-
-# Run with reload option
-CMD hypercorn asgi:app --bind 0.0.0.0:8080 --reload
+# Run app with reload option
 EXPOSE 8080
-
+CMD hypercorn asgi:app --bind 0.0.0.0:8080 --reload
 
 ################# PRODUCTION ####################################
 FROM base as production
 COPY . .
+
 # Run app
-CMD hypercorn asgi:app --bind 0.0.0.0:8080
 EXPOSE 8080
+CMD hypercorn asgi:app --bind 0.0.0.0:8080
