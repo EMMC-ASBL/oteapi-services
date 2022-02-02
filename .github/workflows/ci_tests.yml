@@ -99,6 +99,7 @@ jobs:
           --env OTEAPI_REDIS_TYPE=redis \
           --env OTEAPI_REDIS_HOST=redis \
           --env OTEAPI_REDIS_PORT=6379 \
+          --network host \
           "oteapi-${{ matrix.docker-target }}:latest" &
         .github/utils/wait_for_it.sh localhost:8080 -t 60
         sleep 5
