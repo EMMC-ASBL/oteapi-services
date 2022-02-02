@@ -43,7 +43,7 @@ PyYAML==6.0
 requests==2.27.1
 six==1.16.0
 sniffio==1.2.0
-starlette==0.17.1
+starlette==0.18.0
 tenacity==8.0.1
 toml==0.10.2
 typing_extensions==4.0.1
