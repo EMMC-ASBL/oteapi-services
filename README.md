@@ -9,7 +9,7 @@ This requires that the local directory is bind-mounted using the `-v` or `--volu
 To build and run the development target from the command line:
 
 ```shell
-docker build --rm -q -f Dockerfile \
+docker build --rm -f Dockerfile \
     --label "ontotrans.oteapi=development" \
     --target development \
     -t "ontotrans/oteapi-development:latest" .
@@ -22,7 +22,7 @@ Also you might want to use a named container with the `--restart=always` option 
 To build and run the production target from the command line:
 
 ```shell
-docker build --rm -q -f Dockerfile \
+docker build --rm -f Dockerfile \
     --label "ontotrans.oteapi=production" \
     --target production \
     -t "ontotrans/oteapi:latest" .
@@ -88,18 +88,30 @@ To test the data access via SFTP, the atmoz sftp-server can be run:
 
 ```shell
 docker volume create sftpdrive
-docker run \
+PASSWORD="Insert your user password here" docker run \
     --detach \
     --network=otenet \
-    --volume sftpdrive:/home/foo/upload \
+    --volume sftpdrive:${HOME}/download \
     --publish 2222:22 \
-    atmoz/sftp foo:pass:1001
+    atmoz/sftp ${USER}:${PASSWORD}:1001
 ```
 
+For production, SSH public key authentication is preferred.
+
 ## Run with Docker Compose
+
+Prepare the Docker Compose system by running:
 
 ```shell
 docker-compose pull  # Pull the latest images
 docker-compose build  # Build the central OTE service (from Dockerfile)
+```
+
+Now one can simply run:
+
+```shell
 docker-compose up -d  # Run the OTE Services (detached)
 ```
+
+Note that default values will be used if certain environment variables are not present.
+To inspect which environment variables can be specified, please inspect the [Docker Compose file](docker-compose.yml).
