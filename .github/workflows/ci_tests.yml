@@ -75,17 +75,6 @@ jobs:
       matrix:
         docker-target: ["development", "production"]
 
-    services:
-      redis:
-        image: redis:latest
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
     - uses: actions/checkout@v2
 
@@ -93,24 +82,8 @@ jobs:
       run: |
         docker build \
           -f Dockerfile \
-          --tag "oteapi-${{ matrix.docker-target }}:latest" \
           --target ${{ matrix.docker-target }} \
           .
-
-    - name: Start the Docker app
-      run: |
-        docker run \
-          --volume ${PWD}:/app \
-          --env OTEAPI_REDIS_TYPE=redis \
-          --env OTEAPI_REDIS_HOST=localhost \
-          --env OTEAPI_REDIS_PORT=6379 \
-          --publish ${{ env.PORT }}:8080 \
-          "oteapi-${{ matrix.docker-target }}:latest" &
-        .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 60
-        sleep 5
-        curl -X "GET" -i "http://localhost:${{ env.PORT }}/api/v1/session"
-      env:
-        PORT: 8123
 
   pytest:
     runs-on: ubuntu-latest
