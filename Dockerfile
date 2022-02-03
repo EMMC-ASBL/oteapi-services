@@ -8,8 +8,8 @@ ENV PYTHONUNBUFFERED 1
 # Set working directory
 WORKDIR /app
 
-# Install requirements
-COPY ./requirements.txt .
+# Copy core parts and install requirements
+COPY requirements.txt LICENSE README.md app/ asgi.py ./
 RUN apt-get update \
   && apt-get -y install git \
   && pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip \
@@ -17,7 +17,9 @@ RUN apt-get update \
 
 ################# DEVELOPMENT ####################################
 FROM base as development
-COPY . .
+
+# Copy development parts
+COPY requirements_dev.txt tests/ .pre-commit-config.yaml .pylintrc ./
 
 # Run static security check, linters, and pytest with code coverage
 RUN pip install -q --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt \
@@ -33,7 +35,6 @@ CMD hypercorn asgi:app --bind 0.0.0.0:8080 --reload
 
 ################# PRODUCTION ####################################
 FROM base as production
-COPY . .
 
 # Run app
 EXPOSE 8080
