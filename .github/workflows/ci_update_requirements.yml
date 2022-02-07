@@ -78,6 +78,7 @@ jobs:
         title: "[Auto-generated] Update `requirements.txt`"
         body: ${{ steps.pr_body.outputs.result }}
         labels: CI/CD
+        base: "cwa/close-38-simplify-dependency-updates"
 
     - name: Information
       if: env.UPDATE_DEPS == 'true'
