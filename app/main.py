@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi_plugins import RedisSettings, redis_plugin
-from oteapi.plugins import load_plugins
+from oteapi.plugins import load_strategies
 from pydantic import Field
 
 from app import __version__
@@ -54,7 +54,7 @@ are concrete strategy implementations of the following types:
 
 This service is based on:
 
-- **oteapi-core**: v0.0.3
+- **oteapi-core**: v0.0.5
 
         """,
     )
@@ -109,4 +109,4 @@ _APP.openapi = custom_openapi
 # Events
 _APP.add_event_handler("startup", init_redis)
 _APP.add_event_handler("shutdown", terminate_redis)
-_APP.add_event_handler("startup", load_plugins)
+_APP.add_event_handler("startup", load_strategies)

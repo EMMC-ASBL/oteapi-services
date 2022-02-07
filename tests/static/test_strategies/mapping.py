@@ -3,8 +3,6 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from oteapi.plugins.factories import StrategyFactory
-
 if TYPE_CHECKING:
     from typing import Any, Dict, Optional
 
@@ -12,7 +10,6 @@ if TYPE_CHECKING:
 
 
 @dataclass
-@StrategyFactory.register(("mappingType", "mapping/demo"))
 class DemoMappingStrategy:
     """Mapping Strategy."""
 

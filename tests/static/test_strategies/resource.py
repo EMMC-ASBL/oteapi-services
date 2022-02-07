@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from oteapi.plugins.factories import StrategyFactory, create_download_strategy
+from oteapi.plugins.factories import create_strategy
 
 if TYPE_CHECKING:
     from typing import Any, Dict, Optional
@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 
 @dataclass
-@StrategyFactory.register(("accessService", "demo-access-service"))
 class DemoResourceStrategy:
     """Resource Strategy."""
 
@@ -27,6 +26,6 @@ class DemoResourceStrategy:
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Manage mapping and return shared map"""
         # Example of the plugin using the download strategy to fetch the data
-        download_strategy = create_download_strategy(self.resource_config)
+        download_strategy = create_strategy("download", self.resource_config)
         read_output = download_strategy.get(session)
         return {"output": read_output}

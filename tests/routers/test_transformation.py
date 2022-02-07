@@ -12,7 +12,7 @@ def test_create_transformation(client: "TestClient") -> None:
     response = client.post(
         "/transformation/",
         json={
-            "transformation_type": "script/dummy",
+            "transformationType": "script/dummy",
             "name": "script/dummy",
             "configuration": {},
         },
