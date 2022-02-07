@@ -1,0 +1,5 @@
+aioredis
+fastapi
+fastapi_plugins
+oteapi
+pydantic

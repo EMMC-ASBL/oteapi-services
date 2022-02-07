@@ -1,0 +1,70 @@
+name: CI - Check for updates to `requirements.txt`
+
+on:
+  schedule:
+    # At 8:30 every Monday (6:30 UTC)
+    - cron: "30 6 * * 1"
+  push:
+    branches:
+      - "cwa/close-38-simplify-dependency-updates"
+
+env:
+  DEPENDABOT_BRANCH: ci/dependabot-updates
+  GIT_USER_NAME: "TEAM 4.0[bot]"
+  GIT_USER_EMAIL: "Team4.0@SINTEF.no"
+  DEFAULT_REPO_BRANCH: master
+
+jobs:
+  update-requirements:
+    name: Update `requirements.txt`
+    if: github.repository_owner == 'EMMC-ASBL'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ env.DEFAULT_REPO_BRANCH }}
+        fetch-depth: 0
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Set up git config
+      run: |
+        git config --global user.name "${{ env.GIT_USER_NAME }}"
+        git config --global user.email "${{ env.GIT_USER_EMAIL }}"
+
+    - name: Install immediate requirements
+      run: |
+        python -m pip install -U pip
+        pip install -U setuptools wheel
+        pip install --upgrade-strategy=eager -U -r .github/utils/direct_requirements.txt
+
+    - name: Run `pip freeze` and update current `requirements.txt`
+      run: |
+        pip freeze > requirements_new.txt
+        if [ "$(diff requirements.txt requirements_new.txt)" ]; then
+          # There are updates !
+          mv -f requirements_new.txt requirements.txt
+          echo -e "requirements.txt has been updated. Diff:\n$(git diff requirements.txt)"
+          echo "UPDATE_DEPS=true" >> $GITHUB_ENV
+
+          git add requirements.txt
+          git commit -m "Update \`requirements.txt\`"
+        else:
+          # No changes
+          echo "No changes found for requirements.txt."
+          echo "UPDATE_DEPS=false" >> $GITHUB_ENV
+        fi
+
+    # - name: Push to '${{ env.DEPENDABOT_BRANCH }}'
+    #   if: env.UPDATE_DEPS == 'true'
+    #   uses: CasperWA/push-protected@v2
+    #   with:
+    #     token: ${{ secrets.RELEASE_PAT }}
+    #     branch: ${{ env.DEPENDABOT_BRANCH }}
+    #     sleep: 15
+    #     force: ${{ env.FORCE_PUSH }}

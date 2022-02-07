@@ -24,7 +24,7 @@ FROM base as development
 # Copy development parts
 COPY tests tests/
 COPY .git .git/
-COPY requirements_dev.txt .pre-commit-config.yaml .pylintrc ./
+COPY .dev/requirements_dev.txt .pre-commit-config.yaml .pylintrc ./
 
 # Run static security check, linters, and pytest with code coverage
 RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt \
