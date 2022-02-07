@@ -24,7 +24,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        ref: ${{ env.DEFAULT_REPO_BRANCH }}
+        # ref: ${{ env.DEFAULT_REPO_BRANCH }}
         fetch-depth: 0
 
     - name: Set up Python 3.9
