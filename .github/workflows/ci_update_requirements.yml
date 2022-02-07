@@ -4,7 +4,6 @@ on:
   schedule:
     # At 8:30 every Monday (6:30 UTC)
     - cron: "30 6 * * 1"
-  pull_request:
 
 env:
   DEPENDABOT_BRANCH: ci/dependabot-updates
@@ -21,7 +20,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        # ref: ${{ env.DEPENDABOT_BRANCH }}
+        ref: ${{ env.DEPENDABOT_BRANCH }}
         fetch-depth: 0
 
     - name: Set up Python 3.9
@@ -78,7 +77,6 @@ jobs:
         title: "[Auto-generated] Update `requirements.txt`"
         body: ${{ steps.pr_body.outputs.result }}
         labels: CI/CD
-        base: "ci/dependabot-updates"
 
     - name: Information
       if: env.UPDATE_DEPS == 'true'
