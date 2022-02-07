@@ -4,15 +4,11 @@ on:
   schedule:
     # At 8:30 every Monday (6:30 UTC)
     - cron: "30 6 * * 1"
-  push:
-    branches:
-      - "cwa/close-38-simplify-dependency-updates"
 
 env:
   DEPENDABOT_BRANCH: ci/dependabot-updates
   GIT_USER_NAME: "TEAM 4.0[bot]"
   GIT_USER_EMAIL: "Team4.0@SINTEF.no"
-  DEFAULT_REPO_BRANCH: master
 
 jobs:
   update-requirements:
@@ -24,7 +20,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
-        # ref: ${{ env.DEPENDABOT_BRANCH }}
+        ref: ${{ env.DEPENDABOT_BRANCH }}
         fetch-depth: 0
 
     - name: Set up Python 3.9
@@ -60,28 +56,28 @@ jobs:
           echo "UPDATE_DEPS=false" >> $GITHUB_ENV
         fi
 
-    # - name: Fetch PR body
-    #   if: env.UPDATE_DEPS == 'true'
-    #   id: pr_body
-    #   uses: chuhlomin/render-template@v1.4
-    #   with:
-    #     template: .github/utils/requirements_update_pr_body.txt
+    - name: Fetch PR body
+      if: env.UPDATE_DEPS == 'true'
+      id: pr_body
+      uses: chuhlomin/render-template@v1.4
+      with:
+        template: .github/utils/requirements_update_pr_body.txt
 
-    # - name: Create PR
-    #   if: env.UPDATE_DEPS == 'true'
-    #   id: cpr
-    #   uses: peter-evans/create-pull-request@v3
-    #   with:
-    #     token: ${{ secrets.RELEASE_PAT }}
-    #     commit-message: "Update `requirements.txt`"
-    #     committer: "${{ env.GIT_USER_NAME }} <${{ env.GIT_USER_EMAIL }}>"
-    #     author: "${{ env.GIT_USER_NAME }} <${{ env.GIT_USER_EMAIL }}>"
-    #     branch: ci/update-requirements
-    #     delete-branch: true
-    #     title: "[Auto-generated] Update `requirements.txt`"
-    #     body: ${{ steps.pr_body.outputs.result }}
-    #     labels: CI/CD
+    - name: Create PR
+      if: env.UPDATE_DEPS == 'true'
+      id: cpr
+      uses: peter-evans/create-pull-request@v3
+      with:
+        token: ${{ secrets.RELEASE_PAT }}
+        commit-message: "Update `requirements.txt`"
+        committer: "${{ env.GIT_USER_NAME }} <${{ env.GIT_USER_EMAIL }}>"
+        author: "${{ env.GIT_USER_NAME }} <${{ env.GIT_USER_EMAIL }}>"
+        branch: ci/update-requirements
+        delete-branch: true
+        title: "[Auto-generated] Update `requirements.txt`"
+        body: ${{ steps.pr_body.outputs.result }}
+        labels: CI/CD
 
-    # - name: Information
-    #   if: env.UPDATE_DEPS == 'true'
-    #   run: 'echo "${{ steps.cpr.outputs.pull-request-operation }} PR #${{ steps.cpr.outputs.pull-request-number }}: ${{ steps.cpr.outputs.pull-request-url }}"'
+    - name: Information
+      if: env.UPDATE_DEPS == 'true'
+      run: 'echo "${{ steps.cpr.outputs.pull-request-operation }} PR #${{ steps.cpr.outputs.pull-request-number }}: ${{ steps.cpr.outputs.pull-request-url }}"'
