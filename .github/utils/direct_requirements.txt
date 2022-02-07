@@ -1,5 +1,5 @@
 aioredis
 fastapi
 fastapi_plugins
-oteapi
+oteapi-core
 pydantic
