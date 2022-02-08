@@ -26,7 +26,6 @@ docker build --rm -f Dockerfile \
     --label "ontotrans.oteapi=production" \
     --target production \
     -t "ontotrans/oteapi:latest" .
-
 ```
 
 ### Run redis
