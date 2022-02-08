@@ -6,8 +6,8 @@ from uuid import uuid4
 from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
-from oteapi.models.transformationconfig import TransformationConfig
-from oteapi.plugins.factories import create_transformation_strategy
+from oteapi.models import TransformationConfig
+from oteapi.plugins import create_strategy
 
 from .session import _update_session, _update_session_list_item
 
@@ -48,7 +48,7 @@ async def get_transformation_status(
     transformation_info = TransformationConfig(**transformation_info_json)
 
     # Apply the appropriate transformation strategy (plugin) using the factory
-    transformation_strategy = create_transformation_strategy(transformation_info)
+    transformation_strategy = create_strategy("transformation", transformation_info)
 
     status = transformation_strategy.status(task_id)
     return status
@@ -68,7 +68,7 @@ async def get_transformation(
     transformation_info = TransformationConfig(**transformation_info_json)
 
     # Apply the appropriate transformation strategy (plugin) using the factory
-    transformation_strategy = create_transformation_strategy(transformation_info)
+    transformation_strategy = create_strategy("transformation", transformation_info)
 
     session_data = None if not session_id else json.loads(await cache.get(session_id))
     result = transformation_strategy.get(session_data)
@@ -89,8 +89,9 @@ async def execute_transformation(
     transformation_info = json.loads(await cache.get(transformation_id))
 
     # Apply the appropriate transformation strategy (plugin) using the factory
-    transformation_strategy = create_transformation_strategy(
-        TransformationConfig(**transformation_info)
+    transformation_strategy = create_strategy(
+        "transformation",
+        TransformationConfig(**transformation_info),
     )
 
     # If session id is given, pass the object to the strategy create function
@@ -114,8 +115,9 @@ async def initialize_transformation(
     transformation_info = json.loads(await cache.get(transformation_id))
 
     # Apply the appropriate transformation strategy (plugin) using the factory
-    transformation_strategy = create_transformation_strategy(
-        TransformationConfig(**transformation_info)
+    transformation_strategy = create_strategy(
+        "transformation",
+        TransformationConfig(**transformation_info),
     )
 
     # If session id is given, pass the object to the strategy create function

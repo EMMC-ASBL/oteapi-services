@@ -29,7 +29,7 @@ invoke==1.6.0
 kombu==5.2.3
 numpy==1.22.2
 openpyxl==3.0.9
-oteapi-core==0.0.4
+oteapi-core==0.0.5
 paramiko==2.9.2
 Pillow==9.0.1
 priority==2.0.0

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from oteapi.datacache.datacache import DataCache
-from oteapi.plugins.factories import StrategyFactory, create_download_strategy
+from oteapi.plugins.factories import create_strategy
 
 if TYPE_CHECKING:
     from typing import Any, Dict, Optional
@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 
 @dataclass
-@StrategyFactory.register(("mediaType", "text/json"))
 class DemoJSONDataParseStrategy:
     """Parse Strategy."""
 
@@ -28,7 +27,7 @@ class DemoJSONDataParseStrategy:
 
     def parse(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Parse json."""
-        downloader = create_download_strategy(self.resource_config)
+        downloader = create_strategy("download", self.resource_config)
         output = downloader.get()
         cache = DataCache(self.resource_config.configuration)
         content = cache.get(output["key"])

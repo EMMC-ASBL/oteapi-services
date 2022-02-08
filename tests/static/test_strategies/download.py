@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from oteapi.datacache.datacache import DataCache
-from oteapi.plugins.factories import StrategyFactory
 from pydantic import BaseModel, Extra, Field
 
 if TYPE_CHECKING:
@@ -27,7 +26,6 @@ class FileConfig(BaseModel):
 
 
 @dataclass
-@StrategyFactory.register(("scheme", "file"))
 class FileStrategy:
     """Strategy for retrieving data via local file."""
 
