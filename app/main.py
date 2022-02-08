@@ -52,11 +52,8 @@ are concrete strategy implementations of the following types:
 - **Filter operation strategy** (defines specify views/operations)
 - **Transformation strategy** (asyncronous operations)
 
-This service is based on:
-
-- **oteapi-core**: v0.0.5
-
-        """,
+This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-core).
+""",
     )
     for router_module in (
         session,
