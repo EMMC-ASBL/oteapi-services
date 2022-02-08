@@ -6,8 +6,8 @@ from uuid import uuid4
 from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
-from oteapi.models.filterconfig import FilterConfig
-from oteapi.plugins.factories import create_filter_strategy
+from oteapi.models import FilterConfig
+from oteapi.plugins import create_strategy
 
 from .session import _update_session, _update_session_list_item
 
@@ -42,7 +42,7 @@ async def get_filter(
 
     filter_info_json = json.loads(await cache.get(filter_id))
     filter_info = FilterConfig(**filter_info_json)
-    filter_strategy = create_filter_strategy(filter_info)
+    filter_strategy = create_strategy("filter", filter_info)
     session_data = None if not session_id else json.loads(await cache.get(session_id))
     result = filter_strategy.get(session_data)
     if result and session_id:
@@ -61,7 +61,7 @@ async def initialize_filter(
 
     filter_info_json = json.loads(await cache.get(filter_id))
     filter_info = FilterConfig(**filter_info_json)
-    filter_strategy = create_filter_strategy(filter_info)
+    filter_strategy = create_strategy("filter", filter_info)
     session_data = None if not session_id else json.loads(await cache.get(session_id))
     result = filter_strategy.initialize(session_data)
     if result and session_id:

@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, List
 
-from oteapi.plugins.factories import StrategyFactory
 from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
@@ -19,7 +18,6 @@ class DemoDataModel(BaseModel):
 
 
 @dataclass
-@StrategyFactory.register(("filterType", "filter/demo"))
 class DemoFilter:
     """Filter Strategy."""
 

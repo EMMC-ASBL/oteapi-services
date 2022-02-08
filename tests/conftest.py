@@ -68,18 +68,70 @@ def test_data() -> "Dict[str, dict]":
         "2": {"foo": "bar"},
         # transformation
         "transformation-f752c613-fde0-4d43-a7f6-c50f68642daa": {
-            "transformation_type": "script/demo",
+            "transformationType": "script/demo",
             "name": "script/dummy",
             "configuration": {},
         },
     }
 
 
+def load_test_strategies() -> None:
+    """Load test strategies."""
+    from importlib.metadata import EntryPoint
+
+    from oteapi.plugins.entry_points import (
+        EntryPointStrategy,
+        EntryPointStrategyCollection,
+        StrategyType,
+    )
+    from oteapi.plugins.factories import StrategyFactory
+
+    test_strategies = [
+        {
+            "name": "tests.file",
+            "value": "tests.static.test_strategies.download:FileStrategy",
+            "group": "oteapi.download",
+        },
+        {
+            "name": "tests.filter/demo",
+            "value": "tests.static.test_strategies.filter:DemoFilter",
+            "group": "oteapi.filter",
+        },
+        {
+            "name": "tests.mapping/demo",
+            "value": "tests.static.test_strategies.mapping:DemoMappingStrategy",
+            "group": "oteapi.mapping",
+        },
+        {
+            "name": "tests.text/json",
+            "value": "tests.static.test_strategies.parse:DemoJSONDataParseStrategy",
+            "group": "oteapi.parse",
+        },
+        {
+            "name": "tests.demo-access-service",
+            "value": "tests.static.test_strategies.resource:DemoResourceStrategy",
+            "group": "oteapi.resource",
+        },
+        {
+            "name": "tests.script/demo",
+            "value": "tests.static.test_strategies.transformation:DummyTransformationStrategy",
+            "group": "oteapi.transformation",
+        },
+    ]
+    generated_entry_points = [EntryPoint(**_) for _ in test_strategies]
+
+    StrategyFactory.strategy_create_func = {
+        strategy_type: EntryPointStrategyCollection(
+            *(EntryPointStrategy(_) for _ in generated_entry_points)
+        )
+        for strategy_type in StrategyType
+    }
+
+
 @pytest.fixture(scope="session")
-def client(test_data: "Dict[str, dict]", top_dir: Path) -> TestClient:
+def client(test_data: "Dict[str, dict]") -> TestClient:
     """Return a test client."""
     from fastapi_plugins import depends_redis
-    from oteapi.plugins.plugins import import_module, load_plugins
 
     from asgi import app
 
@@ -91,17 +143,7 @@ def client(test_data: "Dict[str, dict]", top_dir: Path) -> TestClient:
         return DummyCache(test_data)
 
     app.dependency_overrides[depends_redis] = override_depends_redis
-    for index, func in enumerate(tuple(app.router.on_startup)):
-        if func == load_plugins:
-            app.router.on_startup.pop(index)
 
-    for strategy_file in (top_dir / "tests" / "static" / "test_strategies").glob(
-        "*.py"
-    ):
-        import_module(
-            str(strategy_file.resolve().with_suffix("").relative_to(top_dir)).replace(
-                "/", "."
-            )
-        )
+    load_test_strategies()
 
     return TestClient(app)

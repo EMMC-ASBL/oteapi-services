@@ -6,8 +6,8 @@ from uuid import uuid4
 from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
-from oteapi.models.mappingconfig import MappingConfig
-from oteapi.plugins.factories import create_mapping_strategy
+from oteapi.models import MappingConfig
+from oteapi.plugins import create_strategy
 
 from .session import _update_session, _update_session_list_item
 
@@ -44,7 +44,7 @@ async def get_mapping(
     mapping_info_json = json.loads(await cache.get(mapping_id))
     mapping_info = MappingConfig(**mapping_info_json)
 
-    mapping_strategy = create_mapping_strategy(mapping_info)
+    mapping_strategy = create_strategy("mapping", mapping_info)
     session_data = None if not session_id else json.loads(await cache.get(session_id))
     result = mapping_strategy.get(session_data)
     if result and session_id:
@@ -63,7 +63,7 @@ async def initialize_mapping(
     mapping_info_json = json.loads(await cache.get(mapping_id))
     mapping_info = MappingConfig(**mapping_info_json)
 
-    mapping_strategy = create_mapping_strategy(mapping_info)
+    mapping_strategy = create_strategy("mapping", mapping_info)
     session_data = None if not session_id else json.loads(await cache.get(session_id))
     result = mapping_strategy.initialize(session_data)
     if result and session_id:

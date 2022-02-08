@@ -6,12 +6,8 @@ from uuid import uuid4
 from aioredis import Redis
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_plugins import depends_redis
-from oteapi.models.resourceconfig import ResourceConfig
-from oteapi.plugins.factories import (
-    create_download_strategy,
-    create_parse_strategy,
-    create_resource_strategy,
-)
+from oteapi.models import ResourceConfig
+from oteapi.plugins import create_strategy
 
 from .session import _update_session, _update_session_list_item
 
@@ -79,7 +75,7 @@ async def read_dataresource(
     session_data = None if not session_id else json.loads(await cache.get(session_id))
 
     if resource_config.accessUrl and resource_config.accessService:
-        strategy = create_resource_strategy(resource_config)
+        strategy = create_strategy("resource", resource_config)
         session_data = (
             None if not session_id else json.loads(await cache.get(session_id))
         )
@@ -87,13 +83,13 @@ async def read_dataresource(
         if output and session_id:
             await _update_session(session_id, output, cache)
     elif resource_config.downloadUrl and resource_config.mediaType:
-        download_strategy = create_download_strategy(resource_config)
+        download_strategy = create_strategy("download", resource_config)
         output = download_strategy.get(session_data)
         if session_id:
             await _update_session(session_id, output, cache)
             session_data = json.loads(await cache.get(session_id))
         # Parse
-        parse_strategy = create_parse_strategy(resource_config)
+        parse_strategy = create_strategy("parse", resource_config)
         output = parse_strategy.parse(session_data)
         if session_id:
             await _update_session(session_id, output, cache)
@@ -116,9 +112,9 @@ async def initialize_dataresource(
     resource_config = ResourceConfig(**resource_info_json)
 
     if resource_config.accessUrl and resource_config.accessService:
-        strategy = create_resource_strategy(resource_config)
+        strategy = create_strategy("resource", resource_config)
     elif resource_config.downloadUrl and resource_config.mediaType:
-        strategy = create_download_strategy(resource_config)
+        strategy = create_strategy("download", resource_config)
     else:
         raise HTTPException(
             status_code=404,
