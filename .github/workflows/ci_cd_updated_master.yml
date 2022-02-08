@@ -74,7 +74,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Build image
-      run: docker build --file Dockerfile --tag "$[IMAGE_NAME]" --label "gh_actions_runnumber=${GITHUB_RUN_ID}" --label "oteapi=production" --target production .
+      run: docker build --file Dockerfile --tag "$[IMAGE_NAME]:latest" --label "gh_actions_runnumber=${GITHUB_RUN_ID}" --label "oteapi=production" --target production .
 
     - name: Log in to registry
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u TEAM4-0 --password-stdin
