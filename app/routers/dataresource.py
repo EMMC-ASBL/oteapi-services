@@ -90,7 +90,7 @@ async def read_dataresource(
             session_data = json.loads(await cache.get(session_id))
         # Parse
         parse_strategy = create_strategy("parse", resource_config)
-        output = parse_strategy.parse(session_data)
+        output = parse_strategy.get(session_data)
         if session_id:
             await _update_session(session_id, output, cache)
     else:
