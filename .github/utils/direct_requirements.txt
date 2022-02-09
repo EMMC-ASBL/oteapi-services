@@ -1,0 +1,6 @@
+aioredis
+fastapi
+fastapi_plugins
+hypercorn
+oteapi-core
+pydantic

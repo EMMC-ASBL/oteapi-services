@@ -1,0 +1,83 @@
+name: CI - Check for updates to `requirements.txt`
+
+on:
+  schedule:
+    # At 7:30 every Monday (6:30 UTC)
+    - cron: "30 6 * * 1"
+
+env:
+  DEPENDABOT_BRANCH: ci/dependabot-updates
+  GIT_USER_NAME: "TEAM 4.0[bot]"
+  GIT_USER_EMAIL: "Team4.0@SINTEF.no"
+
+jobs:
+  update-requirements:
+    name: Update `requirements.txt`
+    if: github.repository_owner == 'EMMC-ASBL'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        ref: ${{ env.DEPENDABOT_BRANCH }}
+        fetch-depth: 0
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Set up git config
+      run: |
+        git config --global user.name "${{ env.GIT_USER_NAME }}"
+        git config --global user.email "${{ env.GIT_USER_EMAIL }}"
+
+    - name: Install immediate requirements
+      run: |
+        python -m pip install -U pip
+        pip install -U setuptools wheel
+        pip install --no-cache-dir --upgrade-strategy=eager -U -r .github/utils/direct_requirements.txt
+
+    - name: Run `pip freeze` and update current `requirements.txt`
+      run: |
+        pip freeze > requirements_new.txt
+        if [ "$(diff requirements.txt requirements_new.txt)" ]; then
+          # There are updates !
+          mv -f requirements_new.txt requirements.txt
+          echo -e "requirements.txt has been updated. Diff:\n$(git diff requirements.txt)"
+          echo "UPDATE_DEPS=true" >> $GITHUB_ENV
+
+          git add requirements.txt
+          git commit -m "Update \`requirements.txt\`"
+        else
+          # No changes
+          echo "No changes found for requirements.txt."
+          echo "UPDATE_DEPS=false" >> $GITHUB_ENV
+        fi
+
+    - name: Fetch PR body
+      if: env.UPDATE_DEPS == 'true'
+      id: pr_body
+      uses: chuhlomin/render-template@v1.4
+      with:
+        template: .github/utils/requirements_update_pr_body.txt
+
+    - name: Create PR
+      if: env.UPDATE_DEPS == 'true'
+      id: cpr
+      uses: peter-evans/create-pull-request@v3
+      with:
+        token: ${{ secrets.RELEASE_PAT }}
+        commit-message: "Update `requirements.txt`"
+        committer: "${{ env.GIT_USER_NAME }} <${{ env.GIT_USER_EMAIL }}>"
+        author: "${{ env.GIT_USER_NAME }} <${{ env.GIT_USER_EMAIL }}>"
+        branch: ci/update-requirements
+        delete-branch: true
+        title: "[Auto-generated] Update `requirements.txt`"
+        body: ${{ steps.pr_body.outputs.result }}
+        labels: CI/CD
+
+    - name: Information
+      if: env.UPDATE_DEPS == 'true'
+      run: 'echo "${{ steps.cpr.outputs.pull-request-operation }} PR #${{ steps.cpr.outputs.pull-request-number }}: ${{ steps.cpr.outputs.pull-request-url }}"'

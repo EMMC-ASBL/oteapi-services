@@ -37,7 +37,7 @@ jobs:
           if [[ "${line}" =~ ^pre-commit.*$ ]]; then
             pre_commit="${line}"
           fi
-        done < requirements_dev.txt
+        done < .dev/requirements_dev.txt
 
         pip install ${pre_commit}
 
