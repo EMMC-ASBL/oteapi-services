@@ -2,7 +2,7 @@ name: CI - Check for updates to `requirements.txt`
 
 on:
   schedule:
-    # At 8:30 every Monday (6:30 UTC)
+    # At 7:30 every Monday (6:30 UTC)
     - cron: "30 6 * * 1"
 
 env:
