@@ -26,7 +26,6 @@ docker build --rm -f Dockerfile \
     --label "ontotrans.oteapi=production" \
     --target production \
     -t "ontotrans/oteapi:latest" .
-
 ```
 
 ### Run redis
@@ -98,18 +97,35 @@ PASSWORD="Insert your user password here" docker run \
 
 For production, SSH public key authentication is preferred.
 
-## Run with Docker Compose
+## Run with Docker Compose (development)
 
-Prepare the Docker Compose system by running:
+Ensure your current working directory is the root of the repository.
+Then run:
+
+```shell
+docker-compose -f docker-compose_dev.yml pull  # Pull the latest images
+docker-compose -f docker-compose_dev.yml build  # Build the central OTE service (from Dockerfile)
+docker-compose -f docker-compose_dev.yml up -d  # Run the OTE Services (detached)
+```
+
+Note that default values will be used if certain environment variables are not present.
+To inspect which environment variables can be specified, please inspect the [Docker Compose file](docker-compose_dev.yml).
+
+This Docker Compose file will use your local files for the application, meaning updates in your local files (under `app/`) should be reflected in the running application after hypercorn reloads.
+
+To see the logs (in real time) from the server, run:
+
+```shell
+docker logs -f oteapi-services-oteapi-1
+```
+
+## Run with Docker Compose (production)
+
+Ensure your current working directory is the root of the repository.
+Then run:
 
 ```shell
 docker-compose pull  # Pull the latest images
-docker-compose build  # Build the central OTE service (from Dockerfile)
-```
-
-Now one can simply run:
-
-```shell
 docker-compose up -d  # Run the OTE Services (detached)
 ```
 
