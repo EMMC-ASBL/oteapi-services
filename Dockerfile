@@ -36,7 +36,7 @@ RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r
 
 # Run app with reload option
 EXPOSE 8080
-CMD hypercorn asgi:app --bind 0.0.0.0:8080 --reload
+CMD hypercorn asgi:app --bind 0.0.0.0:8080 --reload --debug --log-level debug
 
 ################# PRODUCTION ####################################
 FROM base as production
