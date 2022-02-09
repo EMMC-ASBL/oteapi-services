@@ -56,3 +56,39 @@ jobs:
         branch: ${{ env.DEPENDABOT_BRANCH }}
         sleep: 15
         force: ${{ env.FORCE_PUSH }}
+
+  publish-container-image:
+    name: Publish Container image on GH Packages
+    if: github.repository_owner == 'EMMC-ASBL'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    env:
+      IMAGE_NAME: oteapi
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build image
+      run: docker build --file Dockerfile --tag "${IMAGE_NAME}" --label "gh_actions_runnumber=${GITHUB_RUN_ID}" --label "oteapi=production" --target production .
+
+    - name: Log in to registry
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u TEAM4-0 --password-stdin
+
+    - name: Push image
+      run: |
+        IMAGE_ID=ghcr.io/${{ github.repository_owner }}/${IMAGE_NAME}
+
+        # Change all uppercase to lowercase
+        IMAGE_ID=$(echo ${IMAGE_ID} | tr '[A-Z]' '[a-z]')
+
+        VERSION=latest
+
+        echo IMAGE_ID=${IMAGE_ID}
+        echo VERSION=${VERSION}
+
+        docker tag ${IMAGE_NAME} ${IMAGE_ID}:${VERSION}
+        docker push ${IMAGE_ID}:${VERSION}
