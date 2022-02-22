@@ -1,46 +1,46 @@
 """Data Resource."""
 import json
-from typing import Any, Dict, Optional
-from uuid import uuid4
+from typing import TYPE_CHECKING, Optional
 
 from aioredis import Redis
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi_plugins import depends_redis
 from oteapi.models import ResourceConfig
 from oteapi.plugins import create_strategy
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
 
-from app.models.response import (
+from app.models.dataresource import (
+    IDPREFIX,
+    CreateResourceResponse,
+    GetResourceResponse,
+    InitializeResourceResponse,
+)
+from app.models.error import (
     HTTPNotFoundError,
     HTTPValidationError,
-    Status,
     httpexception_404_item_id_does_not_exist,
     httpexception_422_resource_id_is_unprocessable,
 )
+from app.routers.session import _update_session, _update_session_list_item
 
-from .session import _update_session, _update_session_list_item
+if TYPE_CHECKING:  # pragma: no cover
+    from typing import Any, Dict
 
-router = APIRouter(prefix="/dataresource")
-
-IDPREDIX = "dataresource-"
+ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
 
-@router.post(
+@ROUTER.post(
     "/",
-    response_model=Status,
-    response_model_exclude_unset=True,
+    response_model=CreateResourceResponse,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
 )
 async def create_dataresource(
     config: ResourceConfig,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
-    """
-    Register an external data resource.
-    -----------------------------------
+) -> CreateResourceResponse:
+    """### Register an external data resource.
 
     An external data resource can be any data distribution provider
     that provides services of obtaining information through queries,
@@ -53,129 +53,157 @@ async def create_dataresource(
     and specify the service name with the mediaType property.
 
     """
-    resource_id = IDPREDIX + str(uuid4())
+    new_resource = CreateResourceResponse()
 
-    await cache.set(resource_id, config.json())
+    await cache.set(new_resource.resource_id, config.json())
+
     if session_id:
         if not await cache.exists(session_id):
             raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
         await _update_session_list_item(
-            session_id, "resource_info", [resource_id], cache
+            session_id=session_id,
+            list_key="resource_info",
+            list_items=[new_resource.resource_id],
+            redis=cache,
         )
-    return dict(resource_id=resource_id)
+
+    return new_resource
 
 
-@router.get(
+@ROUTER.get(
     "/{resource_id}/info",
     response_model=ResourceConfig,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
 )
 async def info_dataresource(
     resource_id: str,
     cache: Redis = Depends(depends_redis),
 ) -> ResourceConfig:
-    """Get data resource info"""
-
+    """Get data resource info."""
     if not await cache.exists(resource_id):
         raise httpexception_404_item_id_does_not_exist(resource_id, "resource_id")
-    resource_info_json = json.loads(await cache.get(resource_id))
-    return ResourceConfig(**resource_info_json)
+
+    # Using `.construct` here to avoid validation of already validated data.
+    # This is a slight speed up.
+    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
+    return ResourceConfig.construct(**json.loads(await cache.get(resource_id)))
 
 
-@router.get(
-    "/{resource_id}/read",
-    response_model=Status,
-    response_model_exclude_unset=True,
-    responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-        HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
-    },
-)
-@router.get(
+@ROUTER.get(
     "/{resource_id}",
-    response_model=Status,
+    response_model=GetResourceResponse,
     response_model_exclude_unset=True,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-        HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
     },
 )
 async def read_dataresource(
     resource_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
-    """
-    Read data from dataresource using the appropriate download strategy.
-    Parse data information using the appropriate parser
+) -> GetResourceResponse:
+    """Read data from dataresource using the appropriate download strategy.
+
+    Parse data information using the appropriate parser.
     """
     if not await cache.exists(resource_id):
         raise httpexception_404_item_id_does_not_exist(resource_id, "resource_id")
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    resource_info_json = json.loads(await cache.get(resource_id))
-    resource_config = ResourceConfig(**resource_info_json)
-    session_data = None if not session_id else json.loads(await cache.get(session_id))
+    # Using `.construct` here to avoid validation of already validated data.
+    # This is a slight speed up.
+    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
+    config = ResourceConfig.construct(**json.loads(await cache.get(resource_id)))
 
-    if resource_config.accessUrl and resource_config.accessService:
-        strategy = create_strategy("resource", resource_config)
-        session_data = (
-            None if not session_id else json.loads(await cache.get(session_id))
-        )
-        output = strategy.get(session_data)
-        if output and session_id:
-            await _update_session(session_id, output, cache)
-    elif resource_config.downloadUrl and resource_config.mediaType:
-        download_strategy = create_strategy("download", resource_config)
-        output = download_strategy.get(session_data)
-        if session_id:
-            await _update_session(session_id, output, cache)
-            session_data = json.loads(await cache.get(session_id))
-        # Parse
-        parse_strategy = create_strategy("parse", resource_config)
-        output = parse_strategy.get(session_data)
-        if session_id:
-            await _update_session(session_id, output, cache)
+    session_data: "Optional[Dict[str, Any]]" = (
+        None if not session_id else json.loads(await cache.get(session_id))
+    )
+
+    if config.accessUrl and config.accessService:
+        # Resource strategy
+        session_update = create_strategy("resource", config).get(session=session_data)
+        if session_update and session_id:
+            await _update_session(session_id, session_update, cache)
+
+    elif config.downloadUrl and config.mediaType:
+        # Download strategy
+        session_update = create_strategy("download", config).get(session=session_data)
+        if session_update and session_id:
+            session_data = await _update_session(session_id, session_update, cache)
+
+        # Parse strategy
+        session_update = create_strategy("parse", config).get(session=session_data)
+        if session_update and session_id:
+            await _update_session(session_id, session_update, cache)
+
     else:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
-    return output
+
+    return GetResourceResponse(**session_update)
 
 
-@router.post(
+@ROUTER.post(
     "/{resource_id}/initialize",
-    response_model=Status,
-    response_model_exclude_unset=True,
+    response_model=InitializeResourceResponse,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-        HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
     },
 )
 async def initialize_dataresource(
     resource_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
-    """Initialize data resource"""
-
+) -> InitializeResourceResponse:
+    """Initialize data resource."""
     if not await cache.exists(resource_id):
         raise httpexception_404_item_id_does_not_exist(resource_id, "resource_id")
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    resource_info_json = json.loads(await cache.get(resource_id))
-    resource_config = ResourceConfig(**resource_info_json)
+    # Using `.construct` here to avoid validation of already validated data.
+    # This is a slight speed up.
+    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
+    config = ResourceConfig.construct(**json.loads(await cache.get(resource_id)))
 
-    if resource_config.accessUrl and resource_config.accessService:
-        strategy = create_strategy("resource", resource_config)
-    elif resource_config.downloadUrl and resource_config.mediaType:
-        strategy = create_strategy("download", resource_config)
+    session_data: "Optional[Dict[str, Any]]" = (
+        None if not session_id else json.loads(await cache.get(session_id))
+    )
+
+    if config.accessUrl and config.accessService:
+        # Resource strategy
+        session_update = create_strategy("resource", config).initialize(
+            session=session_data
+        )
+        if session_update and session_id:
+            session_data = await _update_session(
+                session_id=session_id, updated_session=session_update, redis=cache
+            )
+
+    elif config.downloadUrl and config.mediaType:
+        # Download strategy
+        session_update = create_strategy("download", config).initialize(
+            session=session_data
+        )
+        if session_update and session_id:
+            session_data = await _update_session(
+                session_id=session_id, updated_session=session_update, redis=cache
+            )
+
+        # Parse strategy
+        session_update = create_strategy("parse", config).initialize(
+            session=session_data
+        )
+        if session_update and session_id:
+            session_data = await _update_session(
+                session_id=session_id, updated_session=session_update, redis=cache
+            )
+
     else:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
-    session_data = None if not session_id else json.loads(await cache.get(session_id))
-    result = strategy.initialize(session_data)
-    if result and session_id:
-        await _update_session(session_id, result, cache)
-    return result
+
+    return InitializeResourceResponse(**session_update)

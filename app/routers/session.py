@@ -1,192 +1,208 @@
 """Microservice Session."""
 import json
-from typing import Any, Dict, List, Literal, Union
-from uuid import uuid4
+from typing import TYPE_CHECKING
 
 from aioredis import Redis
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi_plugins import depends_redis
-from starlette.status import HTTP_404_NOT_FOUND
+from oteapi.models import SessionUpdate
 
-from app.models.parameter import Session
-from app.models.response import (
-    HTTPNotFoundError,
-    SessionKeys,
-    Status,
-    httpexception_404_item_id_does_not_exist,
+from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
+from app.models.response import Session
+from app.models.session import (
+    IDPREFIX,
+    CreateSessionResponse,
+    DeleteAllSessionsResponse,
+    DeleteSessionResponse,
+    ListSessionsResponse,
 )
 
-router = APIRouter(prefix="/session")
+if TYPE_CHECKING:  # pragma: no cover
+    from typing import Any, Dict, Union
 
-IDPREFIX = "session-"
+
+ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
 
-@router.post(
+@ROUTER.post(
     "/",
-    response_model=Status,
-    response_model_exclude_unset=True,
+    response_model=CreateSessionResponse,
+    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
 async def create_session(
     session: Session,
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
-    """
-    Create a new session
-    --------------------
+) -> CreateSessionResponse:
+    """## Create a new session
 
     The session allows for storing keyword/value pairs of information
     on the OTE server. The session can be shared between different OTE
     microservices.
 
-    Attributes
-    ----------
-    - session : Dict[str,Any]
-        A key/value object to be created as a session object
-    - cache : Redis
-        The in-memory storage engine to be used (default Redis)
+    Attributes:
+        session: A key/value object to be created as a session object.
+        cache: The in-memory storage engine to be used (default Redis).
 
-
-    Return
-    ------
-    - session identifier : Dict[str,str]
-        Object containing the session identifier
+    Returns:
+        Object containing the session identifier.
 
     """
+    new_session = CreateSessionResponse()
 
-    session_id = f"{IDPREFIX}{str(uuid4())}"
-    new_session = session.copy()
-    await cache.set(session_id, new_session.json())
-    return dict(session_id=session_id)
+    await cache.set(new_session.session_id, session.json())
+    return new_session
 
 
-@router.get(
+@ROUTER.get(
     "/",
-    response_model=SessionKeys,
-    response_model_exclude_unset=True,
+    response_model=ListSessionsResponse,
+    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
 async def list_sessions(
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, List[str]]:
+) -> ListSessionsResponse:
     """Get all session keys"""
     keylist = []
     for key in await cache.keys(pattern=f"{IDPREFIX}*"):
-        keylist.append(key.decode())
-    return dict(keys=keylist)
+        if not isinstance(key, bytes):
+            raise TypeError(
+                "Found a key that is not stored as bytes (stored as type "
+                f"{type(key)!r})."
+            )
+        keylist.append(key.decode(encoding="utf-8"))
+    return ListSessionsResponse(keys=keylist)
 
 
-@router.delete(
+@ROUTER.delete(
     "/",
-    response_model=Status,
-    response_model_exclude_unset=True,
+    response_model=DeleteAllSessionsResponse,
+    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
 async def delete_all_sessions(
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Union[str, int]]:
+) -> DeleteAllSessionsResponse:
     """Delete all session keys.
 
-    Warning:
+    Danger:
         Data stored in sessions cannot be recovered after calling this endpoint.
 
     """
     keylist = await cache.keys(pattern=f"{IDPREFIX}*")
-
-    await cache.delete(*keylist)
-    return {"status": "ok", "number_of_deleted_rows": len(keylist)}
+    return DeleteAllSessionsResponse(
+        number_of_deleted_sessions=await cache.delete(*keylist)
+    )
 
 
 async def _get_session(
     session_id: str,
     redis: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
-    """Return the session contents given a session_id"""
+) -> Session:
+    """Return the session contents given a `session_id`."""
     if not await redis.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-    return json.loads(await redis.get(session_id))
+    return Session(**json.loads(await redis.get(session_id)))
 
 
 async def _update_session(
     session_id: str,
-    updated_session: Dict[str, Any],
+    updated_session: "Union[SessionUpdate, Dict[str, Any]]",
     redis: Redis,
-) -> Dict[str, Any]:
+) -> Session:
     """Update an existing session (to be called internally)."""
     session = await _get_session(session_id, redis)
     session.update(updated_session)
-    await redis.set(session_id, json.dumps(session).encode("utf-8"))
+    await redis.set(session_id, session.json().encode("utf-8"))
     return session
 
 
 async def _update_session_list_item(
     session_id: str,
     list_key: str,
-    list_items: List[Any],
+    list_items: list,
     redis: Redis,
-) -> Dict[str, Any]:
-    """Append or create list items to an existing session"""
+) -> Session:
+    """Append to or create list items in an existing session."""
     session = await _get_session(session_id, redis)
+
+    if not isinstance(list_items, list):
+        raise TypeError(
+            "Expected `list_items` to be a list, found it to be of type "
+            f"{type(list_items)!r}."
+        )
+
     if list_key in session:
-        session[list_key].append(list_items)
+        if not isinstance(session[list_key], list):
+            raise TypeError(
+                f"Expected type for {list_key!r} field in session to be a list, found "
+                f"{type(session[list_key])!r}."
+            )
+        session[list_key].extend(list_items)
     else:
         session[list_key] = list_items
-    await redis.set(session_id, json.dumps(session).encode("utf-8"))
+    await redis.set(session_id, session.json().encode("utf-8"))
     return session
 
 
-@router.put(
+@ROUTER.put(
     "/{session_id}",
     response_model=Session,
-    response_model_exclude_unset=True,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
 )
 async def update_session(
     session_id: str,
-    updated_session: Dict[str, Any],
+    updated_session: SessionUpdate,
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
-    """Update session object"""
+) -> Session:
+    """Update session object."""
     if not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-    session: Dict[str, Any] = json.loads(await cache.get(session_id))
+
+    # Using `.construct` here to avoid validation of already validated data.
+    # This is a slight speed up.
+    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
+    session = Session.construct(**json.loads(await cache.get(session_id)))
     session.update(updated_session)
-    await cache.set(session_id, json.dumps(session).encode("utf-8"))
+    await cache.set(session_id, session.json().encode("utf-8"))
     return session
 
 
-@router.get(
+@ROUTER.get(
     "/{session_id}",
     response_model=Session,
-    response_model_exclude_unset=True,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
 )
 async def get_session(
     session_id: str,
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
-    """Fetch the entire session object"""
+) -> Session:
+    """Fetch the entire session object."""
     if not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-    session = json.loads(await cache.get(session_id))
-    return session
+
+    # Using `.construct` here to avoid validation of already validated data.
+    # This is a slight speed up.
+    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
+    return Session.construct(**json.loads(await cache.get(session_id)))
 
 
-@router.delete(
+@ROUTER.delete(
     "/{session_id}",
-    response_model=Status,
-    response_model_exclude_unset=True,
+    response_model=DeleteSessionResponse,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
 )
 async def delete_session(
     session_id: str,
     cache: Redis = Depends(depends_redis),
-) -> Dict[Literal["status"], Literal["ok"]]:
-    """Delete a session object"""
+) -> DeleteSessionResponse:
+    """Delete a session object."""
     if not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
+
     await cache.delete(session_id)
-    return {"status": "ok"}
+    return DeleteSessionResponse(success=True)

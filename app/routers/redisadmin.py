@@ -6,10 +6,10 @@ from aioredis import Redis
 from fastapi import APIRouter, Depends
 from fastapi_plugins import depends_redis
 
-router = APIRouter(prefix="/redis")
+ROUTER = APIRouter(prefix="/redis")
 
 
-@router.get("/{key}")
+@ROUTER.get("/{key}", include_in_schema=False)
 async def get_gey(
     key: str,
     cache: Redis = Depends(depends_redis),

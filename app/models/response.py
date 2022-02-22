@@ -1,67 +1,40 @@
-"""Response Models"""
-from typing import Any, Dict, List, Optional
+"""Pydantic response models."""
+import re
+from typing import TYPE_CHECKING
 
-from fastapi import HTTPException
-from pydantic import BaseModel, Field
-from starlette.status import HTTP_404_NOT_FOUND, HTTP_422_UNPROCESSABLE_ENTITY
+from oteapi.models import AttrDict
+from pydantic import root_validator
 
-
-class Status(BaseModel):
-    """Status Response Model."""
-
-    __root__: Dict[str, Any]
+if TYPE_CHECKING:  # pragma: no cover
+    from typing import Any, Dict
 
 
-class SessionKeys(BaseModel):
-    """List of Session keys Response Model."""
-
-    keys: List[str]
+class Session(AttrDict):
+    """Base session response model."""
 
 
-class ValidationError(BaseModel):
-    """Validation Error response Model."""
+class CreateResponse(Session):
+    """Base `POST /` (create) response model.
 
-    loc: List[str] = Field(..., title="Location")
-    msg: str = Field(..., title="Message")
-    type: str = Field(..., title="Error Type")
+    The subclasses of this model should _always_ contain a `*_id` attribute.
+    """
 
-
-class HTTPValidationError(BaseModel):
-    """HTTPValidation Error Response model."""
-
-    detail: Optional[List[ValidationError]]
-
-
-class HTTPNotFoundError(HTTPValidationError):
-    """HTTPNotFound Error Response model."""
-
-
-def httpexception_404_item_id_does_not_exist(
-    item_id: str, item_name: str
-) -> HTTPException:
-    """return 404 Exception with session_id."""
-    return HTTPException(
-        status_code=HTTP_404_NOT_FOUND,
-        detail=[
-            {
-                "loc": f"[{item_name}]",
-                "msg": f"{item_name}={item_id} not found in server cache.",
-                "type": "Error",
-            }
-        ],
-    )
+    @root_validator(allow_reuse=True)
+    def ensure_id_attribute(cls, values: "Dict[str, Any]") -> "Dict[str, Any]":
+        """Ensure a `*_id` attribute exists."""
+        if issubclass(cls, CreateResponse) and cls != CreateResponse:
+            # `cls` is a subclass of `CreateResponse`
+            if not any(re.match(r"^.+_id$", field) for field in values):
+                raise AttributeError(
+                    "A '*_id' attribute MUST be defined for a subclass of "
+                    "`CreateResponse`."
+                )
+        return values
 
 
-def httpexception_422_resource_id_is_unprocessable(resource_id: str) -> HTTPException:
-    """return 422 Exception with resource_id."""
-    return HTTPException(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-        detail=[
-            {
-                "loc": ["resource_id"],
-                "msg": "Missing downloadUrl/mediaType or "
-                f"accessUrl/accessService identifier in {resource_id=}",
-                "type": "Error",
-            }
-        ],
-    )
+class GetResponse(Session):
+    """Base `GET /{id}` response model."""
+
+
+class InitializeResponse(Session):
+    """Base `POST /{id}/initialize` response model."""

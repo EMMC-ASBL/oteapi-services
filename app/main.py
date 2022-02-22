@@ -1,15 +1,14 @@
 """OTE-API FastAPI application."""
 from typing import TYPE_CHECKING
 
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from fastapi.openapi.utils import get_openapi
 from fastapi_plugins import RedisSettings, redis_plugin
 from oteapi.plugins import load_strategies
 from pydantic import Field
-from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from app import __version__
-from app.models.response import HTTPValidationError
+from app.models.error import HTTPValidationError
 from app.routers import (
     datafilter,
     dataresource,
@@ -19,7 +18,7 @@ from app.routers import (
     transformation,
 )
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from typing import Any, Dict
 
 
@@ -66,10 +65,10 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
         redisadmin,
     ):
         app.include_router(
-            router_module.router,
+            router_module.ROUTER,
             prefix=CONFIG.prefix,
             responses={
-                HTTP_422_UNPROCESSABLE_ENTITY: {
+                status.HTTP_422_UNPROCESSABLE_ENTITY: {
                     "description": "Validation Error",
                     "model": HTTPValidationError,
                 },
@@ -81,27 +80,27 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
 
 def custom_openapi() -> "Dict[str, Any]":
     """Improve the default look & feel when rendering using ReDocs."""
-    if _APP.openapi_schema:
-        return _APP.openapi_schema
+    if APP.openapi_schema:
+        return APP.openapi_schema
 
-    _APP.openapi_schema = get_openapi(
-        title=_APP.title,
-        version=_APP.version,
-        openapi_version=_APP.openapi_version,
-        description=_APP.description,
-        routes=_APP.routes,
-        tags=_APP.openapi_tags,
-        servers=_APP.servers,
+    APP.openapi_schema = get_openapi(
+        title=APP.title,
+        version=APP.version,
+        openapi_version=APP.openapi_version,
+        description=APP.description,
+        routes=APP.routes,
+        tags=APP.openapi_tags,
+        servers=APP.servers,
     )
-    _APP.openapi_schema["info"]["x-logo"] = {
+    APP.openapi_schema["info"]["x-logo"] = {
         "url": "https://ontotrans.eu/wp-content/uploads/2020/05/ot_logo_rosa_gro%C3%9F.svg"
     }
-    return _APP.openapi_schema
+    return APP.openapi_schema
 
 
 async def init_redis() -> None:
     """Initialize Redis upon app startup."""
-    await redis_plugin.init_app(_APP, config=CONFIG)
+    await redis_plugin.init_app(APP, config=CONFIG)
     await redis_plugin.init()
 
 
@@ -111,10 +110,10 @@ async def terminate_redis() -> None:
 
 
 CONFIG = AppSettings()
-_APP = create_app()
-_APP.openapi = custom_openapi
+APP = create_app()
+APP.openapi = custom_openapi
 
 # Events
-_APP.add_event_handler("startup", init_redis)
-_APP.add_event_handler("shutdown", terminate_redis)
-_APP.add_event_handler("startup", load_strategies)
+APP.add_event_handler("startup", init_redis)
+APP.add_event_handler("shutdown", terminate_redis)
+APP.add_event_handler("startup", load_strategies)

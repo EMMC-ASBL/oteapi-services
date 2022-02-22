@@ -1,107 +1,120 @@
 """Data Filter."""
 import json
-from typing import Any, Dict, Optional
-from uuid import uuid4
+from typing import Optional
 
 from aioredis import Redis
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from fastapi_plugins import depends_redis
 from oteapi.models import FilterConfig
 from oteapi.plugins import create_strategy
-from starlette.status import HTTP_404_NOT_FOUND
 
-from app.models.response import (
-    HTTPNotFoundError,
-    Status,
-    httpexception_404_item_id_does_not_exist,
+from app.models.datafilter import (
+    IDPREFIX,
+    CreateFilterResponse,
+    GetFilterResponse,
+    InitializeFilterResponse,
 )
+from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
+from app.routers.session import _update_session, _update_session_list_item
 
-from .session import _update_session, _update_session_list_item
-
-router = APIRouter(prefix="/filter")
-
-IDPREDIX = "filter-"
+ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
 
-@router.post(
+@ROUTER.post(
     "/",
-    response_model=Status,
-    response_model_exclude_unset=True,
+    response_model=CreateFilterResponse,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
 )
 async def create_filter(
     config: FilterConfig,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
+) -> CreateFilterResponse:
     """Define a new filter configuration (data operation)"""
+    new_filter = CreateFilterResponse()
 
-    filter_id = IDPREDIX + str(uuid4())
+    await cache.set(new_filter.filter_id, config.json())
 
-    await cache.set(filter_id, config.json())
     if session_id:
         if not await cache.exists(session_id):
             raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-        await _update_session_list_item(session_id, "filter_info", [filter_id], cache)
-    return dict(filter_id=filter_id)
+        await _update_session_list_item(
+            session_id=session_id,
+            list_key="filter_info",
+            list_items=[new_filter.filter_id],
+            redis=cache,
+        )
+
+    return new_filter
 
 
-@router.get(
+@ROUTER.get(
     "/{filter_id}",
-    response_model=Status,
+    response_model=GetFilterResponse,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
 )
 async def get_filter(
     filter_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
+) -> GetFilterResponse:
     """Run and return data from a filter (data operation)"""
     if not await cache.exists(filter_id):
         raise httpexception_404_item_id_does_not_exist(filter_id, "filter_id")
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    filter_info_json = json.loads(await cache.get(filter_id))
-    filter_info = FilterConfig(**filter_info_json)
-    filter_strategy = create_strategy("filter", filter_info)
+    # Using `.construct` here to avoid validation of already validated data.
+    # This is a slight speed up.
+    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
+    config = FilterConfig.construct(**json.loads(await cache.get(filter_id)))
+
+    strategy = create_strategy("filter", config)
     session_data = None if not session_id else json.loads(await cache.get(session_id))
-    result = filter_strategy.get(session_data)
-    if result and session_id:
-        await _update_session(session_id, result, cache)
+    session_update = strategy.get(session=session_data)
 
-    return result
+    if session_update and session_id:
+        await _update_session(
+            session_id=session_id, updated_session=session_update, redis=cache
+        )
+
+    return GetFilterResponse(**session_update)
 
 
-@router.post(
+@ROUTER.post(
     "/{filter_id}/initialize",
-    response_model=Status,
-    response_model_exclude_unset=True,
+    response_model=InitializeFilterResponse,
     responses={
-        HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
 )
 async def initialize_filter(
     filter_id: str,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
-) -> Dict[str, Any]:
-    """Initialize and return data to update session"""
+) -> InitializeFilterResponse:
+    """Initialize and return data to update session."""
     if not await cache.exists(filter_id):
         raise httpexception_404_item_id_does_not_exist(filter_id, "filter_id")
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    filter_info_json = json.loads(await cache.get(filter_id))
-    filter_info = FilterConfig(**filter_info_json)
-    filter_strategy = create_strategy("filter", filter_info)
-    session_data = None if not session_id else json.loads(await cache.get(session_id))
-    result = filter_strategy.initialize(session_data)
-    if result and session_id:
-        await _update_session(session_id, result, cache)
+    # Using `.construct` here to avoid validation of already validated data.
+    # This is a slight speed up.
+    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
+    config = FilterConfig.construct(**json.loads(await cache.get(filter_id)))
 
-    return result
+    strategy = create_strategy("filter", config)
+    session_data = None if not session_id else json.loads(await cache.get(session_id))
+    session_update = strategy.initialize(session=session_data)
+
+    if session_update and session_id:
+        await _update_session(
+            session_id=session_id, updated_session=session_update, redis=cache
+        )
+
+    return InitializeFilterResponse(**session_update)
