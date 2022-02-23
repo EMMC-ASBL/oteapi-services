@@ -9,14 +9,14 @@ celery==5.2.3
 certifi==2021.10.8
 cffi==1.15.0
 charset-normalizer==2.0.12
-click==8.0.3
+click==8.0.4
 click-didyoumean==0.3.0
 click-plugins==1.1.1
 click-repl==0.2.0
 cryptography==36.0.1
 diskcache==5.4.0
 et-xmlfile==1.1.0
-fastapi==0.73.0
+fastapi==0.74.0
 fastapi-plugins==0.9.0
 h11==0.13.0
 h2==4.1.0
