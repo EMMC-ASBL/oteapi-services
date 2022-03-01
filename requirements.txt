@@ -16,7 +16,7 @@ click-repl==0.2.0
 cryptography==36.0.1
 diskcache==5.4.0
 et-xmlfile==1.1.0
-fastapi==0.74.0
+fastapi==0.74.1
 fastapi-plugins==0.9.0
 h11==0.13.0
 h2==4.1.0
@@ -28,7 +28,7 @@ idna==3.3
 kombu==5.2.3
 numpy==1.22.2
 openpyxl==3.0.9
-oteapi-core==0.1.0
+oteapi-core==0.1.1
 paramiko==2.9.2
 Pillow==9.0.1
 priority==2.0.0
@@ -49,4 +49,4 @@ typing_extensions==4.1.1
 urllib3==1.26.8
 vine==5.0.0
 wcwidth==0.2.5
-wsproto==1.0.0
+wsproto==1.1.0
