@@ -150,7 +150,7 @@ jobs:
         DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
 
     - name: Start the Docker services with local `oteapi-core`
-      if: docker-target == 'development'
+      if: matrix.docker-target == 'development'
       run: |
         git clone https://github.com/EMMC-ASBL/oteapi-core ${PATH_TO_OTEAPI_CORE}
         docker-compose -f docker-compose_dev.yml  --verbose -- up &
