@@ -72,10 +72,7 @@ async def get_mapping(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = MappingConfig.construct(**json.loads(await cache.get(mapping_id)))
+    config = MappingConfig(**json.loads(await cache.get(mapping_id)))
 
     mapping_strategy = create_strategy("mapping", config)
     session_data: "Optional[Dict[str, Any]]" = (
@@ -109,10 +106,7 @@ async def initialize_mapping(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = MappingConfig.construct(**json.loads(await cache.get(mapping_id)))
+    config = MappingConfig(**json.loads(await cache.get(mapping_id)))
 
     mapping_strategy = create_strategy("mapping", config)
     session_data: "Optional[Dict[str, Any]]" = (

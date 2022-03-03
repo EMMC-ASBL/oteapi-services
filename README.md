@@ -63,6 +63,22 @@ docker run \
 
 Open the following URL in a browser [http://localhost:8080/redoc](http://localhost:8080/redoc).
 
+One can also use a local `oteapi-core` repository by specifying the `PATH_TO_OTEAPI_CORE` environment variable:
+
+```shell
+export PATH_TO_OTEAPI_CORE=/local/path/to/oteapi-core
+docker run \
+    --rm \
+    --network otenet \
+    --detach \
+    --volume ${PWD}:/app \
+    --publish 8080:8080 \
+    --env OTEAPI_REDIS_TYPE=redis \
+    --env OTEAPI_REDIS_HOST=redis \
+    --env OTEAPI_REDIS_PORT=6379 \
+    ontotrans/oteapi-development:latest
+```
+
 ### Run oteapi (production)
 
 Run the services by attaching to the otenet network and set the environmental variables for connecting to Redis.
@@ -112,6 +128,12 @@ Note that default values will be used if certain environment variables are not p
 To inspect which environment variables can be specified, please inspect the [Docker Compose file](docker-compose_dev.yml).
 
 This Docker Compose file will use your local files for the application, meaning updates in your local files (under `app/`) should be reflected in the running application after hypercorn reloads.
+You can go one step further and use your local files also for the `oteapi-core` repository by specifying the `PATH_TO_OTEAPI_CORE` environment variable:
+
+```shell
+export PATH_TO_OTEAPI_CORE=/local/path/to/oteapi-core
+docker-compose -f docker-compose_dev.yml up --build -d  # Run the OTE Services detached, build if necessary
+```
 
 To see the logs (in real time) from the server, run:
 
