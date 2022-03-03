@@ -35,7 +35,6 @@ RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r
   && pytest --cov app
 
 # Run app with reload option
-ENV PATH_TO_OTEAPI_CORE=/dev/null
 EXPOSE 8080
 CMD if [ "${PATH_TO_OTEAPI_CORE}" != "/dev/null" ]; then pip install -U --force-reinstall -e /oteapi_core; fi && hypercorn asgi:app --bind 0.0.0.0:8080 --reload --debug --log-level debug
 

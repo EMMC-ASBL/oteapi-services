@@ -12,7 +12,7 @@ services:
       OTEAPI_REDIS_HOST: redis
       OTEAPI_REDIS_PORT: 6379
       OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
-      PATH_TO_OTEAPI_CORE:
+      PATH_TO_OTEAPI_CORE: "${PATH_TO_OTEAPI_CORE:-/dev/null}"
     depends_on:
       - redis
     networks:

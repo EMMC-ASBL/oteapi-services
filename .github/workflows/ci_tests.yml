@@ -148,3 +148,17 @@ jobs:
         PORT: 8123
         OTEAPI_prefix: /api/ci/v1
         DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
+
+    - name: Start the Docker services with local `oteapi-core`
+      if: docker-target == 'development'
+      run: |
+        git clone https://github.com/EMMC-ASBL/oteapi-core ${PATH_TO_OTEAPI_CORE}
+        docker-compose -f docker-compose_dev.yml  --verbose -- up &
+        .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
+        sleep 5
+        curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
+      env:
+        PORT: 8123
+        OTEAPI_prefix: /api/ci/v1
+        DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
+        PATH_TO_OTEAPI_CORE: ${GITHUB_WORKSPACE}/../oteapi-core
