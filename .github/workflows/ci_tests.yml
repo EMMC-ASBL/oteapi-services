@@ -161,4 +161,4 @@ jobs:
         PORT: 8123
         OTEAPI_prefix: /api/ci/v1
         DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
-        PATH_TO_OTEAPI_CORE: ${GITHUB_WORKSPACE}/../oteapi-core
+        PATH_TO_OTEAPI_CORE: /tmp/oteapi-core
