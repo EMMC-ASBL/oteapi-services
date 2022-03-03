@@ -142,7 +142,7 @@ jobs:
       run: |
         docker-compose -f docker-compose_dev.yml --verbose -- up -d
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
-        # sleep 5
+        sleep 5
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
         PORT: 8123
@@ -158,7 +158,7 @@ jobs:
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         # Sleep for longer, since it takes a while to install `oteapi-core`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
-        # sleep 40
+        sleep 40
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
         PORT: 8123
