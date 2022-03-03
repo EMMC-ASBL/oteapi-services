@@ -140,7 +140,7 @@ jobs:
 
     - name: Start the Docker services
       run: |
-        docker-compose -f docker-compose_dev.yml  --verbose -- up &
+        docker-compose -f docker-compose_dev.yml --verbose -- up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         sleep 5
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
@@ -153,7 +153,8 @@ jobs:
       if: matrix.docker-target == 'development'
       run: |
         git clone https://github.com/EMMC-ASBL/oteapi-core ${PATH_TO_OTEAPI_CORE}
-        docker-compose -f docker-compose_dev.yml  --verbose -- up &
+        docker-compose -f docker-compose_dev.yml down
+        docker-compose -f docker-compose_dev.yml --verbose -- up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         sleep 5
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
