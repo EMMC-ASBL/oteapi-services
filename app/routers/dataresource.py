@@ -85,10 +85,7 @@ async def info_dataresource(
     if not await cache.exists(resource_id):
         raise httpexception_404_item_id_does_not_exist(resource_id, "resource_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    return ResourceConfig.construct(**json.loads(await cache.get(resource_id)))
+    return ResourceConfig(**json.loads(await cache.get(resource_id)))
 
 
 @ROUTER.get(
@@ -114,10 +111,7 @@ async def read_dataresource(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = ResourceConfig.construct(**json.loads(await cache.get(resource_id)))
+    config = ResourceConfig(**json.loads(await cache.get(resource_id)))
 
     session_data: "Optional[Dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
@@ -165,10 +159,7 @@ async def initialize_dataresource(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = ResourceConfig.construct(**json.loads(await cache.get(resource_id)))
+    config = ResourceConfig(**json.loads(await cache.get(resource_id)))
 
     session_data: "Optional[Dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))

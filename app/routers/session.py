@@ -159,10 +159,7 @@ async def update_session(
     if not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    session = Session.construct(**json.loads(await cache.get(session_id)))
+    session = Session(**json.loads(await cache.get(session_id)))
     session.update(updated_session)
     await cache.set(session_id, session.json().encode("utf-8"))
     return session
@@ -183,10 +180,7 @@ async def get_session(
     if not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    return Session.construct(**json.loads(await cache.get(session_id)))
+    return Session(**json.loads(await cache.get(session_id)))
 
 
 @ROUTER.delete(

@@ -68,10 +68,7 @@ async def get_filter(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = FilterConfig.construct(**json.loads(await cache.get(filter_id)))
+    config = FilterConfig(**json.loads(await cache.get(filter_id)))
 
     strategy = create_strategy("filter", config)
     session_data = None if not session_id else json.loads(await cache.get(session_id))
@@ -103,10 +100,7 @@ async def initialize_filter(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = FilterConfig.construct(**json.loads(await cache.get(filter_id)))
+    config = FilterConfig(**json.loads(await cache.get(filter_id)))
 
     strategy = create_strategy("filter", config)
     session_data = None if not session_id else json.loads(await cache.get(session_id))

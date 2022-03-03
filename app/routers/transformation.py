@@ -74,12 +74,7 @@ async def get_transformation_status(
             transformation_id, "transformation_id"
         )
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = TransformationConfig.construct(
-        **json.loads(await cache.get(transformation_id))
-    )
+    config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
     return strategy.status(task_id=task_id)
@@ -105,12 +100,7 @@ async def get_transformation(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = TransformationConfig.construct(
-        **json.loads(await cache.get(transformation_id))
-    )
+    config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
     session_data: "Optional[Dict[str, Any]]" = (
@@ -147,12 +137,7 @@ async def execute_transformation(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = TransformationConfig.construct(
-        **json.loads(await cache.get(transformation_id))
-    )
+    config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
     session_data: "Optional[Dict[str, Any]]" = (
@@ -189,12 +174,7 @@ async def initialize_transformation(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    # Using `.construct` here to avoid validation of already validated data.
-    # This is a slight speed up.
-    # https://pydantic-docs.helpmanual.io/usage/models/#creating-models-without-validation
-    config = TransformationConfig.construct(
-        **json.loads(await cache.get(transformation_id))
-    )
+    config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
     session_data: "Optional[Dict[str, Any]]" = (
