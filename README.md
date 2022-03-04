@@ -6,26 +6,26 @@
 
 The development target will allow for automatic reloading when source code changes.
 This requires that the local directory is bind-mounted using the `-v` or `--volume` argument.
-To build and run the development target from the command line:
+To build the development target from the command line:
 
 ```shell
 docker build --rm -f Dockerfile \
-    --label "ontotrans.oteapi=development" \
+    --label "emmc-asbl.oteapi=development" \
     --target development \
-    -t "ontotrans/oteapi-development:latest" .
+    -t "emmc-asbl/oteapi-development:latest" .
 ```
 
 ### Production target
 
-The production target will not reload itself on code change and will run a predictable version of the code on port 80.
+The production target will not reload itself on code change and will run a predictable version of the code.
 Also you might want to use a named container with the `--restart=always` option to ensure that the container is restarted indefinitely regardless of the exit status.
-To build and run the production target from the command line:
+To build the production target from the command line:
 
 ```shell
 docker build --rm -f Dockerfile \
-    --label "ontotrans.oteapi=production" \
+    --label "oteapi=production" \
     --target production \
-    -t "ontotrans/oteapi:latest" .
+    -t "emmc-asbl/oteapi:latest" .
 ```
 
 ### Run redis
@@ -58,10 +58,8 @@ docker run \
     --env OTEAPI_REDIS_TYPE=redis \
     --env OTEAPI_REDIS_HOST=redis \
     --env OTEAPI_REDIS_PORT=6379 \
-    ontotrans/oteapi-development:latest
+    emmc-asbl/oteapi-development:latest
 ```
-
-Open the following URL in a browser [http://localhost:8080/redoc](http://localhost:8080/redoc).
 
 One can also use a local `oteapi-core` repository by specifying the `PATH_TO_OTEAPI_CORE` environment variable:
 
@@ -72,12 +70,16 @@ docker run \
     --network otenet \
     --detach \
     --volume ${PWD}:/app \
+    --volume ${PATH_TO_OTEAPI_CORE}:/oteapi_core \
     --publish 8080:8080 \
     --env OTEAPI_REDIS_TYPE=redis \
     --env OTEAPI_REDIS_HOST=redis \
     --env OTEAPI_REDIS_PORT=6379 \
+    --env PATH_TO_OTEAPI_CORE \
     ontotrans/oteapi-development:latest
 ```
+
+Open the following URL in a browser [http://localhost:8080/redoc](http://localhost:8080/redoc).
 
 ### Run oteapi (production)
 
@@ -92,10 +94,10 @@ docker run \
     --env OTEAPI_REDIS_TYPE=redis \
     --env OTEAPI_REDIS_HOST=redis \
     --env OTEAPI_REDIS_PORT=6379 \
-    ontotrans/oteapi:latest
+    emmc-asbl/oteapi:latest
 ```
 
-Open the following URL in a browser [http://localhost:80/redoc](http://localhost:80/redoc).
+Open the following URL in a browser [http://localhost/redoc](http://localhost:80/redoc).
 
 ### Run the Atmoz SFTP Server
 
@@ -113,10 +115,11 @@ PASSWORD="Insert your user password here" docker run \
 
 For production, SSH public key authentication is preferred.
 
-## Run with Docker Compose (development)
+## Run with Docker Compose
 
-Ensure your current working directory is the root of the repository.
-Then run:
+### Run with Docker Compose (development)
+
+Ensure your current working directory is the root of the repository, then run:
 
 ```shell
 docker-compose -f docker-compose_dev.yml pull  # Pull the latest images
@@ -127,7 +130,7 @@ docker-compose -f docker-compose_dev.yml up -d  # Run the OTE Services (detached
 Note that default values will be used if certain environment variables are not present.
 To inspect which environment variables can be specified, please inspect the [Docker Compose file](docker-compose_dev.yml).
 
-This Docker Compose file will use your local files for the application, meaning updates in your local files (under `app/`) should be reflected in the running application after hypercorn reloads.
+This Docker Compose file will use your local files for the application, meaning updates in your local files (under `app/`) should be reflected in the running application upon storing the changes to disk, after hypercorn reloads.
 You can go one step further and use your local files also for the `oteapi-core` repository by specifying the `PATH_TO_OTEAPI_CORE` environment variable:
 
 ```shell
@@ -135,16 +138,17 @@ export PATH_TO_OTEAPI_CORE=/local/path/to/oteapi-core
 docker-compose -f docker-compose_dev.yml up --build -d  # Run the OTE Services detached, build if necessary
 ```
 
-To see the logs (in real time) from the server, run:
+To see the logs from the OTEAPI service in real time from the server, run:
 
 ```shell
 docker logs -f oteapi-services-oteapi-1
 ```
 
-## Run with Docker Compose (production)
+Leave out the `-f` option to write out the log to your terminal without following along and writing out new log messages.
 
-Ensure your current working directory is the root of the repository.
-Then run:
+### Run with Docker Compose (production)
+
+Ensure your current working directory is the root of the repository, then run:
 
 ```shell
 docker-compose pull  # Pull the latest images
@@ -153,3 +157,25 @@ docker-compose up -d  # Run the OTE Services (detached)
 
 Note that default values will be used if certain environment variables are not present.
 To inspect which environment variables can be specified, please inspect the [Docker Compose file](docker-compose.yml).
+
+## OTEAPI Plugin Repositories
+
+To use OTEAPI strategies other than those included in [OTEAPI Core](https://emmc-asbl.github.io/oteapi-core/latest/#types-of-strategies), one can install externally available OTEAPI plugin Python packages.
+Currently, there is no index of available plugins, however, there might be in the future.
+
+To install OTEAPI plugin packages for use in the OTEAPI service, one needs to specify the `OTEAPI_PLUGIN_PACKAGES` environment variable when running the service through either [Docker](#run-in-docker) or [Docker Compose](#run-with-docker-compose).
+The variable should be a space-separated string of each package name, possibly including a version range for the given package.
+
+For example, to install the packages `oteapi-plugin` and `my_special_plugin` one could specify `OTEAPI_PLUGIN_PACKAGES` in the following way:
+
+```shell
+OTEAPI_PLUGIN_PACKAGES="oteapi-plugin my_special_plugin"
+```
+
+Should there be special version constraints for the packages, these can be added after the package name, separated by commas:
+
+```shell
+OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3 my_special_plugin>=2.1.1,<3,!=2.1.0"
+```
+
+To ensure this variable is used when running the service you could either `export` it, set it in the same command line as running the service, or define it in a separate file, telling `docker` or `docker-compose` to use this file as a source of environment variables through the `--env-file` option.
