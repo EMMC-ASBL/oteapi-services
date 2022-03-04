@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Copy core parts and install requirements
 COPY app app/
-COPY requirements.txt LICENSE README.md asgi.py ./
+COPY requirements.txt LICENSE README.md asgi.py entrypoint.sh ./
 RUN apt-get update \
   && apt-get -y install --fix-broken --fix-missing --no-install-recommends git \
   && apt-get purge -y --auto-remove \
@@ -36,11 +36,13 @@ RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r
 
 # Run app with reload option
 EXPOSE 8080
-CMD if [ "${PATH_TO_OTEAPI_CORE}" != "/dev/null" ] && [ -n "${PATH_TO_OTEAPI_CORE}" ]; then pip install -U --force-reinstall -e /oteapi_core; fi && hypercorn asgi:app --bind 0.0.0.0:8080 --reload --debug --log-level debug
+CMD if [ "${PATH_TO_OTEAPI_CORE}" != "/dev/null" ] && [ -n "${PATH_TO_OTEAPI_CORE}" ]; then \
+  pip install -U --force-reinstall -c requirements.txt -e /oteapi_core; fi \
+  && ./entrypoint.sh --reload --debug --log-level debug
 
 ################# PRODUCTION #####################################
 FROM base as production
 
 # Run app
 EXPOSE 8080
-CMD hypercorn asgi:app --bind 0.0.0.0:8080
+ENTRYPOINT [ "./entrypoint.sh" ]
