@@ -565,3 +565,6 @@ MigrationBackup/
 
 # Git
 *.orig
+
+# From docker build
+constraints.txt
