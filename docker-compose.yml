@@ -31,9 +31,22 @@ services:
     networks:
       - otenet
 
+  agraph:
+      image: franzinc/agraph:v7.2.0
+      volumes:
+        - agraph-data:/agraph/data
+        - ./agraph.cfg:/agraph/etc/agraph.cfg
+      ports:
+        - "10000-10035:10000-10035"
+      restart: on-failure
+      shm_size: 4g
+      networks:
+        - otenet
+
 volumes:
   redis-persist:
   sftp-storage:
+  agraph-data:
 
 networks:
   otenet:

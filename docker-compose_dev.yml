@@ -14,6 +14,8 @@ services:
       OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
       OTEAPI_PLUGIN_PACKAGES:
       PATH_TO_OTEAPI_CORE: "${PATH_TO_OTEAPI_CORE:-/dev/null}"
+      AGRAPH_SUPER_USER: dbuser
+      AGRAPH_SUPER_PASSWORD: test123
     depends_on:
       - redis
     networks:
@@ -37,9 +39,22 @@ services:
     networks:
       - otenet
 
+  agraph:
+      image: franzinc/agraph:v7.2.0
+      volumes:
+        - agraph-data:/agraph/data
+        - ./agraph.cfg:/agraph/etc/agraph.cfg
+      ports:
+        - "10000-10035:10000-10035"
+      restart: on-failure
+      shm_size: 4g
+      networks:
+        - otenet
+
 volumes:
   redis-persist:
   sftp-storage:
+  agraph-data:
 
 networks:
   otenet:
