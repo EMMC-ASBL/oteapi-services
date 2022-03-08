@@ -195,4 +195,4 @@ jobs:
         sleep 40
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
-        OTEAPI_PLUGIN_PACKAGES: "-v -e /oteapi-core[dev]:oteapi-dlite"
+        OTEAPI_PLUGIN_PACKAGES: '"-v -e /oteapi-core[dev]:oteapi-dlite"'
