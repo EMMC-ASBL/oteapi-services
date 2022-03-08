@@ -19,7 +19,7 @@ services:
     networks:
       - otenet
     volumes:
-      - "${LOCAL_TARGET_PLUGIN_PATH}:/oteapi-core"
+      - "${LOCAL_TARGET_PLUGIN_PATH}:${CONTAINER_PLUGIN_PATH}"
       - "${PATH_TO_OTEAPI_CORE:-/dev/null}:/oteapi_core"
 
   redis:
