@@ -164,18 +164,43 @@ To use OTEAPI strategies other than those included in [OTEAPI Core](https://emmc
 Currently, there is no index of available plugins, however, there might be in the future.
 
 To install OTEAPI plugin packages for use in the OTEAPI service, one needs to specify the `OTEAPI_PLUGIN_PACKAGES` environment variable when running the service through either [Docker](#run-in-docker) or [Docker Compose](#run-with-docker-compose).
-The variable should be a space-separated string of each package name, possibly including a version range for the given package.
+The variable should be a colon-separated (`:`) string of each package name, possibly including a version range for the given package.
 
 For example, to install the packages `oteapi-plugin` and `my_special_plugin` one could specify `OTEAPI_PLUGIN_PACKAGES` in the following way:
 
 ```shell
-OTEAPI_PLUGIN_PACKAGES="oteapi-plugin my_special_plugin"
+OTEAPI_PLUGIN_PACKAGES="oteapi-plugin:my_special_plugin"
 ```
 
 Should there be special version constraints for the packages, these can be added after the package name, separated by commas:
 
 ```shell
-OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3 my_special_plugin>=2.1.1,<3,!=2.1.0"
+OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3:my_special_plugin>=2.1.1,<3,!=2.1.0"
 ```
 
 To ensure this variable is used when running the service you could either `export` it, set it in the same command line as running the service, or define it in a separate file, telling `docker` or `docker-compose` to use this file as a source of environment variables through the `--env-file` option.
+
+### For plugin developers
+
+This environment variable allows you to pass _any_ parameters and values to `pip install`, hence you could map a local folder for your plugin repository into the container and use the full path within the container to install the plugin.
+
+If passing it with the `-e` option, it will be an editable installation.
+This means any changes in the plugin will be echoed in the service as soon as the file is stored to disk and hypercorn has reloaded.
+
+Example:
+
+```shell
+OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3:my_special_plugin>=2.1.1,<3,!=2.1.0:-v -e /oteapi-plugin-dev[dev]"
+```
+
+Here, the constant `-q` (silent) option for `pip install` has been reversed by using the `-v` (verbose) option, and the package at `/oteapi-plugin-dev` within the container is being installed as an editable installation, including the `dev` extra.
+
+Now in the local `docker-compose.yml` file, one would need to add:
+
+```yaml
+- "${PWD}:/oteapi-plugin-dev"
+```
+
+Under `volumes` under `oteapi`.
+Assuming the `docker-compose.yml` file in question is placed in the root of the plugin repository.
+If not, the first part (`${PWD}`) should be changed accordingly.
