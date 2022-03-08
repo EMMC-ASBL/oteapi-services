@@ -179,5 +179,5 @@ jobs:
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
         CONTAINER_PLUGIN_PATH: /special-plugin
-        OTEAPI_PLUGIN_PACKAGES: "-v -e ${{ env.CONTAINER_PLUGIN_PATH }}[dev]:oteapi-dlite"
+        OTEAPI_PLUGIN_PACKAGES: "-v -e /special-plugin[dev]:oteapi-dlite"
         LOCAL_TARGET_PLUGIN_PATH: ${{ env.LOCAL_OTEAPI_PATH }}
