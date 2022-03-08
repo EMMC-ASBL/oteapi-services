@@ -128,15 +128,22 @@ jobs:
       matrix:
         docker-target: ["development", "production"]
 
+    env:
+      PORT: 8123
+      OTEAPI_prefix: /api/ci/v1
+      DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
+      LOCAL_OTEAPI_PATH: /tmp/oteapi-core
+
     steps:
     - uses: actions/checkout@v3
 
-    - name: Build OTEAPI Services Dockerfile
+    - name: Build OTEAPI Services Dockerfiles
       run: |
         # Need to re-install docker-compose from pip:
         # https://github.com/docker/compose/issues/7686
         sudo apt-get update && sudo pip install docker-compose
         docker-compose -f docker-compose_dev.yml --verbose -- build
+        docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- build
 
     - name: Start the Docker services
       run: |
@@ -144,15 +151,13 @@ jobs:
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         sleep 5
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
-      env:
-        PORT: 8123
-        OTEAPI_prefix: /api/ci/v1
-        DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
+
+    - name: Clone `oteapi-core` locally
+      run: git clone https://github.com/EMMC-ASBL/oteapi-core ${LOCAL_OTEAPI_PATH}
 
     - name: Start the Docker services with local `oteapi-core`
       if: matrix.docker-target == 'development'
       run: |
-        git clone https://github.com/EMMC-ASBL/oteapi-core ${PATH_TO_OTEAPI_CORE}
         docker-compose -f docker-compose_dev.yml down
         docker-compose -f docker-compose_dev.yml --verbose -- up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
@@ -161,7 +166,18 @@ jobs:
         sleep 40
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
-        PORT: 8123
-        OTEAPI_prefix: /api/ci/v1
-        DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
-        PATH_TO_OTEAPI_CORE: /tmp/oteapi-core
+        PATH_TO_OTEAPI_CORE: ${{ env.LOCAL_OTEAPI_PATH }}
+
+    - name: Start the Docker services
+      run: |
+        docker-compose -f docker-compose_dev.yml down
+        docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- up &
+        .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
+        # Sleep for longer, since it takes a while to install `oteapi-core`
+        # And the port will be available as soon as the CMD is reached in the Dockerfile.
+        sleep 40
+        curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
+      env:
+        CONTAINER_PLUGIN_PATH: /special-plugin
+        OTEAPI_PLUGIN_PACKAGES: "-v -e /special-plugin[dev]:oteapi-dlite"
+        LOCAL_TARGET_PLUGIN_PATH: ${{ env.LOCAL_OTEAPI_PATH }}
