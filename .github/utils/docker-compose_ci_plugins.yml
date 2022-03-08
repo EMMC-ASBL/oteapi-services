@@ -2,7 +2,9 @@ version: "3"
 
 services:
   oteapi:
-    image: ghcr.io/emmc-asbl/oteapi:${DOCKER_OTEAPI_VERSION:-latest}
+    build:
+      context: "../../"
+      target: "${DOCKER_OTEAPI_TARGET:-development}"
     ports:
       - "${PORT:-8080}:8080"
     environment:
