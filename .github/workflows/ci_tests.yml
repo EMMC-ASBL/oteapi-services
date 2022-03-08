@@ -187,8 +187,8 @@ jobs:
 
     - name: Start the Docker services
       run: |
-        docker-compose -f .github/utils/docker-compose_ci_plugin.yml pull
-        docker-compose -f .github/utils/docker-compose_ci_plugin.yml --verbose -- up &
+        docker-compose -f .github/utils/docker-compose_ci_plugins.yml pull
+        docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         # Sleep for longer, since it takes a while to install `oteapi-core`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
