@@ -180,6 +180,13 @@ OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3:my_special_plugin>=2.1.1,<3,!=2.1.0"
 
 To ensure this variable is used when running the service you could either `export` it, set it in the same command line as running the service, or define it in a separate file, telling `docker` or `docker-compose` to use this file as a source of environment variables through the `--env-file` option.
 
+> **Warning**: Beware that the `OTEAPI_PLUGIN_PACKAGES` variable will be run from the `entrypoint.sh` file within the container using the `eval` Bash function.
+> This means one can potentially execute arbitrary code by appending it to the `OTEAPI_PLUGIN_PACKAGES` environment variable.
+> However, this is mitigated by the fact that this exploit cannot be invoked in an already running instance.
+> To be able to exploit this, one would need access to change the `OTEAPI_PLUGIN_PACKAGES` environment variable and restart the running docker containers.
+> If anyone has access to do this, they essentially have complete control of the system, and this issue is the least of one's problems.
+> But beware too keep the `OTEAPI_PLUGIN_PACKAGES` variable value secret in production and always take proper safety measures for public services.
+
 ### For plugin developers
 
 This environment variable allows you to pass _any_ parameters and values to `pip install`, hence you could map a local folder for your plugin repository into the container and use the full path within the container to install the plugin.
