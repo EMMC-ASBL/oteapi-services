@@ -211,3 +211,78 @@ Now in the local `docker-compose.yml` file, one would need to add:
 Under `volumes` under `oteapi`.
 Assuming the `docker-compose.yml` file in question is placed in the root of the plugin repository.
 If not, the first part (`${PWD}`) should be changed accordingly.
+
+#### Local `oteapi-core`
+
+It is also possible to install a local version of `oteapi-core` using the public image.
+To do this, the `ENTRYPOINT` command in the image needs to be overwritten, which can be done with the `entrypoint` value in the docker compose file:
+
+```yaml
+entrypoint: |
+  /bin/bash -c "if [ \"${PATH_TO_OTEAPI_CORE}\" != \"/dev/null\" ] && [ -n \"${PATH_TO_OTEAPI_CORE}\" ]; then \
+  pip install -U --force-reinstall -e /oteapi-core; fi \
+  && ./entrypoint.sh --reload --debug --log-level debug"
+```
+
+Here the hypercorn command is called with the options `--reload`, `--debug`, and `--log-level debug` as well.
+This makes sure we see all relevant logging output during development as well as having the server restart/reload every time a file is updated that relates to the locally installed packages (for the plugins, they need to have the `-e` option invoked - see above.)
+
+A full example of how a docker compose file may look for a plugin is shown below, but can also be seen in the [OTEAPI Plugin template](https://github.com/EMMC-ASBL/oteapi-plugin-template) repository.
+
+In the following example, there is a possibility that a second plugin may be needed (`oteapi-another-plugin`).
+This possibility has been expressed in the docker compose file through the `PATH_TO_OTEAPI_ANOTHER_PLUGIN` environment variable.
+
+```yaml
+version: "3"
+
+services:
+  oteapi:
+    image: ghcr.io/emmc-asbl/oteapi:${DOCKER_OTEAPI_VERSION:-latest}
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      OTEAPI_REDIS_TYPE: redis
+      OTEAPI_REDIS_HOST: redis
+      OTEAPI_REDIS_PORT: 6379
+      OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
+      PATH_TO_OTEAPI_CORE:
+      # default
+      OTEAPI_PLUGIN_PACKAGES: "-v -e /oteapi-plugin[dev]"
+
+      # use this if PATH_TO_OTEAPI_ANOTHER_PLUGIN is defined
+      # OTEAPI_PLUGIN_PACKAGES: "-v -e /oteapi-plugin[dev]:-v -e /oteapi-another-plugin"
+    depends_on:
+      - redis
+    networks:
+      - otenet
+    volumes:
+      - "${PATH_TO_OTEAPI_CORE:-/dev/null}:/oteapi-core"
+      - "${PATH_TO_OTEAPI_ANOTHER_PLUGIN:-/dev/null}:/oteapi-another-plugin"
+      - "${PWD}:/oteapi-plugin"
+    entrypoint: |
+      /bin/bash -c "if [ \"${PATH_TO_OTEAPI_CORE}\" != \"/dev/null\" ] && [ -n \"${PATH_TO_OTEAPI_CORE}\" ]; then \
+      pip install -U --force-reinstall -e /oteapi-core; fi \
+      && ./entrypoint.sh --reload --debug --log-level debug"
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-persist:/data
+    networks:
+      - otenet
+
+  sftp:
+    image: atmoz/sftp
+    volumes:
+      - sftp-storage:${HOME:-/home/foo}/download
+    command: ${USER:-foo}:${PASSWORD:-pass}:1001
+    networks:
+      - otenet
+
+volumes:
+  redis-persist:
+  sftp-storage:
+
+networks:
+  otenet:
+```
