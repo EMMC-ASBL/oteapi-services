@@ -152,8 +152,10 @@ jobs:
         sleep 5
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
 
-    - name: Clone `oteapi-core` locally
-      run: git clone https://github.com/EMMC-ASBL/oteapi-core ${LOCAL_OTEAPI_PATH}
+    - name: Clone current requirement version of `oteapi-core` locally
+      run: |
+        REQ_VERSION=$(cat requirements.txt | grep "oteapi-core")
+        git clone --branch v${REQ_VERSION#oteapi-core==} https://github.com/EMMC-ASBL/oteapi-core ${LOCAL_OTEAPI_PATH}
 
     - name: Start the Docker services with local `oteapi-core`
       if: matrix.docker-target == 'development'
@@ -168,7 +170,7 @@ jobs:
       env:
         PATH_TO_OTEAPI_CORE: ${{ env.LOCAL_OTEAPI_PATH }}
 
-    - name: Start the Docker services
+    - name: Start the Docker services with plugins
       run: |
         docker-compose -f docker-compose_dev.yml down
         docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- up &
