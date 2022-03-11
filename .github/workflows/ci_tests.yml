@@ -170,7 +170,7 @@ jobs:
       env:
         PATH_TO_OTEAPI_CORE: ${{ env.LOCAL_OTEAPI_PATH }}
 
-    - name: Start the Docker services with plugins and newest oteapi-core
+    - name: Start the Docker services with plugins
       run: |
         docker-compose -f docker-compose_dev.yml down
         docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- up &
