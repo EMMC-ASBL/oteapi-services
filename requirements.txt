@@ -26,9 +26,9 @@ hypercorn==0.13.2
 hyperframe==6.0.1
 idna==3.3
 kombu==5.2.4
-numpy==1.22.2
+numpy==1.22.3
 openpyxl==3.0.9
-oteapi-core==0.1.2
+oteapi-core==0.1.3
 paramiko==2.9.2
 Pillow==9.0.1
 priority==2.0.0
