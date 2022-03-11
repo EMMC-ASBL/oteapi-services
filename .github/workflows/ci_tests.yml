@@ -170,8 +170,13 @@ jobs:
       env:
         PATH_TO_OTEAPI_CORE: ${{ env.LOCAL_OTEAPI_PATH }}
 
-    - name: Start the Docker services with plugins
+    - name: Start the Docker services with plugins and newest oteapi-core
       run: |
+        # Use latest oteapi-core
+        CWD=${PWD}
+        cd ${LOCAL_OTEAPI_PATH} && git checkout master
+        cd ${CWD}
+
         docker-compose -f docker-compose_dev.yml down
         docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
@@ -183,3 +188,4 @@ jobs:
         CONTAINER_PLUGIN_PATH: /special-plugin
         OTEAPI_PLUGIN_PACKAGES: "-v -e /special-plugin[dev]:oteapi-dlite"
         LOCAL_TARGET_PLUGIN_PATH: ${{ env.LOCAL_OTEAPI_PATH }}
+        PATH_TO_OTEAPI_CORE: ${{ env.LOCAL_OTEAPI_PATH }}
