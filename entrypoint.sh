@@ -33,4 +33,4 @@ else
     echo "No extra plugin packages provided. Specify 'OTEAPI_PLUGIN_PACKAGES' to specify plugin packages."
 fi
 
-hypercorn asgi:app --bind 0.0.0.0:8080 $@
+hypercorn asgi:app --bind 0.0.0.0:8080 "$@"
