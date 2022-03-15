@@ -1,23 +1,22 @@
 """Demo strategy class for text/json."""
 # pylint: disable=no-self-use,unused-argument
 import json
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from oteapi.datacache.datacache import DataCache
+from oteapi.models.resourceconfig import ResourceConfig
 from oteapi.plugins.factories import create_strategy
+from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from typing import Any, Dict, Optional
-
-    from oteapi.models.resourceconfig import ResourceConfig
 
 
 @dataclass
 class DemoJSONDataParseStrategy:
     """Parse Strategy."""
 
-    resource_config: "ResourceConfig"
+    resource_config: ResourceConfig
 
     def initialize(
         self, session: "Optional[Dict[str, Any]]" = None

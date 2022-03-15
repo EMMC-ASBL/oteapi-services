@@ -1,15 +1,14 @@
 """Demo download strategy class for file."""
 # pylint: disable=no-self-use,unused-argument
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from oteapi.datacache.datacache import DataCache
+from oteapi.models.resourceconfig import ResourceConfig
 from pydantic import BaseModel, Extra, Field
+from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from typing import Any, Dict
-
-    from oteapi.models.resourceconfig import ResourceConfig
 
 
 class FileConfig(BaseModel):
@@ -29,7 +28,7 @@ class FileConfig(BaseModel):
 class FileStrategy:
     """Strategy for retrieving data via local file."""
 
-    resource_config: "ResourceConfig"
+    resource_config: ResourceConfig
 
     def initialize(
         self, session: "Optional[Dict[str, Any]]" = None

@@ -1,22 +1,23 @@
 """Demo transformation strategy class."""
 # pylint: disable=no-self-use,unused-argument
-from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from oteapi.models.transformationconfig import TransformationStatus
+from oteapi.models.transformationconfig import (
+    TransformationConfig,
+    TransformationStatus,
+)
+from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from typing import Any, Dict, Optional
-
-    from oteapi.models.transformationconfig import TransformationConfig
 
 
 @dataclass
 class DummyTransformationStrategy:
     """Transformation Strategy."""
 
-    transformation_config: "TransformationConfig"
+    transformation_config: TransformationConfig
 
     def run(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Run a job, return a jobid"""
@@ -37,9 +38,6 @@ class DummyTransformationStrategy:
             created=datetime.utcnow(),
             startTime=datetime.utcnow(),
             finishTime=datetime.utcnow(),
-            priority=0,
-            secret=None,
-            configuration={},
         )
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
