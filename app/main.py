@@ -12,6 +12,7 @@ from app.models.error import HTTPValidationError
 from app.routers import (
     datafilter,
     dataresource,
+    function,
     mapping,
     redisadmin,
     session,
@@ -59,9 +60,10 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
     for router_module in (
         session,
         dataresource,
-        transformation,
         datafilter,
+        function,
         mapping,
+        transformation,
         redisadmin,
     ):
         app.include_router(
