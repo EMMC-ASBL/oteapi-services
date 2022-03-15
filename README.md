@@ -164,18 +164,125 @@ To use OTEAPI strategies other than those included in [OTEAPI Core](https://emmc
 Currently, there is no index of available plugins, however, there might be in the future.
 
 To install OTEAPI plugin packages for use in the OTEAPI service, one needs to specify the `OTEAPI_PLUGIN_PACKAGES` environment variable when running the service through either [Docker](#run-in-docker) or [Docker Compose](#run-with-docker-compose).
-The variable should be a space-separated string of each package name, possibly including a version range for the given package.
+The variable should be a colon-separated (`:`) string of each package name, possibly including a version range for the given package.
 
 For example, to install the packages `oteapi-plugin` and `my_special_plugin` one could specify `OTEAPI_PLUGIN_PACKAGES` in the following way:
 
 ```shell
-OTEAPI_PLUGIN_PACKAGES="oteapi-plugin my_special_plugin"
+OTEAPI_PLUGIN_PACKAGES="oteapi-plugin:my_special_plugin"
 ```
 
 Should there be special version constraints for the packages, these can be added after the package name, separated by commas:
 
 ```shell
-OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3 my_special_plugin>=2.1.1,<3,!=2.1.0"
+OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3:my_special_plugin>=2.1.1,<3,!=2.1.0"
 ```
 
 To ensure this variable is used when running the service you could either `export` it, set it in the same command line as running the service, or define it in a separate file, telling `docker` or `docker-compose` to use this file as a source of environment variables through the `--env-file` option.
+
+> **Warning**: Beware that the `OTEAPI_PLUGIN_PACKAGES` variable will be run from the `entrypoint.sh` file within the container using the `eval` Bash function.
+> This means one can potentially execute arbitrary code by appending it to the `OTEAPI_PLUGIN_PACKAGES` environment variable.
+> However, this is mitigated by the fact that this exploit cannot be invoked in an already running instance.
+> To be able to exploit this, one would need access to change the `OTEAPI_PLUGIN_PACKAGES` environment variable and restart the running docker containers.
+> If anyone has access to do this, they essentially have complete control of the system, and this issue is the least of one's problems.
+> But beware too keep the `OTEAPI_PLUGIN_PACKAGES` variable value secret in production and always take proper safety measures for public services.
+
+### For plugin developers
+
+This environment variable allows you to pass _any_ parameters and values to `pip install`, hence you could map a local folder for your plugin repository into the container and use the full path within the container to install the plugin.
+
+If passing it with the `-e` option, it will be an editable installation.
+This means any changes in the plugin will be echoed in the service as soon as the file is stored to disk and hypercorn has reloaded.
+
+Example:
+
+```shell
+OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3:my_special_plugin>=2.1.1,<3,!=2.1.0:-v -e /oteapi-plugin-dev[dev]"
+```
+
+Here, the constant `-q` (silent) option for `pip install` has been reversed by using the `-v` (verbose) option, and the package at `/oteapi-plugin-dev` within the container is being installed as an editable installation, including the `dev` extra.
+
+Now in the local `docker-compose.yml` file, one would need to add:
+
+```yaml
+- "${PWD}:/oteapi-plugin-dev"
+```
+
+Under `volumes` under `oteapi`.
+Assuming the `docker-compose.yml` file in question is placed in the root of the plugin repository.
+If not, the first part (`${PWD}`) should be changed accordingly.
+
+#### Local `oteapi-core`
+
+It is also possible to install a local version of `oteapi-core` using the public image.
+To do this, the `ENTRYPOINT` command in the image needs to be overwritten, which can be done with the `entrypoint` value in the docker compose file:
+
+```yaml
+entrypoint: |
+  /bin/bash -c "if [ \"${PATH_TO_OTEAPI_CORE}\" != \"/dev/null\" ] && [ -n \"${PATH_TO_OTEAPI_CORE}\" ]; then \
+  pip install -U --force-reinstall -e /oteapi-core; fi \
+  && ./entrypoint.sh --reload --debug --log-level debug"
+```
+
+Here the hypercorn command is called with the options `--reload`, `--debug`, and `--log-level debug` as well.
+This makes sure we see all relevant logging output during development as well as having the server restart/reload every time a file is updated that relates to the locally installed packages (for the plugins, they need to have the `-e` option invoked - see above.)
+
+A full example of how a docker compose file may look for a plugin is shown below, but can also be seen in the [OTEAPI Plugin template](https://github.com/EMMC-ASBL/oteapi-plugin-template) repository.
+
+In the following example, there is a possibility that a second plugin may be needed (`oteapi-another-plugin`).
+This possibility has been expressed in the docker compose file through the `PATH_TO_OTEAPI_ANOTHER_PLUGIN` environment variable.
+
+```yaml
+version: "3"
+
+services:
+  oteapi:
+    image: ghcr.io/emmc-asbl/oteapi:${DOCKER_OTEAPI_VERSION:-latest}
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      OTEAPI_REDIS_TYPE: redis
+      OTEAPI_REDIS_HOST: redis
+      OTEAPI_REDIS_PORT: 6379
+      OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
+      PATH_TO_OTEAPI_CORE:
+      # default
+      OTEAPI_PLUGIN_PACKAGES: "-v -e /oteapi-plugin[dev]"
+
+      # use this if PATH_TO_OTEAPI_ANOTHER_PLUGIN is defined
+      # OTEAPI_PLUGIN_PACKAGES: "-v -e /oteapi-plugin[dev]:-v -e /oteapi-another-plugin"
+    depends_on:
+      - redis
+    networks:
+      - otenet
+    volumes:
+      - "${PATH_TO_OTEAPI_CORE:-/dev/null}:/oteapi-core"
+      - "${PATH_TO_OTEAPI_ANOTHER_PLUGIN:-/dev/null}:/oteapi-another-plugin"
+      - "${PWD}:/oteapi-plugin"
+    entrypoint: |
+      /bin/bash -c "if [ \"${PATH_TO_OTEAPI_CORE}\" != \"/dev/null\" ] && [ -n \"${PATH_TO_OTEAPI_CORE}\" ]; then \
+      pip install -U --force-reinstall -e /oteapi-core; fi \
+      && ./entrypoint.sh --reload --debug --log-level debug"
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-persist:/data
+    networks:
+      - otenet
+
+  sftp:
+    image: atmoz/sftp
+    volumes:
+      - sftp-storage:${HOME:-/home/foo}/download
+    command: ${USER:-foo}:${PASSWORD:-pass}:1001
+    networks:
+      - otenet
+
+volumes:
+  redis-persist:
+  sftp-storage:
+
+networks:
+  otenet:
+```

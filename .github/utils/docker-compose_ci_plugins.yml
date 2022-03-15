@@ -3,7 +3,7 @@ version: "3"
 services:
   oteapi:
     build:
-      context: "."
+      context: "../../"
       target: "${DOCKER_OTEAPI_TARGET:-development}"
     ports:
       - "${PORT:-8080}:8080"
@@ -12,17 +12,14 @@ services:
       OTEAPI_REDIS_HOST: redis
       OTEAPI_REDIS_PORT: 6379
       OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
-      PATH_TO_OTEAPI_CORE:
       OTEAPI_PLUGIN_PACKAGES:
       PATH_TO_OTEAPI_CORE: "${PATH_TO_OTEAPI_CORE:-/dev/null}"
-      AGRAPH_SUPER_USER: dbuser
-      AGRAPH_SUPER_PASSWORD: test123
     depends_on:
       - redis
     networks:
       - otenet
     volumes:
-      - "${PWD}:/app"
+      - "${LOCAL_TARGET_PLUGIN_PATH:-/dev/null}:${CONTAINER_PLUGIN_PATH:-/dev/null}"
       - "${PATH_TO_OTEAPI_CORE:-/dev/null}:/oteapi_core"
 
   redis:
@@ -40,22 +37,9 @@ services:
     networks:
       - otenet
 
-  agraph:
-      image: franzinc/agraph:v7.2.0
-      volumes:
-        - agraph-data:/agraph/data
-        - ./agraph.cfg:/agraph/etc/agraph.cfg
-      ports:
-        - "10000-10035:10000-10035"
-      restart: on-failure
-      shm_size: 4g
-      networks:
-        - otenet
-
 volumes:
   redis-persist:
   sftp-storage:
-  agraph-data:
 
 networks:
   otenet:

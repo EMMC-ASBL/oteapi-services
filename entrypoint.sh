@@ -20,17 +20,17 @@ sed -E -e "s|oteapi-core==[0-9.]+|${oteapi_core_requirement}|" requirements.txt 
 if [ -n "${OTEAPI_PLUGIN_PACKAGES}" ]; then
     echo "Installing plugins:"
     # Print out list of plugins in separate for-loop to avoid `pip` message interjections
+    IFS=":"
     for plugin in ${OTEAPI_PLUGIN_PACKAGES}; do echo "* ${plugin}"; done
-    for plugin in ${OTEAPI_PLUGIN_PACKAGES}; do pip install -q -c constraints.txt ${plugin} || continue; done
+    for plugin in ${OTEAPI_PLUGIN_PACKAGES}; do eval "pip install -q -c constraints.txt ${plugin}" || FAILED_PLUGIN_INSTALLS=${FAILED_PLUGIN_INSTALLS:+$FAILED_PLUGIN_INSTALLS:}${plugin} && continue; done
     current_packages="$(pip freeze)"
-    for plugin in ${OTEAPI_PLUGIN_PACKAGES}; do
-        if [[ "${current_package}" != *"${plugin}"* ]]; then
-            echo "One or more plugin packages failed to install. See above for more information."
-            exit 1
-        fi
-    done
+    if [ -n "${FAILED_PLUGIN_INSTALLS}" ]; then
+        echo "The following plugins failed to install:"
+        for plugin in ${FAILED_PLUGIN_INSTALLS}; do echo "* ${plugin}"; done
+        exit 1
+    fi
 else
     echo "No extra plugin packages provided. Specify 'OTEAPI_PLUGIN_PACKAGES' to specify plugin packages."
 fi
 
-hypercorn asgi:app --bind 0.0.0.0:8080 $@
+hypercorn asgi:app --bind 0.0.0.0:8080 "$@"
