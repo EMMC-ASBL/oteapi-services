@@ -1,14 +1,13 @@
 """Demo filter strategy."""
 # pylint: disable=no-self-use,unused-argument
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, List
 
+from oteapi.models.filterconfig import FilterConfig
 from pydantic import BaseModel, Field
+from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from typing import Any, Dict, Optional
-
-    from oteapi.models.filterconfig import FilterConfig
 
 
 class DemoDataModel(BaseModel):
@@ -21,7 +20,7 @@ class DemoDataModel(BaseModel):
 class DemoFilter:
     """Filter Strategy."""
 
-    filter_config: "FilterConfig"
+    filter_config: FilterConfig
 
     def initialize(
         self, session: "Optional[Dict[str, Any]]" = None

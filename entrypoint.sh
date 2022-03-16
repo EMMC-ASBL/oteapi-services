@@ -20,7 +20,7 @@ sed -E -e "s|oteapi-core==[0-9.]+|${oteapi_core_requirement}|" requirements.txt 
 if [ -n "${OTEAPI_PLUGIN_PACKAGES}" ]; then
     echo "Installing plugins:"
     # Print out list of plugins in separate for-loop to avoid `pip` message interjections
-    IFS=":"
+    IFS="|"
     for plugin in ${OTEAPI_PLUGIN_PACKAGES}; do echo "* ${plugin}"; done
     for plugin in ${OTEAPI_PLUGIN_PACKAGES}; do eval "pip install -q -c constraints.txt ${plugin}" || FAILED_PLUGIN_INSTALLS=${FAILED_PLUGIN_INSTALLS:+$FAILED_PLUGIN_INSTALLS:}${plugin} && continue; done
     current_packages="$(pip freeze)"

@@ -60,6 +60,11 @@ def test_data() -> "Dict[str, dict]":
             "filterType": "filter/demo",
             "configuration": {"demo_data": [1, 2]},
         },
+        # function
+        "function-a647012a-7ab9-4f2c-9c13-2564aa6d95a1": {
+            "functionType": "function/demo",
+            "configuration": {},
+        },
         # mapping
         "mapping-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": {
             "mappingType": "mapping/demo",
@@ -100,6 +105,11 @@ def load_test_strategies() -> None:
             "name": "tests.filter/demo",
             "value": "tests.static.test_strategies.filter:DemoFilter",
             "group": "oteapi.filter",
+        },
+        {
+            "name": "tests.function/demo",
+            "value": "tests.static.test_strategies.function:DemoFunctionStrategy",
+            "group": "oteapi.function",
         },
         {
             "name": "tests.mapping/demo",

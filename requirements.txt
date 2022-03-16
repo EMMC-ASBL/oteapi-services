@@ -30,7 +30,7 @@ kombu==5.2.4
 numpy==1.22.3
 openpyxl==3.0.9
 oteapi-core==0.1.4
-paramiko==2.9.2
+paramiko==2.10.1
 Pillow==9.0.1
 priority==2.0.0
 prompt-toolkit==3.0.28
