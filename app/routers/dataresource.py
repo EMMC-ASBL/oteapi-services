@@ -117,13 +117,7 @@ async def read_dataresource(
         None if not session_id else json.loads(await cache.get(session_id))
     )
 
-    if config.accessUrl and config.accessService:
-        # Resource strategy
-        session_update = create_strategy("resource", config).get(session=session_data)
-        if session_update and session_id:
-            await _update_session(session_id, session_update, cache)
-
-    elif config.downloadUrl and config.mediaType:
+    if config.downloadUrl and config.mediaType:
         # Download strategy
         session_update = create_strategy("download", config).get(session=session_data)
         if session_update and session_id:
@@ -131,6 +125,12 @@ async def read_dataresource(
 
         # Parse strategy
         session_update = create_strategy("parse", config).get(session=session_data)
+        if session_update and session_id:
+            await _update_session(session_id, session_update, cache)
+
+    elif config.accessUrl and config.accessService:
+        # Resource strategy
+        session_update = create_strategy("resource", config).get(session=session_data)
         if session_update and session_id:
             await _update_session(session_id, session_update, cache)
 
@@ -165,17 +165,7 @@ async def initialize_dataresource(
         None if not session_id else json.loads(await cache.get(session_id))
     )
 
-    if config.accessUrl and config.accessService:
-        # Resource strategy
-        session_update = create_strategy("resource", config).initialize(
-            session=session_data
-        )
-        if session_update and session_id:
-            session_data = await _update_session(
-                session_id=session_id, updated_session=session_update, redis=cache
-            )
-
-    elif config.downloadUrl and config.mediaType:
+    if config.downloadUrl and config.mediaType:
         # Download strategy
         session_update = create_strategy("download", config).initialize(
             session=session_data
@@ -187,6 +177,16 @@ async def initialize_dataresource(
 
         # Parse strategy
         session_update = create_strategy("parse", config).initialize(
+            session=session_data
+        )
+        if session_update and session_id:
+            session_data = await _update_session(
+                session_id=session_id, updated_session=session_update, redis=cache
+            )
+
+    elif config.accessUrl and config.accessService:
+        # Resource strategy
+        session_update = create_strategy("resource", config).initialize(
             session=session_data
         )
         if session_update and session_id:
