@@ -91,13 +91,13 @@ jobs:
           fi
         done < requirements.txt
 
-        echo IMAGE_ID=###${IMAGE_ID}###
-        echo VERSION=###${VERSION}###
+        echo IMAGE_ID=${IMAGE_ID}
+        echo VERSION=${VERSION}
 
-        # # Tag image using current OTEAPI Core version
-        # docker tag ${IMAGE_NAME} ${IMAGE_ID}:${VERSION}
+        # Tag image using current OTEAPI Core version
+        docker tag ${IMAGE_NAME} ${IMAGE_ID}:${VERSION}
 
-        # # Always tag as the "latest"
-        # docker tag ${IMAGE_NAME} ${IMAGE_ID}:latest
+        # Always tag as the "latest"
+        docker tag ${IMAGE_NAME} ${IMAGE_ID}:latest
 
-        # docker push --all-tags ${IMAGE_ID}
+        docker push --all-tags ${IMAGE_ID}
