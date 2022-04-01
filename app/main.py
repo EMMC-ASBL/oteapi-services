@@ -17,6 +17,7 @@ from app.routers import (
     redisadmin,
     session,
     transformation,
+    triplestore,
 )
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -65,6 +66,7 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
         mapping,
         transformation,
         redisadmin,
+        triplestore,
     ):
         app.include_router(
             router_module.ROUTER,
