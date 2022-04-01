@@ -11,8 +11,6 @@ services:
       OTEAPI_REDIS_PORT: 6379
       OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
       OTEAPI_PLUGIN_PACKAGES:
-      AGRAPH_SUPER_USER: dbuser
-      AGRAPH_SUPER_PASSWORD: test123
     depends_on:
       - redis
     networks:
