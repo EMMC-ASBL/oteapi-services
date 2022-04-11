@@ -6,7 +6,7 @@ anyio==3.5.0
 async-timeout==4.0.2
 bcrypt==3.2.0
 billiard==3.6.4.0
-celery==5.2.5
+celery==5.2.6
 certifi==2021.10.8
 cffi==1.15.0
 charset-normalizer==2.0.12
@@ -35,7 +35,7 @@ oteapi-core==0.1.5
 paramiko==2.10.3
 Pillow==9.1.0
 priority==2.0.0
-prompt-toolkit==3.0.28
+prompt-toolkit==3.0.29
 pycparser==2.21
 pydantic==1.9.0
 PyNaCl==1.5.0
