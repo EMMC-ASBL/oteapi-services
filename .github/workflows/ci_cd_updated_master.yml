@@ -102,7 +102,7 @@ jobs:
         IMAGE_ID=$(echo ${IMAGE_ID} | tr '[A-Z]' '[a-z]')
 
         # Get current OTEAPI Services version from a Python utility function
-        VERSION="$(from app import _get_version; print(_get_version()))"
+        VERSION="$(python -c "from app import _get_version; print(_get_version())")"
 
         echo IMAGE_ID=${IMAGE_ID}
         echo VERSION=${VERSION}
