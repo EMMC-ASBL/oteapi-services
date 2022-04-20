@@ -70,16 +70,16 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.9"
-
     - name: Build image
       run: docker build --file Dockerfile --tag "${IMAGE_NAME}" --label "gh_actions_runnumber=${GITHUB_RUN_ID}" --label "oteapi=production" --target production .
 
     - name: Log in to registry
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u TEAM4-0 --password-stdin
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.9"
 
     - name: Install Python dependencies
       run: |
