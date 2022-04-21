@@ -10,14 +10,13 @@ env:
   GIT_USER_EMAIL: "Team4.0@SINTEF.no"
   DEFAULT_REPO_BRANCH: master
 
+permissions: write-all
+
 jobs:
   update-version:
     name: Update the version (new build number)
     if: github.repository_owner == 'EMMC-ASBL'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      security-events: write
 
     steps:
     - name: Checkout repository
