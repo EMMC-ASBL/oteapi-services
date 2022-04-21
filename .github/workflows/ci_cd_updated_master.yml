@@ -2,8 +2,7 @@ name: CI/CD - New updates to 'master'
 
 on:
   push:
-    branches: [master]
-  pull_request:
+    branches: [cwa/TEMP_BRANCH]
 
 env:
   DEPENDABOT_BRANCH: ci/dependabot-updates
