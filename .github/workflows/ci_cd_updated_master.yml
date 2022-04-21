@@ -15,6 +15,9 @@ jobs:
     name: Update the version (new build number)
     if: github.repository_owner == 'EMMC-ASBL'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      security-events: write
 
     steps:
     - name: Checkout repository
