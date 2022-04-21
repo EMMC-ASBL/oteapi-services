@@ -82,7 +82,7 @@ jobs:
   #   name: Update permanent dependabot branch
   #   if: github.repository_owner == 'EMMC-ASBL' && needs.update_version.outputs.continue_workflow == 'true'
   #   runs-on: ubuntu-latest
-  #   needs: update-version
+  #   needs: update_version
 
   #   steps:
   #   - name: Checkout repository
@@ -126,7 +126,7 @@ jobs:
     name: Publish Container image on GH Packages
     if: github.repository_owner == 'EMMC-ASBL' && needs.update_version.outputs.continue_workflow == 'true'
     runs-on: ubuntu-latest
-    needs: update-version
+    needs: update_version
     permissions:
       packages: write
       contents: read
