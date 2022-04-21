@@ -76,7 +76,7 @@ jobs:
         branch: cwa/TEMP_BRANCH
         sleep: 15
         force: true
-        unprotect_reviews: true
+        unprotect_reviews: false
 
   # update_dependabot_branch:
   #   name: Update permanent dependabot branch
