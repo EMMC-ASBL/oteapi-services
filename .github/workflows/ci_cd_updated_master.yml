@@ -13,10 +13,12 @@ env:
 permissions: write-all
 
 jobs:
-  update-version:
+  update_version:
     name: Update the version (new build number)
     if: github.repository_owner == 'EMMC-ASBL'
     runs-on: ubuntu-latest
+    outputs:
+      continue_workflow: ${{ steps.update_version.outputs.continue_workflow }}
 
     steps:
     - name: Checkout repository
@@ -40,31 +42,45 @@ jobs:
         pip install -U setuptools wheel
         pip install -U -r .dev/requirements_dev.txt
 
-    - name: Update changelog
-      uses: CharMixer/auto-changelog-action@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        release_branch: ${{ env.DEFAULT_REPO_BRANCH }}
-
     - name: Update version
+      id: update_version
       run: |
         invoke setver
 
+        if [ -n "$(git status --porcelain app/__init__.py)" ]; then
+          echo "CONTINUE_WORKFLOW=true" >> $GITHUB_ENV
+        else
+          # The version has not changed - i.e. the workflow shouldn't continue.
+          echo "CONTINUE_WORKFLOW=false" >> $GITHUB_ENV
+        fi
+        echo "::set-output name=continue_workflow::${CONITNUE_WORKFLOW}"
+
+    - name: Update changelog
+      if: env.CONTINUE_WORKFLOW == 'true'
+      uses: CharMixer/auto-changelog-action@v1
+      with:
+        token: ${{ secrets.RELEASE_PAT }}
+        release_branch: ${{ env.DEFAULT_REPO_BRANCH }}
+
+    - name: Commit changes
+      if: env.CONTINUE_WORKFLOW == 'true'
+      run: |
         git add app/__init__.py CHANGELOG.md
         git commit --amend -C HEAD
 
     - name: Update 'cwa/TEMP_BRANCH'
+      if: env.CONTINUE_WORKFLOW == 'true'
       uses: CasperWA/push-protected@v2
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.RELEASE_PAT }}
         branch: cwa/TEMP_BRANCH
         sleep: 15
         force: true
         unprotect_reviews: true
 
-  # update-dependabot-branch:
+  # update_dependabot_branch:
   #   name: Update permanent dependabot branch
-  #   if: github.repository_owner == 'EMMC-ASBL'
+  #   if: github.repository_owner == 'EMMC-ASBL' && needs.update_version.outputs.continue_workflow == 'true'
   #   runs-on: ubuntu-latest
   #   needs: update-version
 
@@ -106,9 +122,9 @@ jobs:
   #       sleep: 15
   #       force: ${{ env.FORCE_PUSH }}
 
-  publish-container-image:
+  publish_container_image:
     name: Publish Container image on GH Packages
-    if: github.repository_owner == 'EMMC-ASBL'
+    if: github.repository_owner == 'EMMC-ASBL' && needs.update_version.outputs.continue_workflow == 'true'
     runs-on: ubuntu-latest
     needs: update-version
     permissions:
