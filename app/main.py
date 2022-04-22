@@ -31,7 +31,8 @@ class AppSettings(RedisSettings):
         "oteapi_services", description="Application-specific name for Redis cache."
     )
     prefix: str = Field(
-        f"/api/v{__version__.split('.')[0]}", description="Application route prefix."
+        f"/api/v{__version__.split('.', maxsplit=1)[0]}",
+        description="Application route prefix.",
     )
 
     class Config:
