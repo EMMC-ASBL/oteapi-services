@@ -106,7 +106,7 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
     except NotGitRepository:
         return False
 
-    with open(devnull, "w", encoding="utf8") as handle:
+    with open(devnull, "wb") as handle:
         porcelain.fetch(repo, outstream=handle, errstream=handle)
 
     return any(
