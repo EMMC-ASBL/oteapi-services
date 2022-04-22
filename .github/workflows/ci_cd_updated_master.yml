@@ -4,6 +4,8 @@ on:
   push:
     branches: [master]
 
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
 env:
   DEPENDABOT_BRANCH: ci/dependabot-updates
   GIT_USER_NAME: "TEAM 4.0[bot]"
