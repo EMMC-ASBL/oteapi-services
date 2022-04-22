@@ -95,6 +95,8 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
         Services version is expected to be compiled properly.
 
     """
+    from os import devnull
+
     from dulwich import porcelain
     from dulwich.errors import NotGitRepository
     from dulwich.repo import Repo
@@ -104,7 +106,8 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
     except NotGitRepository:
         return False
 
-    porcelain.fetch(repo)
+    with open(devnull, "w", encoding="utf8") as handle:
+        porcelain.fetch(repo, outstream=handle)
 
     return any(
         ref in repo.get_refs()
