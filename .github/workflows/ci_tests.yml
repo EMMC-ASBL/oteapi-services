@@ -77,8 +77,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
 
     - name: Build Dockerfile
       run: |
@@ -98,7 +96,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        fetch-depth: 0
+        fetch-depth: 2
 
     - name: Set up Python ${{ matrix.python-version}}
       uses: actions/setup-python@v3
@@ -138,8 +136,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
 
     - name: Build OTEAPI Services Dockerfiles
       run: |
