@@ -48,11 +48,15 @@ jobs:
         invoke setver
 
         if [ -n "$(git status --porcelain app/__init__.py)" ]; then
-          echo "CONTINUE_WORKFLOW=true" >> $GITHUB_ENV
+          echo "Version updated !"
+          CONTINUE_WORKFLOW=true
         else
           # The version has not changed - i.e. the workflow shouldn't continue.
-          echo "CONTINUE_WORKFLOW=false" >> $GITHUB_ENV
+          CONTINUE_WORKFLOW=false
+          echo "Version not updated !"
         fi
+
+        echo "CONTINUE_WORKFLOW=${CONTINUE_WORKFLOW}" >> $GITHUB_ENV
         echo "::set-output name=continue_workflow::${CONITNUE_WORKFLOW}"
 
     - name: Update changelog
