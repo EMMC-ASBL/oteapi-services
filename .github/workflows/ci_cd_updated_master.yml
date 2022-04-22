@@ -152,7 +152,15 @@ jobs:
         git config --global user.email "${{ env.GIT_USER_EMAIL }}"
 
     - name: Build image
-      run: docker build --file Dockerfile --tag "${IMAGE_NAME}" --label "gh_actions_runnumber=${GITHUB_RUN_ID}" --label "oteapi=production" --target production .
+      run: |
+        docker build \
+          --file Dockerfile \
+          --tag "${IMAGE_NAME}" \
+          --label "gh_actions_runnumber=${GITHUB_RUN_ID}" \
+          --label "org.opencontainers.image.description=$(cat README.md)" \
+          --label "oteapi=production" \
+          --target production \
+          .
 
     - name: Log in to registry
       run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u TEAM4-0 --password-stdin
