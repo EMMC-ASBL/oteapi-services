@@ -4,6 +4,7 @@ More information on `invoke` can be found at http://www.pyinvoke.org/.
 """
 # pylint: disable=import-outside-toplevel
 import datetime as dt
+import os
 import re
 import sys
 from pathlib import Path
@@ -95,8 +96,6 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
         Services version is expected to be compiled properly.
 
     """
-    from os import devnull
-
     from dulwich import porcelain
     from dulwich.errors import NotGitRepository
     from dulwich.repo import Repo
@@ -106,7 +105,7 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
     except NotGitRepository:
         return False
 
-    with open(devnull, "wb") as handle:
+    with open(os.devnull, "wb") as handle:
         porcelain.fetch(repo, outstream=handle, errstream=handle)
 
     return any(
@@ -122,6 +121,9 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
 @task(help={"ver": "OTEAPI Services version to set."})
 def setver(_, ver=""):
     """Sets the OTEAPI Services version."""
+    if os.getenv("CI", "false") != "true":
+        sys.exit("This invoke task should only be run as part of a CI/CD workflow.")
+
     if ver:
         match = re.fullmatch(
             (
