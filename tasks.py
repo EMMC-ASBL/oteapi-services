@@ -107,7 +107,7 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
         return False
 
     with open(devnull, "w", encoding="utf8") as handle:
-        porcelain.fetch(repo, outstream=handle)
+        porcelain.fetch(repo, outstream=handle, errstream=handle)
 
     return any(
         ref in repo.get_refs()
