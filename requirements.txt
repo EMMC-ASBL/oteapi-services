@@ -31,7 +31,7 @@ iso8601==1.0.2
 kombu==5.2.4
 numpy==1.22.3
 openpyxl==3.0.9
-oteapi-core==0.1.5
+oteapi-core==0.1.6
 paramiko==2.10.3
 Pillow==9.1.0
 priority==2.0.0
