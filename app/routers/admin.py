@@ -1,6 +1,11 @@
 """Administrative endpoint."""
+import asyncio
 import platform
-from pathlib import Path
+from collections import defaultdict
+from importlib.metadata import distributions
+
+# from pathlib import Path
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -16,35 +21,61 @@ ROUTER = APIRouter(prefix="/admin", include_in_schema=False)
 
 
 @ROUTER.get("/info", include_in_schema=False)
-async def get_info(request: Request) -> JSONResponse:
+async def get_info(request: Request) -> JSONResponse:  # pylint: disable=too-many-locals
     """Write out introspective information about the service."""
-    top_dir = Path(__file__).resolve().parent.parent.parent.resolve()
+    # top_dir = Path(__file__).resolve().parent.parent.parent.resolve()
 
-    py_dependencies = dict(
-        line.split("==", maxsplit=1)
-        for line in (top_dir / "requirements.txt")
-        .read_text(encoding="utf8")
-        .splitlines()
+    process = await asyncio.create_subprocess_shell(
+        "pip freeze", stdout=asyncio.subprocess.PIPE
     )
+    pip_freeze, _ = await process.communicate()
+
+    py_dependencies = {}
+    for line in pip_freeze.decode().splitlines():
+        if "==" in line:
+            split_line = line.split("==", maxsplit=1)
+            py_dependencies[split_line[0]] = split_line[1]
+        elif "://" in line:
+            for line_part in line.split():
+                url = urlparse(line_part)
+                if url.scheme:
+                    break
+            else:
+                raise ValueError(f"Could not parse any part of line as URL: {line}")
+            if "egg" in url.fragment and "@" in url.path:
+                py_dependencies[
+                    url.fragment.split("egg=", maxsplit=1)[-1]
+                ] = url.path.split("@", maxsplit=1)[-1]
+
+    package_to_dist: dict[str, list[str]] = defaultdict(list)
+    for distribution in distributions():
+        if distribution.files and "top_level.txt" in [
+            _.name for _ in distribution.files
+        ]:
+            for package in distribution.read_text("top_level.txt").splitlines():  # type: ignore
+                package_to_dist[package].append(distribution.metadata["Name"])
 
     oteapi_strategies = EntryPointStrategyCollection()
     for strategy_type in StrategyType:
         oteapi_strategies.add(*get_strategy_entry_points(strategy_type=strategy_type))
-    strategies_dict: "dict[str, list[str]]" = {}.fromkeys(
-        (_.value for _ in StrategyType), []
-    )
+    strategies_dict: "dict[str, list[dict[str, str]]]" = defaultdict(list)
     for oteapi_strategy in oteapi_strategies:
         strategies_dict[oteapi_strategy.type.value].append(
-            f"{oteapi_strategy.name} = {oteapi_strategy.module}:"
-            f"{oteapi_strategy.implementation_name}"
+            {
+                "name": oteapi_strategy.name,
+                "module": oteapi_strategy.module,
+                "cls": oteapi_strategy.implementation_name,
+            }
         )
 
-    JSONResponse(
+    return JSONResponse(
         content={
             "version": {
                 "API": __version__.split(".", maxsplit=1)[0],
                 "OTEAPI Services": __version__,
-                "OTEAPI Core": py_dependencies["oteapi-core"],
+                "OTEAPI Core": py_dependencies.get(
+                    "oteapi-core", py_dependencies.get("oteapi_core", "Unknown")
+                ),
             },
             "environment": {
                 "architecture": platform.architecture() + (platform.machine(),),
@@ -61,12 +92,16 @@ async def get_info(request: Request) -> JSONResponse:
             "oteapi": {
                 "registered_strategies": strategies_dict,
                 "plugins": {
-                    strategy.package: py_dependencies[strategy.package]
+                    package_to_dist[strategy.package][0]: py_dependencies.get(
+                        package_to_dist[strategy.package][0],
+                        py_dependencies.get(
+                            package_to_dist[strategy.package][0].replace("-", "_"),
+                            "Unknown",
+                        ),
+                    )
                     for strategy in oteapi_strategies
                 },
             },
-            "routes": [
-                {"path": route.path, "name": route.name} for route in request.app.routes
-            ],
+            "routes": [route.path for route in request.app.routes],
         }
     )
