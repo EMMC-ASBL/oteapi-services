@@ -10,6 +10,7 @@ from pydantic import Field
 from app import __version__
 from app.models.error import HTTPValidationError
 from app.routers import (
+    admin,
     datafilter,
     dataresource,
     function,
@@ -62,6 +63,7 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
 """,
     )
     for router_module in (
+        admin,
         session,
         dataresource,
         datafilter,
