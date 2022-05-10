@@ -10,7 +10,7 @@ ROUTER = APIRouter(prefix="/redis")
 
 
 @ROUTER.get("/{key}", include_in_schema=False)
-async def get_gey(
+async def get_key(
     key: str,
     cache: Redis = Depends(depends_redis),
 ) -> Dict[str, List[str]]:
