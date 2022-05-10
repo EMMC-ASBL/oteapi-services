@@ -4,6 +4,6 @@ This repository contains the OTE-API server application.
 The server should be deployed via the `Dockerfile`.
 """
 
-__version__ = "0.0.1"
+__version__ = "1.20220510.255"
 __author__ = "SINTEF"
-__author_email__ = "Team4.0@SINTEF.onmicrosoft.com"
+__author_email__ = "Team4.0@SINTEF.no"
