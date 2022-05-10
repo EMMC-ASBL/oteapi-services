@@ -4,9 +4,6 @@ import platform
 from collections import defaultdict
 from importlib.metadata import distributions
 
-# from pathlib import Path
-from urllib.parse import urlparse
-
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from oteapi.plugins.entry_points import (
@@ -23,29 +20,34 @@ ROUTER = APIRouter(prefix="/admin", include_in_schema=False)
 @ROUTER.get("/info", include_in_schema=False)
 async def get_info(request: Request) -> JSONResponse:  # pylint: disable=too-many-locals
     """Write out introspective information about the service."""
-    # top_dir = Path(__file__).resolve().parent.parent.parent.resolve()
-
-    process = await asyncio.create_subprocess_shell(
-        "pip freeze", stdout=asyncio.subprocess.PIPE
+    process_pip_freeze = await asyncio.create_subprocess_shell(
+        "pip freeze --all", stdout=asyncio.subprocess.PIPE
     )
-    pip_freeze, _ = await process.communicate()
+    process_pip_list = await asyncio.create_subprocess_shell(
+        "pip list --format=freeze", stdout=asyncio.subprocess.PIPE
+    )
+    pip_freeze_out, _ = await process_pip_freeze.communicate()
+    pip_list_out, _ = await process_pip_list.communicate()
 
-    py_dependencies = {}
-    for line in pip_freeze.decode().splitlines():
+    pip_freeze = pip_freeze_out.decode().splitlines()
+    pip_list = [
+        line for line in pip_list_out.decode().splitlines() if line not in pip_freeze
+    ]
+
+    py_dependencies: dict[str, dict[str, str]] = {
+        "std": {},
+        "editable": {},
+        "external": {},
+    }
+    for line in pip_freeze:
         if "==" in line:
             split_line = line.split("==", maxsplit=1)
-            py_dependencies[split_line[0]] = split_line[1]
-        elif "://" in line:
-            for line_part in line.split():
-                url = urlparse(line_part)
-                if url.scheme:
-                    break
-            else:
-                raise ValueError(f"Could not parse any part of line as URL: {line}")
-            if "egg" in url.fragment and "@" in url.path:
-                py_dependencies[
-                    url.fragment.split("egg=", maxsplit=1)[-1]
-                ] = url.path.split("@", maxsplit=1)[-1]
+            py_dependencies["std"][split_line[0]] = split_line[1]
+        else:
+            py_dependencies["external"][line] = ""
+    for line in pip_list:
+        split_line = line.split("==", maxsplit=1)
+        py_dependencies["editable"][split_line[0]] = split_line[1]
 
     package_to_dist: dict[str, list[str]] = defaultdict(list)
     for distribution in distributions():
@@ -73,8 +75,11 @@ async def get_info(request: Request) -> JSONResponse:  # pylint: disable=too-man
             "version": {
                 "API": __version__.split(".", maxsplit=1)[0],
                 "OTEAPI Services": __version__,
-                "OTEAPI Core": py_dependencies.get(
-                    "oteapi-core", py_dependencies.get("oteapi_core", "Unknown")
+                "OTEAPI Core": py_dependencies["std"].get(
+                    "oteapi-core",
+                    py_dependencies["editable"].get(
+                        "oteapi-core", _get_local_oteapi_version()
+                    ),
                 ),
             },
             "environment": {
@@ -92,10 +97,10 @@ async def get_info(request: Request) -> JSONResponse:  # pylint: disable=too-man
             "oteapi": {
                 "registered_strategies": strategies_dict,
                 "plugins": {
-                    package_to_dist[strategy.package][0]: py_dependencies.get(
+                    package_to_dist[strategy.package][0]: py_dependencies["std"].get(
                         package_to_dist[strategy.package][0],
-                        py_dependencies.get(
-                            package_to_dist[strategy.package][0].replace("-", "_"),
+                        py_dependencies["editable"].get(
+                            package_to_dist[strategy.package][0],
                             "Unknown",
                         ),
                     )
@@ -105,3 +110,11 @@ async def get_info(request: Request) -> JSONResponse:  # pylint: disable=too-man
             "routes": [route.path for route in request.app.routes],
         }
     )
+
+
+def _get_local_oteapi_version() -> str:
+    """Import `oteapi` and return `__version__`."""
+    # pylint: disable=import-outside-toplevel
+    from oteapi import __version__ as __oteapi_version__
+
+    return __oteapi_version__
