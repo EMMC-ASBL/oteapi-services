@@ -1,6 +1,6 @@
 dulwich~=0.20.35
 invoke~=1.7
-pre-commit~=2.18
+pre-commit~=2.19
 pylint~=2.13
 pytest~=7.1
 pytest-cov~=3.0

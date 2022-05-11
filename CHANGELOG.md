@@ -46,12 +46,12 @@
 
 **Merged pull requests:**
 
+- \[Auto-generated\] Update dependencies [\#126](https://github.com/EMMC-ASBL/oteapi-services/pull/126) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#122](https://github.com/EMMC-ASBL/oteapi-services/pull/122) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#119](https://github.com/EMMC-ASBL/oteapi-services/pull/119) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#117](https://github.com/EMMC-ASBL/oteapi-services/pull/117) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#115](https://github.com/EMMC-ASBL/oteapi-services/pull/115) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#111](https://github.com/EMMC-ASBL/oteapi-services/pull/111) ([TEAM4-0](https://github.com/TEAM4-0))
-- Use new version syntax [\#107](https://github.com/EMMC-ASBL/oteapi-services/pull/107) ([CasperWA](https://github.com/CasperWA))
 - \[Auto-generated\] Update dependencies [\#106](https://github.com/EMMC-ASBL/oteapi-services/pull/106) ([TEAM4-0](https://github.com/TEAM4-0))
 - Added pull request template [\#102](https://github.com/EMMC-ASBL/oteapi-services/pull/102) ([francescalb](https://github.com/francescalb))
 - \[Auto-generated\] Update dependencies [\#101](https://github.com/EMMC-ASBL/oteapi-services/pull/101) ([TEAM4-0](https://github.com/TEAM4-0))
