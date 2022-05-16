@@ -1,4 +1,4 @@
-dulwich~=0.20.35
+dulwich~=0.20.36
 invoke~=1.7
 pre-commit~=2.19
 pylint~=2.13
