@@ -12,7 +12,7 @@ WORKDIR /app
 COPY app app/
 COPY requirements.txt LICENSE README.md asgi.py entrypoint.sh ./
 RUN apt-get update \
-  && apt-get -y install --fix-broken --fix-missing --no-install-recommends git \
+  && apt-get -y install --fix-broken --fix-missing --no-install-recommends git build-essential \
   && apt-get purge -y --auto-remove \
   && rm -rf /var/lib/apt/lists/* \
   && pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip setuptools wheel \
