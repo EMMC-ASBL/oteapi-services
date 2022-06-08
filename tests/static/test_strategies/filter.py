@@ -1,5 +1,5 @@
 """Demo filter strategy."""
-# pylint: disable=no-self-use,unused-argument
+# pylint: disable=unused-argument
 from typing import TYPE_CHECKING, List
 
 from oteapi.models.filterconfig import FilterConfig
