@@ -1,5 +1,5 @@
 """Demo download strategy class for file."""
-# pylint: disable=no-self-use,unused-argument
+# pylint: disable=unused-argument
 from typing import TYPE_CHECKING, Optional
 
 from oteapi.datacache.datacache import DataCache
