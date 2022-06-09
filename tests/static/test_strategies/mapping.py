@@ -1,5 +1,5 @@
 """Demo mapping strategy class."""
-# pylint: disable=no-self-use,unused-argument
+# pylint: disable=unused-argument
 from typing import TYPE_CHECKING
 
 from oteapi.models.mappingconfig import MappingConfig
