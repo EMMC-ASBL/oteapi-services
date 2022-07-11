@@ -52,7 +52,7 @@ jobs:
           echo -e "requirements.txt has been updated. Diff:\n$(git diff requirements.txt)"
           echo "UPDATE_DEPS=true" >> $GITHUB_ENV
 
-          # Possibly also update the `direct_requirements.txt` file for minimum versions.
+          # Possibly also update the 'direct_requirements.txt' file for minimum versions.
           while IFS= read -r line_direct; do
             if [[ "${line_direct}" =~ ^([a-zA-Z_-]+)\>=.*$ ]]; then
               package="${BASH_REMATCH[1]}"
@@ -67,7 +67,7 @@ jobs:
           done < .github/utils/direct_requirements.txt
 
           git add requirements.txt
-          if [ -n "$(git status --porcelain .github/utils/direct_requirements.txt" ]; then
+          if [ -n "$(git status --porcelain .github/utils/direct_requirements.txt)" ]; then
             git add .github/utils/direct_requirements.txt
           fi
           git commit -m "Update \`requirements.txt\`"
