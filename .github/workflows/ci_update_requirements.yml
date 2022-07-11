@@ -5,9 +5,6 @@ on:
     # At 7:30 every Monday (6:30 UTC)
     - cron: "30 6 * * 1"
   workflow_dispatch:
-  push:
-    branches:
-      - cwa/fix-168-sanity-checks-requirements-update
 
 env:
   DEPENDABOT_BRANCH: ci/dependabot-updates
@@ -24,7 +21,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        # ref: ${{ env.DEPENDABOT_BRANCH }}
+        ref: ${{ env.DEPENDABOT_BRANCH }}
         fetch-depth: 0
 
     - name: Set up Python 3.9
@@ -80,9 +77,6 @@ jobs:
           echo "No changes found for requirements.txt."
           echo "UPDATE_DEPS=false" >> $GITHUB_ENV
         fi
-
-        git diff HEAD~1
-        exit 1
 
     - name: Fetch PR body
       if: env.UPDATE_DEPS == 'true'
