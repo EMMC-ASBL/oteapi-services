@@ -54,11 +54,15 @@ jobs:
 
           # Possibly also update the 'direct_requirements.txt' file for minimum versions.
           while IFS= read -r line_direct; do
+            echo "line direct: ${line_direct}"
             if [[ "${line_direct}" =~ ^([a-zA-Z_-]+)\>=.*$ ]]; then
               package="${BASH_REMATCH[1]}"
+              echo "package: ${package}"
               while IFS= read -r line_full; do
+                echo "line full: ${line_full}"
                 if [[ "${line_full}" =~ ^"${package}"==(.*)$ ]]; then
                   version="${BASH_REMATCH[1]}"
+                  echo "version: ${version}"
                   sed -i "s|${package}>=.*|${package}>=${version}|" ".github/utils/direct_requirements.txt"
                   break
                 fi
