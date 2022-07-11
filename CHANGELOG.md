@@ -46,7 +46,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#151](https://github.com/EMMC-ASBL/oteapi-services/pull/151) ([TEAM4-0](https://github.com/TEAM4-0))
+- Sanity checks requirements update [\#154](https://github.com/EMMC-ASBL/oteapi-services/pull/154) ([CasperWA](https://github.com/CasperWA))
 - \[Auto-generated\] Update dependencies [\#122](https://github.com/EMMC-ASBL/oteapi-services/pull/122) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#119](https://github.com/EMMC-ASBL/oteapi-services/pull/119) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#117](https://github.com/EMMC-ASBL/oteapi-services/pull/117) ([TEAM4-0](https://github.com/TEAM4-0))
