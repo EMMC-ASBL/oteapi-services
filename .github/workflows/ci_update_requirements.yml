@@ -5,6 +5,9 @@ on:
     # At 7:30 every Monday (6:30 UTC)
     - cron: "30 6 * * 1"
   workflow_dispatch:
+  push:
+    branches:
+      - cwa/fix-168-sanity-checks-requirements-update
 
 env:
   DEPENDABOT_BRANCH: ci/dependabot-updates
@@ -49,13 +52,33 @@ jobs:
           echo -e "requirements.txt has been updated. Diff:\n$(git diff requirements.txt)"
           echo "UPDATE_DEPS=true" >> $GITHUB_ENV
 
+          # Possibly also update the `direct_requirements.txt` file for minimum versions.
+          while IFS= read -r line_direct; do
+            if [[ "${line_direct}" =~ ^([a-zA-Z_-]+)\>=.*$ ]]; then
+              package="${BASH_REMATCH[1]}"
+              while IFS= read -r line_full; do
+                if [[ "${line_full}" =~ ^"${package}"==(.*)$ ]]; then
+                  version="${BASH_REMATCH[1]}"
+                  sed -i "s|${package}>=.*|${package}>=${version}|" ".github/utils/direct_requirements.txt"
+                  break
+                fi
+              done < requirements.txt
+            fi
+          done < .github/utils/direct_requirements.txt
+
           git add requirements.txt
+          if [ -n "$(git status --porcelain .github/utils/direct_requirements.txt" ]; then
+            git add .github/utils/direct_requirements.txt
+          fi
           git commit -m "Update \`requirements.txt\`"
         else
           # No changes
           echo "No changes found for requirements.txt."
           echo "UPDATE_DEPS=false" >> $GITHUB_ENV
         fi
+
+        git diff HEAD~1
+        exit 1
 
     - name: Fetch PR body
       if: env.UPDATE_DEPS == 'true'
