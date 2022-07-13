@@ -14,7 +14,7 @@ click==8.1.3
 click-didyoumean==0.3.0
 click-plugins==1.1.1
 click-repl==0.2.0
-cryptography==37.0.2
+cryptography==37.0.4
 diskcache==5.4.0
 et-xmlfile==1.1.0
 fastapi==0.78.0
@@ -29,9 +29,9 @@ hyperframe==6.0.1
 idna==3.3
 iso8601==1.0.2
 kombu==5.2.4
-numpy==1.23.0
+numpy==1.23.1
 openpyxl==3.0.10
-oteapi-core==0.1.6
+oteapi-core==0.2.0
 paramiko==2.11.0
 Pillow==9.2.0
 priority==2.0.0
@@ -40,7 +40,7 @@ pycparser==2.21
 pydantic==1.9.1
 PyNaCl==1.5.0
 pysftp==0.2.9
-python-json-logger==2.0.2
+python-json-logger==2.0.4
 pytz==2022.1
 requests==2.28.1
 six==1.16.0
@@ -49,7 +49,7 @@ starlette==0.19.1
 tenacity==8.0.1
 toml==0.10.2
 typing_extensions==4.3.0
-urllib3==1.26.9
+urllib3==1.26.10
 vine==5.0.0
 wcwidth==0.2.5
 wsproto==1.1.0
