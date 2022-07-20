@@ -22,6 +22,7 @@
 
 **Fixed bugs:**
 
+- Implement sanity checks for updating the `requirements.txt` file [\#159](https://github.com/EMMC-ASBL/oteapi-services/issues/159)
 - Clarify how to install local `oteapi-core` for plugin development [\#82](https://github.com/EMMC-ASBL/oteapi-services/issues/82)
 - Custom pydantic types not used for `.construct()` method [\#67](https://github.com/EMMC-ASBL/oteapi-services/issues/67)
 - CI automerge - GH GraphQL type update [\#58](https://github.com/EMMC-ASBL/oteapi-services/issues/58)
@@ -46,7 +47,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#155](https://github.com/EMMC-ASBL/oteapi-services/pull/155) ([TEAM4-0](https://github.com/TEAM4-0))
+- \[Auto-generated\] Update dependencies [\#160](https://github.com/EMMC-ASBL/oteapi-services/pull/160) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#122](https://github.com/EMMC-ASBL/oteapi-services/pull/122) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#119](https://github.com/EMMC-ASBL/oteapi-services/pull/119) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#117](https://github.com/EMMC-ASBL/oteapi-services/pull/117) ([TEAM4-0](https://github.com/TEAM4-0))
