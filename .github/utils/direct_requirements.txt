@@ -3,4 +3,4 @@ fastapi>=0.79.0
 fastapi-plugins>=0.10.0
 hypercorn>=0.13.2
 oteapi-core>=0.2.1
-pydantic>=1.9.1
+pydantic>=1.9.2
