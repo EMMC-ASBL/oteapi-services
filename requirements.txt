@@ -49,7 +49,7 @@ starlette==0.19.1
 tenacity==8.0.1
 toml==0.10.2
 typing_extensions==4.3.0
-urllib3==1.26.10
+urllib3==1.26.11
 vine==5.0.0
 wcwidth==0.2.5
 wsproto==1.1.0
