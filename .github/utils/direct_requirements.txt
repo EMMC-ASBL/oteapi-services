@@ -1,6 +1,6 @@
 aioredis>=2.0.1
-fastapi>=0.79.1
+fastapi>=0.82.0
 fastapi-plugins>=0.10.0
-hypercorn>=0.13.2
+hypercorn>=0.14.3
 oteapi-core>=0.2.1
-pydantic>=1.9.2
+pydantic>=1.10.2
