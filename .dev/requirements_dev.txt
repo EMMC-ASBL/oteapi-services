@@ -4,4 +4,4 @@ pre-commit~=2.20
 pylint~=2.15
 pytest~=7.1
 pytest-cov~=3.0
-safety~=2.1
+safety~=2.2
