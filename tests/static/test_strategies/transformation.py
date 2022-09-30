@@ -1,5 +1,4 @@
 """Demo transformation strategy class."""
-# pylint: disable=unused-argument
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -21,12 +20,14 @@ class DummyTransformationStrategy:
 
     def run(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Run a job, return a jobid"""
+        del session # fix ignore-unused-argument
         return {"result": "a01d"}
 
     def initialize(
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize a job"""
+        del session # fix ignore-unused-argument
         return {"result": "collection id"}
 
     def status(self, task_id: str) -> TransformationStatus:
@@ -42,4 +43,5 @@ class DummyTransformationStrategy:
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """get transformation"""
+        del session # fix ignore-unused-argument
         return {}
