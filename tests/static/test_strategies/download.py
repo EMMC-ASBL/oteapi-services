@@ -1,5 +1,4 @@
 """Demo download strategy class for file."""
-
 from typing import TYPE_CHECKING, Optional
 
 from oteapi.datacache.datacache import DataCache
