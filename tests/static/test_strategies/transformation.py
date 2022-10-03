@@ -20,19 +20,23 @@ class DummyTransformationStrategy:
 
     def run(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Run a job, return a jobid"""
-        del session  # fix ignore-unused-argument
-        return {"result": "a01d"} | self.transformation_config
+        del session
+        del self.transformation_config
+        return {"result": "a01d"}
 
     def initialize(
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize a job"""
-        del session  # fix ignore-unused-argument
-        return {"result": "collection id"} | self.transformation_config
+        del session
+        del self.transformation_config
 
-    @classmethod
-    def status(cls, task_id: str) -> TransformationStatus:
+        return {"result": "collection id"}
+
+    def status(self, task_id: str) -> TransformationStatus:
         """Get job status"""
+        del self.transformation_config  # unused
+
         return TransformationStatus(
             id=task_id,
             status="wip",
@@ -44,5 +48,7 @@ class DummyTransformationStrategy:
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """get transformation"""
-        del session  # fix ignore-unused-argument
-        return self.transformation_config
+        del session
+        dummy = self.transformation_config
+        del dummy
+        return {}

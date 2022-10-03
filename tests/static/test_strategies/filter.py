@@ -25,11 +25,14 @@ class DemoFilter:
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize strategy and return a dictionary"""
-        del session  # fix ignore-unused-argument
-        return {"result": "collectionid"} | self.filter_config
+        del session  # unused
+        del self.filter_config  # unused
 
-    def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, List[int]]":
+        return {"result": "collectionid"}
+
+    def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Execute strategy and return a dictionary"""
-        del session  # fix ignore-unused-argument
+        del session  # unused
         model = DemoDataModel(**self.filter_config.configuration)
+
         return {"key": model.demo_data}

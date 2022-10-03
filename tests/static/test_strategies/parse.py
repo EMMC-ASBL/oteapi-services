@@ -22,8 +22,10 @@ class DemoJSONDataParseStrategy:
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize"""
-        del session  # fix ignore-unused-argument
-        return self.resource_config
+
+        del session  # unused
+        del self.resource_config  # unused
+        return {}
 
     def parse(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Parse json."""

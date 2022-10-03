@@ -34,8 +34,10 @@ class FileStrategy:
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize"""
-        del session  # fix ignore-unused-argument
-        return self.resource_config
+        del session
+        dummy = self.resource_config.deepcopy()
+        del dummy
+        return {}
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Read local file."""

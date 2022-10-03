@@ -34,8 +34,10 @@ class DemoFunctionStrategy:
             session-specific context from services.
 
         """
-        del session  # fix ignore-unused-argument
-        return SessionUpdate() | self.function_config
+        del session  # unused
+        del self.function_config  # unused
+
+        return SessionUpdate()
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> SessionUpdate:
         """Execute the strategy.
@@ -51,5 +53,6 @@ class DemoFunctionStrategy:
             session-specific context from services.
 
         """
-        del session  # fix ignore-unused-argument
-        return SessionUpdate() | self.function_config
+        del session  # unused
+        del self.function_config  # unused
+        return SessionUpdate()
