@@ -34,12 +34,12 @@ class FileStrategy:
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize"""
-        del session # fix ignore-unused-argument
-        return {}
+        del session  # fix ignore-unused-argument
+        return self.resource_config
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Read local file."""
-        del session # fix ignore-unused-argument
+        del session  # fix ignore-unused-argument
         assert self.resource_config.downloadUrl
         assert self.resource_config.downloadUrl.scheme == "file"
         filename = self.resource_config.downloadUrl.host
