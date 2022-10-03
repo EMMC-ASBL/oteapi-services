@@ -35,6 +35,9 @@ class DemoFunctionStrategy:
             session-specific context from services.
 
         """
+        del session  # unused
+        del self.function_config  # unused
+
         return SessionUpdate()
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> SessionUpdate:
@@ -51,4 +54,6 @@ class DemoFunctionStrategy:
             session-specific context from services.
 
         """
+        del session  # unused
+        del self.function_config  # unused
         return SessionUpdate()

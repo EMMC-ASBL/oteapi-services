@@ -19,8 +19,15 @@ class DemoMappingStrategy:
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize mapping"""
+
+        del session  # unused
+        del self.mapping_config  # unused
         return {}
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Manage mapping and return shared map"""
+
+        del session  # unused
+        del self.mapping_config  # unused
+
         return {}
