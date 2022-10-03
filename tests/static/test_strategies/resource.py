@@ -26,9 +26,8 @@ class DemoResourceStrategy:
     def initialize(self, session: "Optional[Dict[str, Any]]" = None) -> ResourceResult:
         """Initialize"""
 
-        dummy = self.resource_config.deepcopy()
-        del dummy
-        del session
+        del self.resource_config
+        del session  # unused
         return ResourceResult()
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> ResourceResult:

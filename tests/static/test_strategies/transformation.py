@@ -48,7 +48,6 @@ class DummyTransformationStrategy:
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """get transformation"""
-        del session
-        dummy = self.transformation_config
-        del dummy
+        del session  # unused
+        del self.transformation_config  # unused
         return {}

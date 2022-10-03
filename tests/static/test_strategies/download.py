@@ -35,8 +35,7 @@ class FileStrategy:
     ) -> "Dict[str, Any]":
         """Initialize"""
         del session
-        dummy = self.resource_config.deepcopy()
-        del dummy
+        del self.resource_config
         return {}
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
