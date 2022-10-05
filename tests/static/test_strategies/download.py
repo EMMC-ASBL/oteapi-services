@@ -1,5 +1,4 @@
 """Demo download strategy class for file."""
-# pylint: disable=unused-argument
 from typing import TYPE_CHECKING, Optional
 
 from oteapi.datacache.datacache import DataCache
@@ -34,10 +33,13 @@ class FileStrategy:
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize"""
+        del session
+        del self.resource_config
         return {}
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Read local file."""
+        del session  # fix ignore-unused-argument
         assert self.resource_config.downloadUrl
         assert self.resource_config.downloadUrl.scheme == "file"
         filename = self.resource_config.downloadUrl.host
