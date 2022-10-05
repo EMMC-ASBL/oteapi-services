@@ -1,5 +1,5 @@
 """Demo mapping strategy class."""
-# pylint: disable=unused-argument
+
 from typing import TYPE_CHECKING
 
 from oteapi.models.mappingconfig import MappingConfig
@@ -19,8 +19,15 @@ class DemoMappingStrategy:
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize mapping"""
+
+        del session  # unused
+        del self.mapping_config  # unused
         return {}
 
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Manage mapping and return shared map"""
+
+        del session  # unused
+        del self.mapping_config  # unused
+
         return {}
