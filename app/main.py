@@ -1,7 +1,8 @@
 """OTE-API FastAPI application."""
-from typing import TYPE_CHECKING
+import os
+from typing import TYPE_CHECKING, List
 
-from fastapi import FastAPI, status
+from fastapi import Depends, FastAPI, status
 from fastapi.openapi.utils import get_openapi
 from fastapi_plugins import RedisSettings, redis_plugin
 from oteapi.plugins import load_strategies
@@ -19,6 +20,16 @@ from app.routers import (
     transformation,
     triplestore,
 )
+
+if os.environ.get("OTEAPI_AUTH_ENABLED") == "True":
+    try:
+        from accesscontrol.fastapi import AuthTokenBearer
+
+        dependencies = [Depends(AuthTokenBearer())]
+    except ModuleNotFoundError as error:
+        raise error
+else:
+    dependencies = []
 
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any, Dict
@@ -41,9 +52,10 @@ class AppSettings(RedisSettings):
         env_prefix = "OTEAPI_"
 
 
-def create_app() -> FastAPI:
+def create_app(deps: List[Depends] = None) -> FastAPI:
     """Create the FastAPI app."""
     app = FastAPI(
+        dependencies=deps,
         title="Open Translation Environment API",
         version=__version__,
         description="""OntoTrans Interfaces OpenAPI schema.
@@ -117,7 +129,7 @@ async def terminate_redis() -> None:
 
 
 CONFIG = AppSettings()
-APP = create_app()
+APP = create_app(deps=dependencies)
 APP.openapi = custom_openapi
 
 # Events
