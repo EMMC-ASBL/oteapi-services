@@ -1,6 +1,6 @@
 """OTE-API FastAPI application."""
 import os
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, status
 from fastapi.openapi.utils import get_openapi
@@ -21,7 +21,7 @@ from app.routers import (
     triplestore,
 )
 
-if os.environ.get("OTEAPI_AUTH_ENABLED") == "True":
+if str(os.environ.get("OTEAPI_AUTH_ENABLED")).title() == "True":
     try:
         from accesscontrol.fastapi import AuthTokenBearer
 
@@ -52,10 +52,10 @@ class AppSettings(RedisSettings):
         env_prefix = "OTEAPI_"
 
 
-def create_app(deps: List[Depends] = None) -> FastAPI:
+def create_app() -> FastAPI:
     """Create the FastAPI app."""
     app = FastAPI(
-        dependencies=deps,
+        dependencies=dependencies,
         title="Open Translation Environment API",
         version=__version__,
         description="""OntoTrans Interfaces OpenAPI schema.
@@ -129,7 +129,7 @@ async def terminate_redis() -> None:
 
 
 CONFIG = AppSettings()
-APP = create_app(deps=dependencies)
+APP = create_app()
 APP.openapi = custom_openapi
 
 # Events
