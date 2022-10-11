@@ -1,5 +1,7 @@
 """OTE-API FastAPI application."""
+import logging
 import os
+from importlib import import_module
 from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, status
@@ -21,18 +23,12 @@ from app.routers import (
     triplestore,
 )
 
-if str(os.environ.get("OTEAPI_AUTH_ENABLED")).title() == "True":
-    try:
-        from accesscontrol.fastapi import AuthTokenBearer
-
-        dependencies = [Depends(AuthTokenBearer())]
-    except ModuleNotFoundError as error:
-        raise error
-else:
-    dependencies = []
-
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any, Dict
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class AppSettings(RedisSettings):
@@ -55,7 +51,7 @@ class AppSettings(RedisSettings):
 def create_app() -> FastAPI:
     """Create the FastAPI app."""
     app = FastAPI(
-        dependencies=dependencies,
+        dependencies=get_auth_deps(),
         title="Open Translation Environment API",
         version=__version__,
         description="""OntoTrans Interfaces OpenAPI schema.
@@ -95,6 +91,30 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
         )
 
     return app
+
+
+def get_auth_deps() -> list[Depends]:
+    "function in order to fetch dependencies for authentication"
+    deps = os.environ.get("OTEAPI_AUTH_DEPS")
+    if deps:
+        mods = [
+            module.replace(" ", str()).rpartition(".") for module in deps.split("|")
+        ]
+        try:
+            imports = [
+                getattr(import_module(module), classname)
+                for (module, dot, classname) in mods
+            ]
+        except Exception as error:
+            raise error
+        logger.info(
+            "Imported the following dependencies for authentication: %s", imports
+        )
+        dependencies = [Depends(dependency()) for dependency in imports]
+    else:
+        dependencies = []
+        logger.info("No dependencies for authentication assigned.")
+    return dependencies
 
 
 def custom_openapi() -> "Dict[str, Any]":
