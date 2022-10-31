@@ -33,7 +33,7 @@ numpy==1.23.4
 openpyxl==3.0.10
 oteapi-core==0.2.1
 paramiko==2.11.0
-Pillow==9.2.0
+Pillow==9.3.0
 priority==2.0.0
 prompt-toolkit==3.0.31
 pycparser==2.21
