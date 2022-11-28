@@ -1,5 +1,5 @@
 dulwich~=0.20.50
-httpx~=0.23.0
+httpx~=0.23.1
 invoke~=1.7
 pre-commit~=2.20
 pylint~=2.15
