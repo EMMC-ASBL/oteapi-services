@@ -24,7 +24,7 @@ from app.routers import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+    from typing import Any, Dict, List
 
 
 logger = logging.getLogger(__name__)
