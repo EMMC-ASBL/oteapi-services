@@ -33,7 +33,7 @@ logger.setLevel(logging.INFO)
 class AppSettings(RedisSettings):
     """Redis settings."""
 
-    AUTH_DEPENDENCIES: str = Field(
+    authentication_dependencies: str = Field(
         "", description="List of FastAPI dependencies for authentication features."
     )
 
