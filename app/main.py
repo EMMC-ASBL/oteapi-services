@@ -1,6 +1,5 @@
 """OTE-API FastAPI application."""
 import logging
-import os
 from importlib import import_module
 from typing import TYPE_CHECKING
 
@@ -33,6 +32,10 @@ logger.setLevel(logging.INFO)
 
 class AppSettings(RedisSettings):
     """Redis settings."""
+
+    AUTH_DEPENDENCIES: str = Field(
+        "", description="List of FastAPI dependencies for authentication features."
+    )
 
     api_name: str = Field(
         "oteapi_services", description="Application-specific name for Redis cache."
@@ -98,22 +101,19 @@ def get_auth_deps() -> "List[Depends]":
 
     Fetch dependencies for authentication through the
     `OTEAPI_AUTH_DEPS` environment variable.
-    
+
     Returns:
         List of FastAPI dependencies with authentication functions.
 
     """
     if CONFIG.authentication_dependencies:
         modules = [
-            module.strip().rpartition(".") for module in CONFIG.authentication_dependencies.split("|")
+            module.strip().split(":")
+            for module in CONFIG.authentication_dependencies.split("|")
         ]
-        try:
-            imports = [
-                getattr(import_module(module), classname)
-                for (module, _, classname) in modules
-            ]
-        except Exception as error:
-            raise error
+        imports = [
+            getattr(import_module(module), classname) for (module, classname) in modules
+        ]
         logger.info(
             "Imported the following dependencies for authentication: %s", imports
         )
