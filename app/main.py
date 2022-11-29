@@ -103,8 +103,7 @@ def get_auth_deps() -> "List[Depends]":
         List of FastAPI dependencies with authentication functions.
 
     """
-    deps = os.environ.get("OTEAPI_AUTH_DEPS")
-    if deps:
+    if CONFIG.authentication_dependencies:
         modules = [
             module.strip().rpartition(".") for module in CONFIG.authentication_dependencies.split("|")
         ]
