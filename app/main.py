@@ -110,7 +110,7 @@ def get_auth_deps() -> "List[Depends]":
         try:
             imports = [
                 getattr(import_module(module), classname)
-                for (module, dot, classname) in mods
+                for (module, _, classname) in modules
             ]
         except Exception as error:
             raise error
