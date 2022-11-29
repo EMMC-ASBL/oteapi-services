@@ -93,7 +93,7 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
     return app
 
 
-def get_auth_deps() -> list[Depends]:
+def get_auth_deps() -> "List[Depends]":
     "function in order to fetch dependencies for authentication"
     deps = os.environ.get("OTEAPI_AUTH_DEPS")
     if deps:
