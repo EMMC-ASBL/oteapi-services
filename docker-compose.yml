@@ -11,7 +11,7 @@ services:
       OTEAPI_REDIS_PORT: 6379
       OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
       OTEAPI_PLUGIN_PACKAGES:
-      OTEAPI_AUTH_DEPENDENCIES:
+      OTEAPI_AUTHENTICAION_DEPENDENCIES:
     depends_on:
       - redis
     networks:
