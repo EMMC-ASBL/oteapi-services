@@ -105,8 +105,8 @@ def get_auth_deps() -> "List[Depends]":
     """
     deps = os.environ.get("OTEAPI_AUTH_DEPS")
     if deps:
-        mods = [
-            module.replace(" ", str()).rpartition(".") for module in deps.split("|")
+        modules = [
+            module.strip().rpartition(".") for module in CONFIG.authentication_dependencies.split("|")
         ]
         try:
             imports = [
