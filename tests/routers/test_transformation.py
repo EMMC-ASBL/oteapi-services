@@ -20,6 +20,44 @@ def test_create_transformation(client: "TestClient") -> None:
     assert response.status_code == 200
 
 
+def test_create_transformation_auth_model(client: "TestClient") -> None:
+    """Test creating a transformation through the model."""
+    dummy_secret = "Bearer 123"
+    response = client.post(
+        "/transformation/",
+        json={
+            "transformationType": "script/dummy",
+            "name": "script/dummy",
+            "configuration": {},
+            "secret": dummy_secret,
+        },
+    )
+    assert response.status_code == 200
+
+    response = client.get(f"/redis/{response.json()['transformation_id']}")
+    assert response.status_code == 200
+    assert response.json().get("secret") == dummy_secret
+
+
+def test_create_transformation_auth_headers(client: "TestClient") -> None:
+    """Test creating a transformation through the request headers."""
+    dummy_secret = "Bearer 123"
+    response = client.post(
+        "/transformation/",
+        json={
+            "transformationType": "script/dummy",
+            "name": "script/dummy",
+            "configuration": {},
+        },
+        headers={"Authorization": dummy_secret},
+    )
+    assert response.status_code == 200
+
+    response = client.get(f"/redis/{response.json()['transformation_id']}")
+    assert response.status_code == 200
+    assert response.json().get("secret") == dummy_secret
+
+
 def test_get_transformation(client: "TestClient") -> None:
     """Test getting a transformation."""
     response = client.get(
