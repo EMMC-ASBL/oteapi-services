@@ -18,7 +18,7 @@ def test_create_function(client: "TestClient") -> None:
     assert response.status_code == 200
 
 
-def test_create_transformation_auth_model(client: "TestClient") -> None:
+def test_create_function_auth_model(client: "TestClient") -> None:
     """Test creating a function with a secret passed through the model."""
     dummy_secret = "Bearer 123"
     response = client.post(
@@ -36,7 +36,7 @@ def test_create_transformation_auth_model(client: "TestClient") -> None:
     assert response.json().get("secret") == dummy_secret
 
 
-def test_create_transformation_auth_model(client: "TestClient") -> None:
+def test_create_function_auth_headers(client: "TestClient") -> None:
     """Test creating a function with a secret passed through the request headers."""
     dummy_secret = "Bearer 123"
     response = client.post(
