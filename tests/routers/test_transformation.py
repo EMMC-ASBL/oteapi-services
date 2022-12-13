@@ -1,4 +1,5 @@
 """Test transformation."""
+import json
 from typing import TYPE_CHECKING
 
 import pytest
@@ -36,7 +37,7 @@ def test_create_transformation_auth_model(client: "TestClient") -> None:
 
     response = client.get(f"/redis/{response.json()['transformation_id']}")
     assert response.status_code == 200
-    assert response.json().get("secret") == dummy_secret
+    assert json.loads(response.json()).get("secret") == dummy_secret
 
 
 def test_create_transformation_auth_headers(client: "TestClient") -> None:
@@ -55,7 +56,7 @@ def test_create_transformation_auth_headers(client: "TestClient") -> None:
 
     response = client.get(f"/redis/{response.json()['transformation_id']}")
     assert response.status_code == 200
-    assert response.json().get("secret") == dummy_secret
+    assert json.loads(response.json()).get("secret") == dummy_secret
 
 
 def test_get_transformation(client: "TestClient") -> None:

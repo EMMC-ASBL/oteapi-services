@@ -37,11 +37,9 @@ async def create_function(
     """Create a new function configuration."""
     new_function = CreateFunctionResponse()
 
-    function_config = config.dict()
+    config.secret = request.headers.get("Authorization") or config.secret
 
-    function_config["secret"] = request.headers.get(
-        "Authorization"
-    ) or function_config.get("secret")
+    function_config = config.json()
 
     await cache.set(new_function.function_id, function_config)
 

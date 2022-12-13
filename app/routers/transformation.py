@@ -42,11 +42,9 @@ async def create_transformation(
     """Create a new transformation configuration."""
     new_transformation = CreateTransformationResponse()
 
-    transformation_config = config.dict()
+    config.secret = request.headers.get("Authorization") or config.secret
 
-    transformation_config["secret"] = request.headers.get(
-        "Authorization"
-    ) or transformation_config.get("secret")
+    transformation_config = config.json()
 
     await cache.set(new_transformation.transformation_id, transformation_config)
 

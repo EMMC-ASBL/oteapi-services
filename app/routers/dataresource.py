@@ -56,11 +56,9 @@ async def create_dataresource(
     """
     new_resource = CreateResourceResponse()
 
-    resource_config = config.json()
+    config.secret = request.headers.get("Authorization") or config.secret
 
-    resource_config["secret"] = request.headers.get(
-        "Authorization"
-    ) or resource_config.get("secret")
+    resource_config = config.json()
 
     await cache.set(new_resource.resource_id, resource_config)
 
