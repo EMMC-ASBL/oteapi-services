@@ -117,7 +117,7 @@ def get_auth_deps() -> "List[Depends]":
         logger.info(
             "Imported the following dependencies for authentication: %s", imports
         )
-        dependencies = [Depends(dependency()) for dependency in imports]
+        dependencies = [Depends(dependency) for dependency in imports]
     else:
         dependencies = []
         logger.info("No dependencies for authentication assigned.")

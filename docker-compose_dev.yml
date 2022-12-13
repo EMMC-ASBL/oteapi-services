@@ -14,7 +14,7 @@ services:
       OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
       PATH_TO_OTEAPI_CORE:
       OTEAPI_PLUGIN_PACKAGES:
-      OTEAPI_AUTHENTICAION_DEPENDENCIES:
+      OTEAPI_AUTHENTICATION_DEPENDENCIES:
     depends_on:
       - redis
     networks:
