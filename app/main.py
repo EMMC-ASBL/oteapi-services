@@ -33,6 +33,16 @@ logger.setLevel(logging.INFO)
 class AppSettings(RedisSettings):
     """Redis settings."""
 
+    include_redisadmin: bool = Field(
+        False,
+        description="""If set to `True`,
+        the router for the low-level cache interface will be included into the api.
+        WARNING: This might NOT be recommended for specific production cases,
+        since sensible data (such as secrets) in the cache might be revealed by
+        inspecting other user's session objects. If set to false, the cache can
+        only be read from an admin accessing the redis backend.""",
+    )
+
     authentication_dependencies: str = Field(
         "", description="List of FastAPI dependencies for authentication features."
     )
@@ -72,16 +82,18 @@ are concrete strategy implementations of the following types:
 This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-core).
 """,
     )
-    for router_module in (
+    available_routers = [
         session,
         dataresource,
         datafilter,
         function,
         mapping,
         transformation,
-        redisadmin,
         triplestore,
-    ):
+    ]
+    if CONFIG.include_redisadmin:
+        available_routers.append(redisadmin)
+    for router_module in available_routers:
         app.include_router(
             router_module.ROUTER,
             prefix=CONFIG.prefix,
