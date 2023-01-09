@@ -56,7 +56,7 @@ async def create_dataresource(
     """
     new_resource = CreateResourceResponse()
 
-    config.secret = request.headers.get("Authorization") or config.secret
+    config.token = request.headers.get("Authorization") or config.token
 
     resource_config = config.json()
 

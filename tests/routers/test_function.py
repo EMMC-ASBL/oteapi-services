@@ -27,14 +27,14 @@ def test_create_function_auth_model(client: "TestClient") -> None:
         json={
             "functionType": "function/demo",
             "configuration": {},
-            "secret": dummy_secret,
+            "token": dummy_secret,
         },
     )
     assert response.status_code == 200
 
     response = client.get(f"/redis/{response.json()['function_id']}")
     assert response.status_code == 200
-    assert json.loads(response.json()).get("secret") == dummy_secret
+    assert json.loads(response.json()).get("token") == dummy_secret
 
 
 def test_create_function_auth_headers(client: "TestClient") -> None:
@@ -52,7 +52,7 @@ def test_create_function_auth_headers(client: "TestClient") -> None:
 
     response = client.get(f"/redis/{response.json()['function_id']}")
     assert response.status_code == 200
-    assert json.loads(response.json()).get("secret") == dummy_secret
+    assert json.loads(response.json()).get("token") == dummy_secret
 
 
 def test_get_function(client: "TestClient") -> None:

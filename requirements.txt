@@ -31,7 +31,7 @@ iso8601==1.1.0
 kombu==5.2.4
 numpy==1.23.5
 openpyxl==3.0.10
-oteapi-core @ git+https://github.com/EMMC-ASBL/oteapi-core.git@354ebaa96b92273424eb7d5722cea2740c01ed82
+oteapi-core @ git+https://github.com/EMMC-ASBL/oteapi-core.git@6e54693cb130c48e9acbadc767ae6454d93cbb17
 paramiko==2.12.0
 Pillow==9.3.0
 priority==2.0.0

@@ -44,6 +44,7 @@ def pytest_configure(config):
     """Method that runs before pytest collects tests so no modules are imported"""
     os.environ["OTEAPI_prefix"] = ""
     os.environ["OTEAPI_INCLUDE_REDISADMIN"] = "True"
+    os.environ["OTEAPI_EXPOSE_SECRETS"] = "True"
 
 
 @pytest.fixture(scope="session")

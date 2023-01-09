@@ -7,6 +7,7 @@ from fastapi import Depends, FastAPI, status
 from fastapi.openapi.utils import get_openapi
 from fastapi_plugins import RedisSettings, redis_plugin
 from oteapi.plugins import load_strategies
+from oteapi.settings import OteApiCoreSettings
 from pydantic import Field
 
 from app import __version__
@@ -30,7 +31,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class AppSettings(RedisSettings):
+class AppSettings(RedisSettings, OteApiCoreSettings):
     """Redis settings."""
 
     include_redisadmin: bool = Field(

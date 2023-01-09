@@ -30,14 +30,14 @@ def test_create_transformation_auth_model(client: "TestClient") -> None:
             "transformationType": "script/dummy",
             "name": "script/dummy",
             "configuration": {},
-            "secret": dummy_secret,
+            "token": dummy_secret,
         },
     )
     assert response.status_code == 200
 
     response = client.get(f"/redis/{response.json()['transformation_id']}")
     assert response.status_code == 200
-    assert json.loads(response.json()).get("secret") == dummy_secret
+    assert json.loads(response.json()).get("token") == dummy_secret
 
 
 def test_create_transformation_auth_headers(client: "TestClient") -> None:
@@ -56,7 +56,7 @@ def test_create_transformation_auth_headers(client: "TestClient") -> None:
 
     response = client.get(f"/redis/{response.json()['transformation_id']}")
     assert response.status_code == 200
-    assert json.loads(response.json()).get("secret") == dummy_secret
+    assert json.loads(response.json()).get("token") == dummy_secret
 
 
 def test_get_transformation(client: "TestClient") -> None:
