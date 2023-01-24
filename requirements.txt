@@ -18,7 +18,7 @@ cryptography==39.0.0
 diskcache==5.4.0
 et-xmlfile==1.1.0
 fastapi==0.89.1
-fastapi-plugins==0.10.0
+fastapi-plugins~=0.11.0
 future==0.18.3
 h11==0.14.0
 h2==4.1.0
