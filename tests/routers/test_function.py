@@ -1,5 +1,4 @@
 """Test function."""
-import json
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -34,7 +33,7 @@ def test_create_function_auth_model(client: "TestClient") -> None:
 
     response = client.get(f"/redis/{response.json()['function_id']}")
     assert response.status_code == 200
-    assert json.loads(response.json()).get("token") == dummy_secret
+    assert response.json().get("token") == dummy_secret
 
 
 def test_create_function_auth_headers(client: "TestClient") -> None:
@@ -52,7 +51,7 @@ def test_create_function_auth_headers(client: "TestClient") -> None:
 
     response = client.get(f"/redis/{response.json()['function_id']}")
     assert response.status_code == 200
-    assert json.loads(response.json()).get("token") == dummy_secret
+    assert response.json().get("token") == dummy_secret
 
 
 def test_get_function(client: "TestClient") -> None:

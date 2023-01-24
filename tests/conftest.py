@@ -26,9 +26,7 @@ class DummyCache:
 
     async def get(self, id) -> dict:
         """Mock `get()` method."""
-        import json
-
-        return json.dumps(self.obj[id])
+        return self.obj[id]
 
     async def keys(self, pattern: str) -> "List[bytes]":
         """Mock `keys()` method."""
@@ -54,35 +52,45 @@ def top_dir() -> Path:
 
 
 @pytest.fixture(scope="session")
-def test_data() -> "Dict[str, dict]":
+def test_data() -> "Dict[str, str]":
     """Test data stored in DummyCache."""
+    import json
+
     return {
         # filter
-        "filter-961f5314-9e8e-411e-a216-ba0eb8e8bc6e": {
-            "filterType": "filter/demo",
-            "configuration": {"demo_data": [1, 2]},
-        },
+        "filter-961f5314-9e8e-411e-a216-ba0eb8e8bc6e": json.dumps(
+            {
+                "filterType": "filter/demo",
+                "configuration": {"demo_data": [1, 2]},
+            }
+        ),
         # function
-        "function-a647012a-7ab9-4f2c-9c13-2564aa6d95a1": {
-            "functionType": "function/demo",
-            "configuration": {},
-        },
+        "function-a647012a-7ab9-4f2c-9c13-2564aa6d95a1": json.dumps(
+            {
+                "functionType": "function/demo",
+                "configuration": {},
+            }
+        ),
         # mapping
-        "mapping-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": {
-            "mappingType": "mapping/demo",
-            "prefixes": {":": "<http://namespace.example.com/ns#"},
-            "triples": [[":a", ":has", ":b"]],
-            "configuration": {},
-        },
+        "mapping-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": json.dumps(
+            {
+                "mappingType": "mapping/demo",
+                "prefixes": {":": "<http://namespace.example.com/ns#"},
+                "triples": [[":a", ":has", ":b"]],
+                "configuration": {},
+            }
+        ),
         # sessions
-        "1": {"foo": "bar"},
-        "2": {"foo": "bar"},
+        "1": json.dumps({"foo": "bar"}),
+        "2": json.dumps({"foo": "bar"}),
         # transformation
-        "transformation-f752c613-fde0-4d43-a7f6-c50f68642daa": {
-            "transformationType": "script/demo",
-            "name": "script/dummy",
-            "configuration": {},
-        },
+        "transformation-f752c613-fde0-4d43-a7f6-c50f68642daa": json.dumps(
+            {
+                "transformationType": "script/demo",
+                "name": "script/dummy",
+                "configuration": {},
+            }
+        ),
     }
 
 
