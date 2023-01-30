@@ -1,7 +1,8 @@
-dulwich~=0.20.50
+dulwich~=0.21.2
 httpx~=0.23.3
-invoke~=1.7
-pre-commit~=2.21
+invoke~=2.0
+pre-commit>=2.21.0,<3; python_version<"3.8"
+pre-commit~=3.0; python_version>="3.8"
 pylint~=2.15
 pytest~=7.2
 pytest-cov~=4.0
