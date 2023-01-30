@@ -1,7 +1,7 @@
 dulwich~=0.21.2
 httpx~=0.23.3
 invoke~=2.0
-pre-commit~=2.21
+pre-commit~=3.0
 pylint~=2.15
 pytest~=7.2
 pytest-cov~=4.0
