@@ -143,7 +143,7 @@ async def execute_transformation(
     session_data: "Optional[Dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
     )
-    session_update = strategy.run(session=session_data)
+    session_update = strategy.get(session=session_data)
 
     if session_update and session_id:
         await _update_session(
