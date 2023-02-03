@@ -3,7 +3,7 @@ import json
 from typing import TYPE_CHECKING, Optional
 
 from aioredis import Redis
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi_plugins import depends_redis
 from oteapi.models import FunctionConfig
 from oteapi.plugins import create_strategy
@@ -30,13 +30,18 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 )
 async def create_function(
     config: FunctionConfig,
+    request: Request,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
 ) -> CreateFunctionResponse:
     """Create a new function configuration."""
     new_function = CreateFunctionResponse()
 
-    await cache.set(new_function.function_id, config.json())
+    config.token = request.headers.get("Authorization") or config.token
+
+    function_config = config.json()
+
+    await cache.set(new_function.function_id, function_config)
 
     if session_id:
         if not await cache.exists(session_id):
