@@ -36,6 +36,7 @@
 
 **Closed issues:**
 
+- deprecate run\(\) method for transformation strategies [\#226](https://github.com/EMMC-ASBL/oteapi-services/issues/226)
 - Development image does not start correctly [\#89](https://github.com/EMMC-ASBL/oteapi-services/issues/89)
 - Add a triple store to the docker-compose for mapping strategy [\#75](https://github.com/EMMC-ASBL/oteapi-services/issues/75)
 - Remove checkboxes from PR body for the "update `requirements.txt`" workflow [\#60](https://github.com/EMMC-ASBL/oteapi-services/issues/60)
@@ -48,6 +49,7 @@
 
 **Merged pull requests:**
 
+- Use get\(\) method to execute the transformation [\#227](https://github.com/EMMC-ASBL/oteapi-services/pull/227) ([quaat](https://github.com/quaat))
 - Enh/add auth [\#189](https://github.com/EMMC-ASBL/oteapi-services/pull/189) ([MBueschelberger](https://github.com/MBueschelberger))
 - \[Auto-generated\] Update dependencies [\#122](https://github.com/EMMC-ASBL/oteapi-services/pull/122) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#119](https://github.com/EMMC-ASBL/oteapi-services/pull/119) ([TEAM4-0](https://github.com/TEAM4-0))
