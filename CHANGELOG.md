@@ -49,7 +49,7 @@
 
 **Merged pull requests:**
 
-- Use get\(\) method to execute the transformation [\#227](https://github.com/EMMC-ASBL/oteapi-services/pull/227) ([quaat](https://github.com/quaat))
+- \[Auto-generated\] Update dependencies [\#232](https://github.com/EMMC-ASBL/oteapi-services/pull/232) ([TEAM4-0](https://github.com/TEAM4-0))
 - Enh/add auth [\#189](https://github.com/EMMC-ASBL/oteapi-services/pull/189) ([MBueschelberger](https://github.com/MBueschelberger))
 - \[Auto-generated\] Update dependencies [\#122](https://github.com/EMMC-ASBL/oteapi-services/pull/122) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#119](https://github.com/EMMC-ASBL/oteapi-services/pull/119) ([TEAM4-0](https://github.com/TEAM4-0))
