@@ -145,13 +145,17 @@ SuperUser dbuser:test123
 
 Then one can start the Docker container:
 
+> **Note**: If running on a non-Unix system (e.g., Windows), note that `${PWD}` should be changed accordingly.
+> It is meant to expand to the current working directory.
+> Alternatively, the full path could be explicitly written.
+
 ```shell
 docker volume create agraphdrive
 docker run \
     --detach \
     --network=otenet \
     --volume agraphdrive:/agraph/data \
-    --volume ./agraph.cfg:/agraph/etc/agraph.cfg \
+    --volume ${PWD}/agraph.cfg:/agraph/etc/agraph.cfg \
     --publish "10000-10035:10000-10035" \
     --shm-size 4g \
     franzinc/agraph:v7.2.0
