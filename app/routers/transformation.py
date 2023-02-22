@@ -8,6 +8,7 @@ from fastapi_plugins import depends_redis
 from oteapi.models import TransformationConfig, TransformationStatus
 from oteapi.plugins import create_strategy
 
+from app.common.security import hash_model_secrets
 from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
 from app.models.transformation import (
     IDPREFIX,
@@ -43,6 +44,8 @@ async def create_transformation(
     new_transformation = CreateTransformationResponse()
 
     config.token = request.headers.get("Authorization") or config.token
+
+    config = hash_model_secrets(config)
 
     transformation_config = config.json()
 

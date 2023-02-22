@@ -18,6 +18,9 @@ RUN apt-get update \
   && pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip setuptools wheel \
   && pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
 
+# Ensure authentication configurations are correctly written to the Redis cache
+ENV OTEAPI_expose_secrets True
+
 ################# DEVELOPMENT ####################################
 FROM base as development
 

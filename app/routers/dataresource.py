@@ -8,6 +8,7 @@ from fastapi_plugins import depends_redis
 from oteapi.models import ResourceConfig
 from oteapi.plugins import create_strategy
 
+from app.common.security import hash_model_secrets
 from app.models.dataresource import (
     IDPREFIX,
     CreateResourceResponse,
@@ -57,6 +58,8 @@ async def create_dataresource(
     new_resource = CreateResourceResponse()
 
     config.token = request.headers.get("Authorization") or config.token
+
+    config = hash_model_secrets(config)
 
     resource_config = config.json()
 

@@ -112,8 +112,8 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
 def get_auth_deps() -> "List[Depends]":
     """Get authentication dependencies
 
-    Fetch dependencies for authentication through the
-    `OTEAPI_AUTH_DEPS` environment variable.
+    Fetch dependencies for authentication through the `OTEAPI_AUTH_DEPS` environment
+    variable.
 
     Returns:
         List of FastAPI dependencies with authentication functions.
