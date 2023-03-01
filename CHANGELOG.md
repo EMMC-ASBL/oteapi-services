@@ -38,6 +38,7 @@
 
 **Closed issues:**
 
+- `set-output` is deprecated for GH Actions [\#233](https://github.com/EMMC-ASBL/oteapi-services/issues/233)
 - deprecate run\(\) method for transformation strategies [\#226](https://github.com/EMMC-ASBL/oteapi-services/issues/226)
 - Development image does not start correctly [\#89](https://github.com/EMMC-ASBL/oteapi-services/issues/89)
 - Add a triple store to the docker-compose for mapping strategy [\#75](https://github.com/EMMC-ASBL/oteapi-services/issues/75)
@@ -51,7 +52,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#244](https://github.com/EMMC-ASBL/oteapi-services/pull/244) ([TEAM4-0](https://github.com/TEAM4-0))
+- Use new environment files for set output [\#240](https://github.com/EMMC-ASBL/oteapi-services/pull/240) ([CasperWA](https://github.com/CasperWA))
 - Enh/add auth [\#189](https://github.com/EMMC-ASBL/oteapi-services/pull/189) ([MBueschelberger](https://github.com/MBueschelberger))
 - \[Auto-generated\] Update dependencies [\#122](https://github.com/EMMC-ASBL/oteapi-services/pull/122) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#119](https://github.com/EMMC-ASBL/oteapi-services/pull/119) ([TEAM4-0](https://github.com/TEAM4-0))
