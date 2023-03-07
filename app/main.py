@@ -124,13 +124,23 @@ def get_auth_deps() -> "List[Depends]":
             module.strip().split(":")
             for module in CONFIG.authentication_dependencies.split("|")
         ]
+        mods = [
+            (module, classname.replace("()", ""), True)
+            if "()" in classname
+            else (module, classname, False)
+            for (module, classname) in modules
+        ]
         imports = [
-            getattr(import_module(module), classname) for (module, classname) in modules
+            (getattr(import_module(module), classname), called)
+            for (module, classname, called) in mods
+        ]
+        dependencies = [
+            Depends(dependency()) if called else Depends(dependency)
+            for (dependency, called) in imports
         ]
         logger.info(
-            "Imported the following dependencies for authentication: %s", imports
+            "Imported the following dependencies for authentication: %s", dependencies
         )
-        dependencies = [Depends(dependency) for dependency in imports]
     else:
         dependencies = []
         logger.info("No dependencies for authentication assigned.")
