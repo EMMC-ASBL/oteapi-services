@@ -6,7 +6,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#258](https://github.com/EMMC-ASBL/oteapi-services/pull/258) ([TEAM4-0](https://github.com/TEAM4-0))
+- \[Auto-generated\] Update dependencies [\#261](https://github.com/EMMC-ASBL/oteapi-services/pull/261) ([TEAM4-0](https://github.com/TEAM4-0))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
 
