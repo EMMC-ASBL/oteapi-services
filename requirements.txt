@@ -15,7 +15,7 @@ click-didyoumean==0.3.0
 click-plugins==1.1.1
 click-repl==0.2.0
 cryptography==40.0.2
-diskcache==5.5.1
+diskcache==5.6.1
 et-xmlfile==1.1.0
 fastapi==0.95.1
 fastapi-plugins==0.11.0
@@ -29,7 +29,7 @@ hyperframe==6.0.1
 idna==3.4
 iso8601==1.1.0
 kombu==5.2.4
-numpy==1.24.2
+numpy==1.24.3
 openpyxl==3.1.2
 oteapi-core==0.4.1
 paramiko==3.1.0
