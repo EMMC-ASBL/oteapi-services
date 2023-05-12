@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/EMMC-ASBL/oteapi-services/tree/HEAD)
 
-[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/beaeac12453922f381a676df7876427fa62677fe...HEAD)
+[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20230324.302...HEAD)
+
+**Merged pull requests:**
+
+- \[Auto-generated\] Update dependencies [\#276](https://github.com/EMMC-ASBL/oteapi-services/pull/276) ([TEAM4-0](https://github.com/TEAM4-0))
+
+## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
+
+[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/beaeac12453922f381a676df7876427fa62677fe...v1.20230324.302)
 
 **Implemented enhancements:**
 
@@ -52,7 +60,6 @@
 
 **Merged pull requests:**
 
-- Use new environment files for set output [\#240](https://github.com/EMMC-ASBL/oteapi-services/pull/240) ([CasperWA](https://github.com/CasperWA))
 - Enh/add auth [\#189](https://github.com/EMMC-ASBL/oteapi-services/pull/189) ([MBueschelberger](https://github.com/MBueschelberger))
 - \[Auto-generated\] Update dependencies [\#122](https://github.com/EMMC-ASBL/oteapi-services/pull/122) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#119](https://github.com/EMMC-ASBL/oteapi-services/pull/119) ([TEAM4-0](https://github.com/TEAM4-0))
