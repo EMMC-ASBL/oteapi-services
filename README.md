@@ -28,7 +28,7 @@ docker build --rm -f Dockerfile \
     -t "emmc-asbl/oteapi:latest" .
 ```
 
-### Run redis
+### Run Redis
 
 Redis with persistance needs to run as a prerequisite to starting oteapi.
 Redis needs to share the same network as oteapi.
@@ -114,6 +114,52 @@ PASSWORD="Insert your user password here" docker run \
 ```
 
 For production, SSH public key authentication is preferred.
+
+### Run a triplestore (AllegroGraph)
+
+To test the `/triples` endpoint, a triplestore can be run.
+In this example, the AllegroGraph triplestore is used.
+
+First, a configuration file should be created and stored locally in the current folder as `agraph.cfg`.
+Note, the values for `SuperUser` should preferably be updated, especially in production.
+
+```cfg
+# AllegroGraph configuration file
+RunAs agraph
+SessionPorts 10000-10034
+Port 10035
+SettingsDirectory /agraph/data/settings
+LogDir /agraph/data
+PidFile /agraph/data/agraph.pid
+InstanceTimeout 604800
+SuperUser dbuser:test123
+<RootCatalog>
+ Main /agraph/data/rootcatalog
+</RootCatalog>
+
+<SystemCatalog>
+ Main /agraph/data/systemcatalog
+ InstanceTimeout 10
+</SystemCatalog>
+```
+
+Then one can start the Docker container:
+
+> **Note**: If running on a non-Unix system (e.g., Windows), note that `${PWD}` should be changed accordingly.
+> It is meant to expand to the current working directory.
+> Alternatively, the full path could be explicitly written.
+
+```shell
+docker volume create agraphdrive
+docker run \
+    --detach \
+    --network=otenet \
+    --volume agraphdrive:/agraph/data \
+    --volume ${PWD}/agraph.cfg:/agraph/etc/agraph.cfg \
+    --publish "10000-10035:10000-10035" \
+    --shm-size 4g \
+    franzinc/agraph:v7.2.0
+```
 
 ## Run with Docker Compose
 
