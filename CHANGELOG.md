@@ -10,7 +10,7 @@
 
 **Merged pull requests:**
 
-- Remove sftp from production images [\#241](https://github.com/EMMC-ASBL/oteapi-services/pull/241) ([CasperWA](https://github.com/CasperWA))
+- \[Auto-generated\] Update dependencies [\#285](https://github.com/EMMC-ASBL/oteapi-services/pull/285) ([TEAM4-0](https://github.com/TEAM4-0))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
 

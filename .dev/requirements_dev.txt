@@ -1,5 +1,5 @@
 dulwich~=0.21.5
-httpx~=0.24.0
+httpx~=0.24.1
 invoke~=2.1
 pre-commit>=2.21.0,<3; python_version<"3.8"
 pre-commit~=3.3; python_version>="3.8"
