@@ -2,6 +2,6 @@ aioredis>=2.0.1
 fastapi>=0.95.2
 fastapi-plugins>=0.12.0
 hypercorn>=0.14.3
-oteapi-core>=0.4.2
-pydantic>=1.10.7
+oteapi-core>=0.4.4
+pydantic>=1.10.8
 urllib3<2  # Ensure allegrograph works as intended
