@@ -21,7 +21,7 @@ cycler==0.11.0
 diskcache==5.6.1
 et-xmlfile==1.1.0
 exceptiongroup==1.1.1
-fastapi==0.96.0
+fastapi==0.97.0
 fastapi-plugins==0.12.0
 fonttools==4.39.4
 future==0.18.3
@@ -33,7 +33,7 @@ hypercorn==0.14.3
 hyperframe==6.0.1
 idna==3.4
 importlib-resources==5.12.0
-iso8601==1.1.0
+iso8601==2.0.0
 kiwisolver==1.4.4
 kombu==5.3.0
 matplotlib==3.7.1
