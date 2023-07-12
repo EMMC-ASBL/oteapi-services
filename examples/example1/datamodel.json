@@ -1,5 +1,5 @@
 {
-    "uri": "http://openmodel.eu/meta/0.1/MoltemplateInputPhysicalProperties",
+    "uri":  "http://onto-ns.com/meta/0.1/PhysicalProperties",
     "description": "Entity describing input variables for the simulation",
     "dimensions": [
       {

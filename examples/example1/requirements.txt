@@ -1,3 +1,4 @@
 oteapi-core
 otelib
 oteapi-dlite
+dlite-python
