@@ -7,12 +7,12 @@ thisdir = Path(__file__).resolve().parent
 dlite.storage_path.append(thisdir)
 
 
-#client = OTEClient('python')  # for testing
-client = OTEClient('http://localhost:8080')  # replace with correct url
-url = f"file://{thisdir}/data.xlsx"
+client = OTEClient('python')  # for testing
+#client = OTEClient('http://localhost:8080')  # replace with correct url
+datafile = thisdir / 'data.xlsx'
 
 dataresource = client.create_dataresource(
-     downloadUrl=url,
+     downloadUrl=datafile.as_uri(),
      mediaType="application/vnd.dlite-xlsx",
      configuration={
          'excel_config':{
