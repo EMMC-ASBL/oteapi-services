@@ -1,0 +1,22 @@
+{
+    "uri": "http://openmodel.eu/meta/0.1/MoltemplateInputPhysicalProperties",
+    "description": "Entity describing input variables for the simulation",
+    "dimensions": [
+      {
+        "name": "nrows",
+        "description": "Number of elements (i.e. number or rows)."
+      }
+    ],
+    "properties": {
+        "temperature": {
+            "type": "float",
+	    "dims": ["nrows"],
+            "description": "Temperature"
+        },
+        "pressure": {
+            "type": "float",
+	    "dims": ["nrows"],
+            "description": "Pressure."
+        }
+    }
+}
