@@ -1,4 +1,4 @@
-oteapi-core
-otelib
-oteapi-dlite
-dlite-python
+oteapi-core==0.4.4
+otelib==0.3.2
+oteapi-dlite==0.1.3
+dlite-python==0.3.21
