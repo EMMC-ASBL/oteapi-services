@@ -9,10 +9,10 @@ dlite.storage_path.append(thisdir)
 
 #client = OTEClient('python')  # for testing
 client = OTEClient('http://localhost:8080')  # replace with correct url
-url = f"file://{thisdir}/data.xlsx"
+url = f"data.xlsx"
 
 dataresource = client.create_dataresource(
-     downloadUrl=url,
+     downloadUrl=Path("/app/examples/example1/data.xlsx").as_uri(),
      mediaType="application/vnd.dlite-xlsx",
      configuration={
          'excel_config':{
@@ -22,7 +22,7 @@ dataresource = client.create_dataresource(
              "row_to":"4"
          },
          "metadata": "http://onto-ns.com/meta/0.1/PhysicalProperties" ,
-         "storage_path": "file://"+"/datamodel.json" ,
+         "storage_path": Path("/app/examples/example1/datamodel.json").as_uri(),
          "label": "Physical_properties",
      }
 )
@@ -31,11 +31,14 @@ generator = client.create_function(
     functionType="application/vnd.dlite-generate",
     configuration={
         "driver": "json",
-        "location": f"{thisdir}/output.json",
+        "location": "/app/examples/example1/output.json",
         "options": "mode=w",
         "label": "Physical_properties",
     },
 )
+
+print("!!!!")
+print(thisdir)
 
 pipeline = dataresource >> generator
 
