@@ -31,7 +31,7 @@ generator = client.create_function(
     functionType="application/vnd.dlite-generate",
     configuration={
         "driver": "json",
-        "location": "/app/examples/example1/output.json", # this stores in the volumes (modify as required)
+        "location": "/app/examples/example1/output.json",  # this stores in the volumes (modify as required)
         "options": "mode=w",
         "label": "Physical_properties",
     },
