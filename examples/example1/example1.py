@@ -9,10 +9,9 @@ dlite.storage_path.append(thisdir)
 
 # client = OTEClient('python')  # for testing
 client = OTEClient("http://localhost:8080")  # replace with correct url
-url = f"data.xlsx"
 
 dataresource = client.create_dataresource(
-    downloadUrl="https://github.com/EMMC-ASBL/oteapi-services/blob/example-for-testing/examples/example1/data.xlsx",
+    downloadUrl="https://github.com/EMMC-ASBL/oteapi-services/blob/example-for-testing/examples/example1/data.xlsx?raw=true",
     mediaType="application/vnd.dlite-xlsx",
     configuration={
         "excel_config": {
@@ -22,7 +21,7 @@ dataresource = client.create_dataresource(
             "row_to": "4",
         },
         "metadata": "http://onto-ns.com/meta/0.1/PhysicalProperties",
-        "storage_path": "https://github.com/EMMC-ASBL/oteapi-services/blob/example-for-testing/examples/example1/datamodel.json",
+        "storage_path": "https://github.com/EMMC-ASBL/oteapi-services/blob/example-for-testing/examples/example1/datamodel.json?raw=true",
         "label": "Physical_properties",
     },
 )
