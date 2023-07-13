@@ -1,7 +1,7 @@
 from pathlib import Path
-from otelib import OTEClient
-import dlite
 
+import dlite
+from otelib import OTEClient
 
 thisdir = Path(__file__).resolve().parent
 dlite.storage_path.append(thisdir)
