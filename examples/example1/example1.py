@@ -12,7 +12,7 @@ client = OTEClient("http://localhost:8080")  # replace with correct url
 url = f"data.xlsx"
 
 dataresource = client.create_dataresource(
-    downloadUrl=Path("/app/examples/example1/data.xlsx").as_uri(),
+    downloadUrl="https://github.com/EMMC-ASBL/oteapi-services/blob/example-for-testing/examples/example1/data.xlsx",
     mediaType="application/vnd.dlite-xlsx",
     configuration={
         "excel_config": {
@@ -22,7 +22,7 @@ dataresource = client.create_dataresource(
             "row_to": "4",
         },
         "metadata": "http://onto-ns.com/meta/0.1/PhysicalProperties",
-        "storage_path": Path("/app/examples/example1/datamodel.json").as_uri(),
+        "storage_path": "https://github.com/EMMC-ASBL/oteapi-services/blob/example-for-testing/examples/example1/datamodel.json",
         "label": "Physical_properties",
     },
 )
