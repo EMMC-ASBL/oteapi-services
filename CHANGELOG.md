@@ -6,11 +6,12 @@
 
 **Closed issues:**
 
+- Add oteapi-dlite-plugin python package as a dependency [\#300](https://github.com/EMMC-ASBL/oteapi-services/issues/300)
 - Remove sftp service from production compose file [\#120](https://github.com/EMMC-ASBL/oteapi-services/issues/120)
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#296](https://github.com/EMMC-ASBL/oteapi-services/pull/296) ([TEAM4-0](https://github.com/TEAM4-0))
+- \[Auto-generated\] Update dependencies [\#305](https://github.com/EMMC-ASBL/oteapi-services/pull/305) ([TEAM4-0](https://github.com/TEAM4-0))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
 
