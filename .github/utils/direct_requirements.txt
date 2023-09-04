@@ -1,5 +1,5 @@
 aioredis>=2.0.1
-fastapi>=0.103.0
+fastapi>=0.103.1
 fastapi-plugins>=0.12.0
 hypercorn>=0.14.4
 oteapi-core>=0.4.4
