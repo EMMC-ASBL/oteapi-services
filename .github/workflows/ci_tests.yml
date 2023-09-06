@@ -151,7 +151,7 @@ jobs:
       run: |
         docker-compose -f docker-compose_dev.yml --verbose -- up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
-        sleep 5
+        sleep 15
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
 
     - name: Clone current requirement version of `oteapi-core` locally
@@ -167,7 +167,7 @@ jobs:
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         # Sleep for longer, since it takes a while to install `oteapi-core`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
-        sleep 40
+        sleep 60
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
         PATH_TO_OTEAPI_CORE: ${{ env.LOCAL_OTEAPI_PATH }}
