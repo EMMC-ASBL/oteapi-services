@@ -116,7 +116,7 @@ jobs:
 
     - name: Upload coverage to Codecov
       if: matrix.python-version == 3.9 && github.repository == 'EMMC-ASBL/oteapi-services'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         name: oteapi-services
         files: ./coverage.xml
