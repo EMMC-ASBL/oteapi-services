@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -32,7 +32,7 @@ jobs:
         git config --global user.email "${{ env.GIT_USER_EMAIL }}"
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: "3.9"
 
@@ -57,7 +57,7 @@ jobs:
         fi
 
         echo "CONTINUE_WORKFLOW=${CONTINUE_WORKFLOW}" >> $GITHUB_ENV
-        echo "::set-output name=continue_workflow::${CONTINUE_WORKFLOW}"
+        echo "continue_workflow=${CONTINUE_WORKFLOW}" >> $GITHUB_OUTPUT
 
     - name: Update changelog
       if: env.CONTINUE_WORKFLOW == 'true'
@@ -90,7 +90,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ env.DEPENDABOT_BRANCH }}
         fetch-depth: 0
@@ -140,7 +140,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ env.DEFAULT_REPO_BRANCH }}
         fetch-depth: 0

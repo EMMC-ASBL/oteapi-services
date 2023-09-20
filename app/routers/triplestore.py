@@ -30,7 +30,9 @@ async def upload_ontology(
     file_extention: str,
 ) -> Dict:
     """Connect to a triplestore and upload the ontology via access url"""
-    response = requests.get(ontology_url)
+    response = requests.get(
+        ontology_url, timeout=(3, 27)  # timeout in seconds (connect, read)
+    )
     filename = triplestore_config.repositoryName + file_extention
     with open(filename, "wb") as file:
         file.write(response.content)

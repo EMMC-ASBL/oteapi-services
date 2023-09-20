@@ -3,7 +3,7 @@ import json
 from typing import TYPE_CHECKING, Optional
 
 from aioredis import Redis
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi_plugins import depends_redis
 from oteapi.models import TransformationConfig, TransformationStatus
 from oteapi.plugins import create_strategy
@@ -35,13 +35,18 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 )
 async def create_transformation(
     config: TransformationConfig,
+    request: Request,
     session_id: Optional[str] = None,
     cache: Redis = Depends(depends_redis),
 ) -> CreateTransformationResponse:
     """Create a new transformation configuration."""
     new_transformation = CreateTransformationResponse()
 
-    await cache.set(new_transformation.transformation_id, config.json())
+    config.token = request.headers.get("Authorization") or config.token
+
+    transformation_config = config.json()
+
+    await cache.set(new_transformation.transformation_id, transformation_config)
 
     if session_id:
         if not await cache.exists(session_id):
@@ -143,7 +148,7 @@ async def execute_transformation(
     session_data: "Optional[Dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
     )
-    session_update = strategy.run(session=session_data)
+    session_update = strategy.get(session=session_data)
 
     if session_update and session_id:
         await _update_session(

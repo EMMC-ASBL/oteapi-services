@@ -19,13 +19,13 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: ${{ env.DEPENDABOT_BRANCH }}
         fetch-depth: 0
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: "3.9"
 
@@ -49,7 +49,28 @@ jobs:
           echo -e "requirements.txt has been updated. Diff:\n$(git diff requirements.txt)"
           echo "UPDATE_DEPS=true" >> $GITHUB_ENV
 
+          # Possibly also update the 'direct_requirements.txt' file for minimum versions.
+          while IFS= read -r line_direct; do
+            echo "line direct: ${line_direct}"
+            if [[ "${line_direct}" =~ ^([a-zA-Z_-]+)\>=.*$ ]]; then
+              package="${BASH_REMATCH[1]}"
+              echo "package: ${package}"
+              while IFS= read -r line_full; do
+                echo "line full: ${line_full}"
+                if [[ "${line_full}" =~ ^"${package}"==(.*)$ ]]; then
+                  version="${BASH_REMATCH[1]}"
+                  echo "version: ${version}"
+                  sed -i "s|${package}>=.*|${package}>=${version}|" ".github/utils/direct_requirements.txt"
+                  break
+                fi
+              done < requirements.txt
+            fi
+          done < .github/utils/direct_requirements.txt
+
           git add requirements.txt
+          if [ -n "$(git status --porcelain .github/utils/direct_requirements.txt)" ]; then
+            git add .github/utils/direct_requirements.txt
+          fi
           git commit -m "Update \`requirements.txt\`"
         else
           # No changes
@@ -60,14 +81,14 @@ jobs:
     - name: Fetch PR body
       if: env.UPDATE_DEPS == 'true'
       id: pr_body
-      uses: chuhlomin/render-template@v1.4
+      uses: chuhlomin/render-template@v1.7
       with:
         template: .github/utils/requirements_update_pr_body.txt
 
     - name: Create PR
       if: env.UPDATE_DEPS == 'true'
       id: cpr
-      uses: peter-evans/create-pull-request@v4
+      uses: peter-evans/create-pull-request@v5
       with:
         token: ${{ secrets.RELEASE_PAT }}
         commit-message: "Update `requirements.txt`"

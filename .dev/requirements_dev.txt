@@ -1,7 +1,16 @@
-dulwich~=0.20.35
-invoke~=1.7
-pre-commit~=2.18
-pylint~=2.13
-pytest~=7.1
-pytest-cov~=3.0
-safety~=1.10
+dulwich~=0.21.6
+httpx~=0.25.0
+invoke~=2.2
+pre-commit>=2.21.0,<3; python_version<"3.8"
+pre-commit~=3.4; python_version>="3.8"
+pylint~=2.17
+pytest~=7.4
+pytest-cov~=4.1
+safety~=2.3
+
+# httpx is necessary due to the use of fastapi/starlette's TestClient
+# See https://fastapi.tiangolo.com/tutorial/testing/?h=testclient#using-testclient
+# for more information.
+# NB! httpx depends on an older version of httpcore, which does not support the h11
+# version listed in `requirements.txt`. This is accepted for the moment, but should
+# be followed up.

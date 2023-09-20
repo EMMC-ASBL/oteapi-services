@@ -10,7 +10,10 @@ services:
       OTEAPI_REDIS_HOST: redis
       OTEAPI_REDIS_PORT: 6379
       OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
+      OTEAPI_INCLUDE_REDISADMIN: "${OTEAPI_INCLUDE_REDISADMIN:-False}"
+      OTEAPI_EXPOSE_SECRETS: "${OTEAPI_EXPOSE_SECRETS:-True}"
       OTEAPI_PLUGIN_PACKAGES:
+      OTEAPI_AUTHENTICAION_DEPENDENCIES:
     depends_on:
       - redis
     networks:
@@ -37,7 +40,6 @@ services:
 
 volumes:
   redis-persist:
-  sftp-storage:
   agraph-data:
 
 networks:

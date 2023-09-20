@@ -1,10 +1,13 @@
 """OTE-API FastAPI application."""
+import logging
+from importlib import import_module
 from typing import TYPE_CHECKING
 
-from fastapi import FastAPI, status
+from fastapi import Depends, FastAPI, status
 from fastapi.openapi.utils import get_openapi
 from fastapi_plugins import RedisSettings, redis_plugin
 from oteapi.plugins import load_strategies
+from oteapi.settings import OteApiCoreSettings
 from pydantic import Field
 
 from app import __version__
@@ -22,11 +25,29 @@ from app.routers import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+    from typing import Any, Dict, List
 
 
-class AppSettings(RedisSettings):
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+
+class AppSettings(RedisSettings, OteApiCoreSettings):
     """Redis settings."""
+
+    include_redisadmin: bool = Field(
+        False,
+        description="""If set to `True`,
+        the router for the low-level cache interface will be included into the api.
+        WARNING: This might NOT be recommended for specific production cases,
+        since sensible data (such as secrets) in the cache might be revealed by
+        inspecting other user's session objects. If set to false, the cache can
+        only be read from an admin accessing the redis backend.""",
+    )
+
+    authentication_dependencies: str = Field(
+        "", description="List of FastAPI dependencies for authentication features."
+    )
 
     api_name: str = Field(
         "oteapi_services", description="Application-specific name for Redis cache."
@@ -45,6 +66,7 @@ class AppSettings(RedisSettings):
 def create_app() -> FastAPI:
     """Create the FastAPI app."""
     app = FastAPI(
+        dependencies=get_auth_deps(),
         title="Open Translation Environment API",
         version=__version__,
         description="""OntoTrans Interfaces OpenAPI schema.
@@ -62,7 +84,7 @@ are concrete strategy implementations of the following types:
 This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-core).
 """,
     )
-    for router_module in (
+    available_routers = [
         admin,
         session,
         dataresource,
@@ -70,9 +92,11 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
         function,
         mapping,
         transformation,
-        redisadmin,
         triplestore,
-    ):
+    ]
+    if CONFIG.include_redisadmin:
+        available_routers.append(redisadmin)
+    for router_module in available_routers:
         app.include_router(
             router_module.ROUTER,
             prefix=CONFIG.prefix,
@@ -85,6 +109,34 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
         )
 
     return app
+
+
+def get_auth_deps() -> "List[Depends]":
+    """Get authentication dependencies
+
+    Fetch dependencies for authentication through the
+    `OTEAPI_AUTH_DEPS` environment variable.
+
+    Returns:
+        List of FastAPI dependencies with authentication functions.
+
+    """
+    if CONFIG.authentication_dependencies:
+        modules = [
+            module.strip().split(":")
+            for module in CONFIG.authentication_dependencies.split("|")
+        ]
+        imports = [
+            getattr(import_module(module), classname) for (module, classname) in modules
+        ]
+        logger.info(
+            "Imported the following dependencies for authentication: %s", imports
+        )
+        dependencies = [Depends(dependency) for dependency in imports]
+    else:
+        dependencies = []
+        logger.info("No dependencies for authentication assigned.")
+    return dependencies
 
 
 def custom_openapi() -> "Dict[str, Any]":

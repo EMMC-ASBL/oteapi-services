@@ -2,10 +2,25 @@
 
 ## [Unreleased](https://github.com/EMMC-ASBL/oteapi-services/tree/HEAD)
 
-[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/beaeac12453922f381a676df7876427fa62677fe...HEAD)
+[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20230324.302...HEAD)
+
+**Closed issues:**
+
+- Revert update of codecov-action from v4 to v3 [\#325](https://github.com/EMMC-ASBL/oteapi-services/issues/325)
+- Add oteapi-dlite-plugin python package as a dependency [\#300](https://github.com/EMMC-ASBL/oteapi-services/issues/300)
+- Remove sftp service from production compose file [\#120](https://github.com/EMMC-ASBL/oteapi-services/issues/120)
+
+**Merged pull requests:**
+
+- \[Auto-generated\] Update dependencies [\#327](https://github.com/EMMC-ASBL/oteapi-services/pull/327) ([TEAM4-0](https://github.com/TEAM4-0))
+
+## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
+
+[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/beaeac12453922f381a676df7876427fa62677fe...v1.20230324.302)
 
 **Implemented enhancements:**
 
+- Authentication pathway [\#178](https://github.com/EMMC-ASBL/oteapi-services/issues/178)
 - Implement Function router [\#92](https://github.com/EMMC-ASBL/oteapi-services/issues/92)
 - Support local paths for plugins in container-image [\#77](https://github.com/EMMC-ASBL/oteapi-services/issues/77)
 - Specify local plugin versions to install [\#76](https://github.com/EMMC-ASBL/oteapi-services/issues/76)
@@ -22,6 +37,9 @@
 
 **Fixed bugs:**
 
+- Have correct version number in OpenAPI schema [\#234](https://github.com/EMMC-ASBL/oteapi-services/issues/234)
+- Pylint fails with useless-option-value / R0022 [\#182](https://github.com/EMMC-ASBL/oteapi-services/issues/182)
+- Implement sanity checks for updating the `requirements.txt` file [\#159](https://github.com/EMMC-ASBL/oteapi-services/issues/159)
 - Clarify how to install local `oteapi-core` for plugin development [\#82](https://github.com/EMMC-ASBL/oteapi-services/issues/82)
 - Custom pydantic types not used for `.construct()` method [\#67](https://github.com/EMMC-ASBL/oteapi-services/issues/67)
 - CI automerge - GH GraphQL type update [\#58](https://github.com/EMMC-ASBL/oteapi-services/issues/58)
@@ -34,6 +52,8 @@
 
 **Closed issues:**
 
+- `set-output` is deprecated for GH Actions [\#233](https://github.com/EMMC-ASBL/oteapi-services/issues/233)
+- deprecate run\(\) method for transformation strategies [\#226](https://github.com/EMMC-ASBL/oteapi-services/issues/226)
 - Development image does not start correctly [\#89](https://github.com/EMMC-ASBL/oteapi-services/issues/89)
 - Add a triple store to the docker-compose for mapping strategy [\#75](https://github.com/EMMC-ASBL/oteapi-services/issues/75)
 - Remove checkboxes from PR body for the "update `requirements.txt`" workflow [\#60](https://github.com/EMMC-ASBL/oteapi-services/issues/60)
@@ -46,12 +66,12 @@
 
 **Merged pull requests:**
 
+- Enh/add auth [\#189](https://github.com/EMMC-ASBL/oteapi-services/pull/189) ([MBueschelberger](https://github.com/MBueschelberger))
 - \[Auto-generated\] Update dependencies [\#122](https://github.com/EMMC-ASBL/oteapi-services/pull/122) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#119](https://github.com/EMMC-ASBL/oteapi-services/pull/119) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#117](https://github.com/EMMC-ASBL/oteapi-services/pull/117) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#115](https://github.com/EMMC-ASBL/oteapi-services/pull/115) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#111](https://github.com/EMMC-ASBL/oteapi-services/pull/111) ([TEAM4-0](https://github.com/TEAM4-0))
-- Use new version syntax [\#107](https://github.com/EMMC-ASBL/oteapi-services/pull/107) ([CasperWA](https://github.com/CasperWA))
 - \[Auto-generated\] Update dependencies [\#106](https://github.com/EMMC-ASBL/oteapi-services/pull/106) ([TEAM4-0](https://github.com/TEAM4-0))
 - Added pull request template [\#102](https://github.com/EMMC-ASBL/oteapi-services/pull/102) ([francescalb](https://github.com/francescalb))
 - \[Auto-generated\] Update dependencies [\#101](https://github.com/EMMC-ASBL/oteapi-services/pull/101) ([TEAM4-0](https://github.com/TEAM4-0))

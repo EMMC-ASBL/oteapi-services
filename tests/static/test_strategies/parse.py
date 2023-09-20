@@ -1,5 +1,5 @@
 """Demo strategy class for text/json."""
-# pylint: disable=no-self-use,unused-argument
+# pylint: disable=unused-argument
 import json
 from typing import TYPE_CHECKING
 
@@ -22,6 +22,9 @@ class DemoJSONDataParseStrategy:
         self, session: "Optional[Dict[str, Any]]" = None
     ) -> "Dict[str, Any]":
         """Initialize"""
+
+        del session  # unused
+        del self.resource_config  # unused
         return {}
 
     def parse(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":

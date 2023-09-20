@@ -1,14 +1,14 @@
 """Fixtures and configuration for PyTest."""
 # pylint: disable=invalid-name,redefined-builtin,unused-argument,comparison-with-callable
-import os
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
-from fastapi.testclient import TestClient
 
 if TYPE_CHECKING:
+    from pathlib import Path
     from typing import Dict, List
+
+    from fastapi.testclient import TestClient
 
 
 class DummyCache:
@@ -28,7 +28,7 @@ class DummyCache:
         """Mock `get()` method."""
         import json
 
-        return json.dumps(self.obj[id])
+        return json.loads(json.dumps(self.obj[id]))
 
     async def keys(self, pattern: str) -> "List[bytes]":
         """Mock `keys()` method."""
@@ -42,45 +42,56 @@ class DummyCache:
 
 def pytest_configure(config):
     """Method that runs before pytest collects tests so no modules are imported"""
+    import os
+
     os.environ["OTEAPI_prefix"] = ""
+    os.environ["OTEAPI_INCLUDE_REDISADMIN"] = "True"
+    os.environ["OTEAPI_EXPOSE_SECRETS"] = "True"
 
 
 @pytest.fixture(scope="session")
-def top_dir() -> Path:
+def top_dir() -> "Path":
     """Resolved path to repository directory."""
+    from pathlib import Path
+
     return Path(__file__).resolve().parent.parent.resolve()
 
 
 @pytest.fixture(scope="session")
-def test_data() -> "Dict[str, dict]":
+def test_data() -> "Dict[str, str]":
     """Test data stored in DummyCache."""
+    import json
+
     return {
-        # filter
-        "filter-961f5314-9e8e-411e-a216-ba0eb8e8bc6e": {
-            "filterType": "filter/demo",
-            "configuration": {"demo_data": [1, 2]},
-        },
-        # function
-        "function-a647012a-7ab9-4f2c-9c13-2564aa6d95a1": {
-            "functionType": "function/demo",
-            "configuration": {},
-        },
-        # mapping
-        "mapping-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": {
-            "mappingType": "mapping/demo",
-            "prefixes": {":": "<http://namespace.example.com/ns#"},
-            "triples": [[":a", ":has", ":b"]],
-            "configuration": {},
-        },
-        # sessions
-        "1": {"foo": "bar"},
-        "2": {"foo": "bar"},
-        # transformation
-        "transformation-f752c613-fde0-4d43-a7f6-c50f68642daa": {
-            "transformationType": "script/demo",
-            "name": "script/dummy",
-            "configuration": {},
-        },
+        key: json.dumps(value)
+        for key, value in {
+            # filter
+            "filter-961f5314-9e8e-411e-a216-ba0eb8e8bc6e": {
+                "filterType": "filter/demo",
+                "configuration": {"demo_data": [1, 2]},
+            },
+            # function
+            "function-a647012a-7ab9-4f2c-9c13-2564aa6d95a1": {
+                "functionType": "function/demo",
+                "configuration": {},
+            },
+            # mapping
+            "mapping-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": {
+                "mappingType": "mapping/demo",
+                "prefixes": {":": "<http://namespace.example.com/ns#"},
+                "triples": [[":a", ":has", ":b"]],
+                "configuration": {},
+            },
+            # sessions
+            "1": {"foo": "bar"},
+            "2": {"foo": "bar"},
+            # transformation
+            "transformation-f752c613-fde0-4d43-a7f6-c50f68642daa": {
+                "transformationType": "script/demo",
+                "name": "script/dummy",
+                "configuration": {},
+            },
+        }.items()
     }
 
 
@@ -143,8 +154,9 @@ def load_test_strategies() -> None:
 
 
 @pytest.fixture(scope="session")
-def client(test_data: "Dict[str, dict]") -> TestClient:
+def client(test_data: "Dict[str, dict]") -> "TestClient":
     """Return a test client."""
+    from fastapi.testclient import TestClient
     from fastapi_plugins import depends_redis
 
     from asgi import app
