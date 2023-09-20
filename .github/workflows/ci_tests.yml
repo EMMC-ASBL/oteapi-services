@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python 3.9
       uses: actions/setup-python@v4
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 2
 
@@ -77,7 +77,7 @@ jobs:
         docker-target: ["development", "production"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build Dockerfile
       run: |
@@ -95,7 +95,7 @@ jobs:
         python-version: ["3.9", "3.10"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 2
 
@@ -137,7 +137,7 @@ jobs:
       LOCAL_OTEAPI_PATH: /tmp/oteapi-core
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build OTEAPI Services Dockerfiles
       run: |
@@ -151,7 +151,7 @@ jobs:
       run: |
         docker-compose -f docker-compose_dev.yml --verbose -- up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
-        sleep 5
+        sleep 15
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
 
     - name: Clone current requirement version of `oteapi-core` locally
@@ -167,7 +167,7 @@ jobs:
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         # Sleep for longer, since it takes a while to install `oteapi-core`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
-        sleep 40
+        sleep 60
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
         PATH_TO_OTEAPI_CORE: ${{ env.LOCAL_OTEAPI_PATH }}
