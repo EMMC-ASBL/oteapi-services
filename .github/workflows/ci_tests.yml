@@ -177,9 +177,9 @@ jobs:
         docker-compose -f docker-compose_dev.yml down
         docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
-        # Sleep for longer, since it takes a while to install `oteapi-core`
+        # Sleep for longer, since it takes a while to install `oteapi-core[dev]`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
-        sleep 60
+        sleep 90
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
         CONTAINER_PLUGIN_PATH: /special-plugin
