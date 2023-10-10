@@ -16,7 +16,8 @@ RUN apt-get update \
   && apt-get purge -y --auto-remove \
   && rm -rf /var/lib/apt/lists/* \
   && pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip setuptools wheel \
-  && pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
+  && pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt \
+  && pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -U urllib3
 
 ################# DEVELOPMENT ####################################
 FROM base as development
