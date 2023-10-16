@@ -1,5 +1,5 @@
 """Demo download strategy class for file."""
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Annotated, Optional
 
 from oteapi.datacache.datacache import DataCache
 from oteapi.models.resourceconfig import ResourceConfig
@@ -7,20 +7,23 @@ from pydantic import BaseModel, Field
 from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from typing import Any, Dict
+    from typing import Any
 
 
 class FileConfig(BaseModel):
     """File Specific Configuration"""
 
-    text: bool = Field(
-        False, description="Whether the file should be opened in text mode."
-    )
-    encoding: Optional[str] = Field(
-        None,
-        description="Encoding used when opening the file.  "
-        "Default is platform dependent.",
-    )
+    text: Annotated[
+        bool, Field(description="Whether the file should be opened in text mode.")
+    ] = False
+
+    encoding: Annotated[
+        Optional[str],
+        Field(
+            description="Encoding used when opening the file.  "
+            "Default is platform dependent.",
+        ),
+    ] = None
 
 
 @dataclass
@@ -30,14 +33,14 @@ class FileStrategy:
     resource_config: ResourceConfig
 
     def initialize(
-        self, session: "Optional[Dict[str, Any]]" = None
-    ) -> "Dict[str, Any]":
+        self, session: "Optional[dict[str, Any]]" = None
+    ) -> "dict[str, Any]":
         """Initialize"""
         del session
         del self.resource_config
         return {}
 
-    def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
+    def get(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
         """Read local file."""
         del session  # fix ignore-unused-argument
         assert self.resource_config.downloadUrl

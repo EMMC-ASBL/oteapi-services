@@ -6,7 +6,6 @@ import pytest
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import Dict, List
 
     from fastapi.testclient import TestClient
 
@@ -30,7 +29,7 @@ class DummyCache:
 
         return json.loads(json.dumps(self.obj[id]))
 
-    async def keys(self, pattern: str) -> "List[bytes]":
+    async def keys(self, pattern: str) -> "list[bytes]":
         """Mock `keys()` method."""
         # https://stackoverflow.com/questions/44026515/python-redis-keys-returns-list-of-bytes-objects-instead-of-strings
         return [str.encode(item) for item in self.obj.keys()]
@@ -58,7 +57,7 @@ def top_dir() -> "Path":
 
 
 @pytest.fixture(scope="session")
-def test_data() -> "Dict[str, str]":
+def test_data() -> "dict[str, str]":
     """Test data stored in DummyCache."""
     import json
 
@@ -154,7 +153,7 @@ def load_test_strategies() -> None:
 
 
 @pytest.fixture(scope="session")
-def client(test_data: "Dict[str, dict]") -> "TestClient":
+def client(test_data: "dict[str, dict]") -> "TestClient":
     """Return a test client."""
     from fastapi.testclient import TestClient
 

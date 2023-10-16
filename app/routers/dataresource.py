@@ -22,7 +22,7 @@ from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+    from typing import Any
 
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
@@ -117,7 +117,7 @@ async def read_dataresource(
 
     config = ResourceConfig(**json.loads(await cache.get(resource_id)))
 
-    session_data: "Optional[Dict[str, Any]]" = (
+    session_data: "Optional[dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
     )
 
@@ -165,7 +165,7 @@ async def initialize_dataresource(
 
     config = ResourceConfig(**json.loads(await cache.get(resource_id)))
 
-    session_data: "Optional[Dict[str, Any]]" = (
+    session_data: "Optional[dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
     )
 

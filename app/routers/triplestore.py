@@ -1,6 +1,5 @@
 """Helper service for fetching triples."""
 import os
-from typing import Dict, List
 
 import requests
 from fastapi import APIRouter
@@ -15,7 +14,7 @@ ROUTER = APIRouter(prefix="/triples")
 async def fetch_query_result(
     triplestore_config: TripleStoreConfig,
     sparql_query: str,
-) -> Dict[str, List[str]]:
+) -> dict[str, list[str]]:
     """Connect to a triplestore and fetch mappings using sparql_query"""
     triplestore_instance = TripleStore(triplestore_config)
     result = triplestore_instance.get(sparql_query)
@@ -28,7 +27,7 @@ async def upload_ontology(
     triplestore_config: TripleStoreConfig,
     ontology_url: str,
     file_extention: str,
-) -> Dict:
+) -> dict:
     """Connect to a triplestore and upload the ontology via access url"""
     response = requests.get(
         ontology_url, timeout=(3, 27)  # timeout in seconds (connect, read)

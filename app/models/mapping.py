@@ -1,4 +1,5 @@
 """Mapping-specific pydantic response models."""
+from typing import Annotated
 from uuid import uuid4
 
 from pydantic import Field
@@ -14,14 +15,17 @@ class CreateMappingResponse(CreateResponse):
     Router: `POST /mapping`
     """
 
-    mapping_id: str = Field(
-        default_factory=lambda: f"{IDPREFIX}-{uuid4()}",
-        description="The mapping id.",
-        pattern=(
-            rf"^{IDPREFIX}-[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-"
-            r"[0-9a-f]{12}$"
+    mapping_id: Annotated[
+        str,
+        Field(
+            default_factory=lambda: f"{IDPREFIX}-{uuid4()}",
+            description="The mapping id.",
+            pattern=(
+                rf"^{IDPREFIX}-[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-"
+                r"[0-9a-f]{12}$"
+            ),
         ),
-    )
+    ]
 
 
 class GetMappingResponse(GetResponse):

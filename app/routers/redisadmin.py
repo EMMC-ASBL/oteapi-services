@@ -1,6 +1,6 @@
 """Helper service for viewing redis objects."""
 import json
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter
 
@@ -14,7 +14,7 @@ ROUTER = APIRouter(prefix="/redis")
 async def get_key(
     cache: TRedisPlugin,
     key: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Low-level cache interface to retrieve the object-value
     stored with key 'key'
     """

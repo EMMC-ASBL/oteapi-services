@@ -1,4 +1,5 @@
 """Transformation-specific pydantic response models."""
+from typing import Annotated
 from uuid import uuid4
 
 from pydantic import Field
@@ -14,14 +15,17 @@ class CreateTransformationResponse(CreateResponse):
     Router: `POST /transformation`
     """
 
-    transformation_id: str = Field(
-        default_factory=lambda: f"{IDPREFIX}-{uuid4()}",
-        description="The transformation id.",
-        pattern=(
-            rf"^{IDPREFIX}-[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-"
-            r"[0-9a-f]{12}$"
+    transformation_id: Annotated[
+        str,
+        Field(
+            default_factory=lambda: f"{IDPREFIX}-{uuid4()}",
+            description="The transformation id.",
+            pattern=(
+                rf"^{IDPREFIX}-[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-"
+                r"[0-9a-f]{12}$"
+            ),
         ),
-    )
+    ]
 
 
 class GetTransformationResponse(GetResponse):

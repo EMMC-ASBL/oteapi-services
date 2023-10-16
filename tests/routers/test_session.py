@@ -2,12 +2,10 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Dict
-
     from fastapi.testclient import TestClient
 
 
-def test_list_session(client: "TestClient", test_data: "Dict[str, dict]") -> None:
+def test_list_session(client: "TestClient", test_data: "dict[str, dict]") -> None:
     """Test listing sessions."""
     response = client.get("/session")
     assert response.json() == {"keys": list(test_data)}

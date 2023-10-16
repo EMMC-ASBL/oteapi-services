@@ -17,7 +17,7 @@ from app.models.session import (
 from app.redis_cache import TRedisPlugin
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict, Union
+    from typing import Any, Union
 
 
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
@@ -104,7 +104,7 @@ async def _get_session(
 
 async def _update_session(
     session_id: str,
-    updated_session: "Union[SessionUpdate, Dict[str, Any]]",
+    updated_session: "Union[SessionUpdate, dict[str, Any]]",
     redis: TRedisPlugin,
 ) -> Session:
     """Update an existing session (to be called internally)."""

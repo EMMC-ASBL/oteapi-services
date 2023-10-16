@@ -18,7 +18,7 @@ from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+    from typing import Any
 
     from oteapi.interfaces import ITransformationStrategy
 
@@ -107,7 +107,7 @@ async def get_transformation(
     config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
-    session_data: "Optional[Dict[str, Any]]" = (
+    session_data: "Optional[dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
     )
     session_update = strategy.get(session=session_data)
@@ -144,7 +144,7 @@ async def execute_transformation(
     config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
-    session_data: "Optional[Dict[str, Any]]" = (
+    session_data: "Optional[dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
     )
     session_update = strategy.get(session=session_data)
@@ -181,7 +181,7 @@ async def initialize_transformation(
     config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
-    session_data: "Optional[Dict[str, Any]]" = (
+    session_data: "Optional[dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
     )
     session_update = strategy.initialize(session=session_data)

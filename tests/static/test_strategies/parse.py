@@ -9,7 +9,7 @@ from oteapi.plugins.factories import create_strategy
 from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Optional
+    from typing import Any, Optional
 
 
 @dataclass
@@ -19,15 +19,15 @@ class DemoJSONDataParseStrategy:
     resource_config: ResourceConfig
 
     def initialize(
-        self, session: "Optional[Dict[str, Any]]" = None
-    ) -> "Dict[str, Any]":
+        self, session: "Optional[dict[str, Any]]" = None
+    ) -> "dict[str, Any]":
         """Initialize"""
 
         del session  # unused
         del self.resource_config  # unused
         return {}
 
-    def parse(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
+    def parse(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
         """Parse json."""
         downloader = create_strategy("download", self.resource_config)
         output = downloader.get()

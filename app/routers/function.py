@@ -17,7 +17,7 @@ from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+    from typing import Any
 
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
@@ -76,7 +76,7 @@ async def get_function(
     config = FunctionConfig(**json.loads(await cache.get(function_id)))
 
     function_strategy = create_strategy("function", config)
-    session_data: "Optional[Dict[str, Any]]" = (
+    session_data: "Optional[dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
     )
     session_update = function_strategy.get(session=session_data)
@@ -110,7 +110,7 @@ async def initialize_function(
     config = FunctionConfig(**json.loads(await cache.get(function_id)))
 
     function_strategy = create_strategy("function", config)
-    session_data: "Optional[Dict[str, Any]]" = (
+    session_data: "Optional[dict[str, Any]]" = (
         None if not session_id else json.loads(await cache.get(session_id))
     )
     session_update = function_strategy.initialize(session=session_data)

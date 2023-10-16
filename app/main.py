@@ -24,7 +24,7 @@ from app.routers import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict, List
+    from typing import Any
 
 
 logger = logging.getLogger(__name__)
@@ -104,7 +104,7 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
     return app
 
 
-def get_auth_deps() -> "List[Depends]":
+def get_auth_deps() -> "list[Depends]":
     """Get authentication dependencies
 
     Fetch dependencies for authentication through the
@@ -134,7 +134,7 @@ def get_auth_deps() -> "List[Depends]":
     return dependencies
 
 
-def custom_openapi() -> "Dict[str, Any]":
+def custom_openapi() -> "dict[str, Any]":
     """Improve the default look & feel when rendering using ReDocs."""
     if APP.openapi_schema:
         return APP.openapi_schema
