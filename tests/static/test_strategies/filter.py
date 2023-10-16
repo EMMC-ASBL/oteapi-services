@@ -33,6 +33,8 @@ class DemoFilter:
     def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
         """Execute strategy and return a dictionary"""
         del session  # unused
-        model = DemoDataModel(**self.filter_config.configuration)
+        model = DemoDataModel(
+            **self.filter_config.configuration  # pylint: disable=not-a-mapping
+        )
 
         return {"key": model.demo_data}

@@ -17,7 +17,7 @@ class CreateFunctionResponse(CreateResponse):
     function_id: str = Field(
         default_factory=lambda: f"{IDPREFIX}-{uuid4()}",
         description="The function id.",
-        regex=(
+        pattern=(
             rf"^{IDPREFIX}-[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-"
             r"[0-9a-f]{12}$"
         ),

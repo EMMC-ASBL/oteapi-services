@@ -157,8 +157,8 @@ def load_test_strategies() -> None:
 def client(test_data: "Dict[str, dict]") -> "TestClient":
     """Return a test client."""
     from fastapi.testclient import TestClient
-    from fastapi_plugins import depends_redis
 
+    from app.redis_cache._redis import depends_redis
     from asgi import app
 
     async def override_depends_redis() -> DummyCache:

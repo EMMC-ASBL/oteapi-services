@@ -16,7 +16,7 @@ class ValidationError(BaseModel):
 class HTTPValidationError(BaseModel):
     """HTTPValidation Error Response model."""
 
-    detail: Optional[List[ValidationError]]
+    detail: Optional[List[ValidationError]] = None
 
 
 class HTTPNotFoundError(HTTPValidationError):

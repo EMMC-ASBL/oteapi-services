@@ -2,9 +2,7 @@
 import json
 from typing import Optional
 
-from aioredis import Redis
-from fastapi import APIRouter, Depends, status
-from fastapi_plugins import depends_redis
+from fastapi import APIRouter, status
 from oteapi.models import FilterConfig
 from oteapi.plugins import create_strategy
 
@@ -15,6 +13,7 @@ from app.models.datafilter import (
     InitializeFilterResponse,
 )
 from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
+from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
 
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
@@ -28,14 +27,14 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     },
 )
 async def create_filter(
+    cache: TRedisPlugin,
     config: FilterConfig,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> CreateFilterResponse:
     """Define a new filter configuration (data operation)"""
     new_filter = CreateFilterResponse()
 
-    await cache.set(new_filter.filter_id, config.json())
+    await cache.set(new_filter.filter_id, config.model_dump_json())
 
     if session_id:
         if not await cache.exists(session_id):
@@ -58,9 +57,9 @@ async def create_filter(
     },
 )
 async def get_filter(
+    cache: TRedisPlugin,
     filter_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> GetFilterResponse:
     """Run and return data from a filter (data operation)"""
     if not await cache.exists(filter_id):
@@ -90,9 +89,9 @@ async def get_filter(
     },
 )
 async def initialize_filter(
+    cache: TRedisPlugin,
     filter_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> InitializeFilterResponse:
     """Initialize and return data to update session."""
     if not await cache.exists(filter_id):

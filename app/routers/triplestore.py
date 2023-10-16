@@ -2,7 +2,7 @@
 import os
 from typing import Dict, List
 
-import requests  # type: ignore
+import requests
 from fastapi import APIRouter
 from franz.openrdf.connect import ag_connect
 from oteapi.models import TripleStoreConfig

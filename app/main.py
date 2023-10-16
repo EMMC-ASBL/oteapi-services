@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, status
 from fastapi.openapi.utils import get_openapi
-from fastapi_plugins import RedisSettings, redis_plugin
 from oteapi.plugins import load_strategies
 from oteapi.settings import OteApiCoreSettings
 from pydantic import Field
 
 from app import __version__
 from app.models.error import HTTPValidationError
+from app.redis_cache import RedisSettings, redis_plugin
 from app.routers import (
     datafilter,
     dataresource,
@@ -55,11 +55,6 @@ class AppSettings(RedisSettings, OteApiCoreSettings):
         f"/api/v{__version__.split('.', maxsplit=1)[0]}",
         description="Application route prefix.",
     )
-
-    class Config:
-        """OTE-API Services application configuration."""
-
-        env_prefix = "OTEAPI_"
 
 
 def create_app() -> FastAPI:
@@ -122,7 +117,9 @@ def get_auth_deps() -> "List[Depends]":
     if CONFIG.authentication_dependencies:
         modules = [
             module.strip().split(":")
-            for module in CONFIG.authentication_dependencies.split("|")
+            for module in CONFIG.authentication_dependencies.split(  # pylint: disable=no-member
+                "|"
+            )
         ]
         imports = [
             getattr(import_module(module), classname) for (module, classname) in modules

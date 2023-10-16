@@ -2,9 +2,7 @@
 import json
 from typing import TYPE_CHECKING
 
-from aioredis import Redis
-from fastapi import APIRouter, Depends, status
-from fastapi_plugins import depends_redis
+from fastapi import APIRouter, status
 from oteapi.models import SessionUpdate
 
 from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
@@ -16,6 +14,7 @@ from app.models.session import (
     DeleteSessionResponse,
     ListSessionsResponse,
 )
+from app.redis_cache import TRedisPlugin
 
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any, Dict, Union
@@ -30,8 +29,8 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
 async def create_session(
+    cache: TRedisPlugin,
     session: Session,
-    cache: Redis = Depends(depends_redis),
 ) -> CreateSessionResponse:
     """## Create a new session
 
@@ -49,7 +48,7 @@ async def create_session(
     """
     new_session = CreateSessionResponse()
 
-    await cache.set(new_session.session_id, session.json())
+    await cache.set(new_session.session_id, session.model_dump_json())
     return new_session
 
 
@@ -59,7 +58,7 @@ async def create_session(
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
 async def list_sessions(
-    cache: Redis = Depends(depends_redis),
+    cache: TRedisPlugin,
 ) -> ListSessionsResponse:
     """Get all session keys"""
     keylist = []
@@ -79,7 +78,7 @@ async def list_sessions(
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
 async def delete_all_sessions(
-    cache: Redis = Depends(depends_redis),
+    cache: TRedisPlugin,
 ) -> DeleteAllSessionsResponse:
     """Delete all session keys.
 
@@ -95,7 +94,7 @@ async def delete_all_sessions(
 
 async def _get_session(
     session_id: str,
-    redis: Redis = Depends(depends_redis),
+    redis: TRedisPlugin,
 ) -> Session:
     """Return the session contents given a `session_id`."""
     if not await redis.exists(session_id):
@@ -106,12 +105,12 @@ async def _get_session(
 async def _update_session(
     session_id: str,
     updated_session: "Union[SessionUpdate, Dict[str, Any]]",
-    redis: Redis,
+    redis: TRedisPlugin,
 ) -> Session:
     """Update an existing session (to be called internally)."""
     session = await _get_session(session_id, redis)
     session.update(updated_session)
-    await redis.set(session_id, session.json().encode("utf-8"))
+    await redis.set(session_id, session.model_dump_json().encode("utf-8"))
     return session
 
 
@@ -119,7 +118,7 @@ async def _update_session_list_item(
     session_id: str,
     list_key: str,
     list_items: list,
-    redis: Redis,
+    redis: TRedisPlugin,
 ) -> Session:
     """Append to or create list items in an existing session."""
     session = await _get_session(session_id, redis)
@@ -139,7 +138,7 @@ async def _update_session_list_item(
         session[list_key].extend(list_items)
     else:
         session[list_key] = list_items
-    await redis.set(session_id, session.json().encode("utf-8"))
+    await redis.set(session_id, session.model_dump_json().encode("utf-8"))
     return session
 
 
@@ -151,9 +150,9 @@ async def _update_session_list_item(
     },
 )
 async def update_session(
+    cache: TRedisPlugin,
     session_id: str,
     updated_session: SessionUpdate,
-    cache: Redis = Depends(depends_redis),
 ) -> Session:
     """Update session object."""
     if not await cache.exists(session_id):
@@ -161,7 +160,7 @@ async def update_session(
 
     session = Session(**json.loads(await cache.get(session_id)))
     session.update(updated_session)
-    await cache.set(session_id, session.json().encode("utf-8"))
+    await cache.set(session_id, session.model_dump_json().encode("utf-8"))
     return session
 
 
@@ -173,8 +172,8 @@ async def update_session(
     },
 )
 async def get_session(
+    cache: TRedisPlugin,
     session_id: str,
-    cache: Redis = Depends(depends_redis),
 ) -> Session:
     """Fetch the entire session object."""
     if not await cache.exists(session_id):
@@ -191,8 +190,8 @@ async def get_session(
     },
 )
 async def delete_session(
+    cache: TRedisPlugin,
     session_id: str,
-    cache: Redis = Depends(depends_redis),
 ) -> DeleteSessionResponse:
     """Delete a session object."""
     if not await cache.exists(session_id):
