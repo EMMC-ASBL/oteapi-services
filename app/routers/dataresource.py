@@ -89,7 +89,13 @@ async def info_dataresource(
     if not await cache.exists(resource_id):
         raise httpexception_404_item_id_does_not_exist(resource_id, "resource_id")
 
-    return ResourceConfig(**json.loads(await cache.get(resource_id)))
+    cache_value = await cache.get(resource_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {resource_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    return ResourceConfig(**json.loads(cache_value))
 
 
 @ROUTER.get(
@@ -115,10 +121,23 @@ async def read_dataresource(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = ResourceConfig(**json.loads(await cache.get(resource_id)))
+    cache_value = await cache.get(resource_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {resource_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = ResourceConfig(**json.loads(cache_value))
 
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
     session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+        None if not session_id else json.loads(cache_value)
     )
 
     if config.downloadUrl and config.mediaType:
@@ -163,10 +182,23 @@ async def initialize_dataresource(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = ResourceConfig(**json.loads(await cache.get(resource_id)))
+    cache_value = await cache.get(resource_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {resource_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = ResourceConfig(**json.loads(cache_value))
 
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
     session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+        None if not session_id else json.loads(cache_value)
     )
 
     if config.downloadUrl and config.mediaType:

@@ -99,7 +99,13 @@ async def _get_session(
     """Return the session contents given a `session_id`."""
     if not await redis.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-    return Session(**json.loads(await redis.get(session_id)))
+    cache_value = await redis.get(session_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {session_id} to be a string or bytes, found it "
+            f"to be of type {type(cache_value)!r}."
+        )
+    return Session(**json.loads(cache_value))
 
 
 async def _update_session(
@@ -158,7 +164,13 @@ async def update_session(
     if not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    session = Session(**json.loads(await cache.get(session_id)))
+    cache_value = await cache.get(session_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {session_id} to be a string or bytes, found it "
+            f"to be of type {type(cache_value)!r}."
+        )
+    session = Session(**json.loads(cache_value))
     session.update(updated_session)
     await cache.set(session_id, session.model_dump_json().encode("utf-8"))
     return session
@@ -176,10 +188,17 @@ async def get_session(
     session_id: str,
 ) -> Session:
     """Fetch the entire session object."""
-    if not await cache.exists(session_id):
+    cache_exists: int = await cache.exists(session_id)
+    if not cache_exists:
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    return Session(**json.loads(await cache.get(session_id)))
+    cache_value = await cache.get(session_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {session_id} to be a string or bytes, found it "
+            f"to be of type {type(cache_value)!r}."
+        )
+    return Session(**json.loads(cache_value))
 
 
 @ROUTER.delete(
@@ -194,7 +213,8 @@ async def delete_session(
     session_id: str,
 ) -> DeleteSessionResponse:
     """Delete a session object."""
-    if not await cache.exists(session_id):
+    cache_exists: int = await cache.exists(session_id)
+    if not cache_exists:
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
     await cache.delete(session_id)

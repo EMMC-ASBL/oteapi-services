@@ -20,4 +20,11 @@ async def get_key(
     """
     if not await cache.exists(key):
         raise httpexception_404_item_id_does_not_exist(key, "key")
-    return json.loads(await cache.get(key))
+
+    cache_value = await cache.get(key)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {key} to be a string or bytes, found it "
+            f"to be of type {type(cache_value)!r}."
+        )
+    return json.loads(cache_value)

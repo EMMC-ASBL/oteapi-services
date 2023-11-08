@@ -23,7 +23,7 @@ class CreateResponse(Session):
             and self.__class__ != CreateResponse
         ):
             # Validating on a subclassed instance of `CreateResponse`
-            if not any(re.match(r"^.+_id$", field) for field in self):
+            if not any(re.match(r"^.+_id$", field) for field, _ in self):
                 raise AttributeError(
                     "A '*_id' attribute MUST be defined for a subclass of "
                     "`CreateResponse`."

@@ -9,3 +9,10 @@ warn_unused_configs = true
 show_error_codes = true
 allow_redefinition = true
 plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+addopts = "-rs --cov=app --cov-report=term-missing"
+filterwarnings = [
+    "ignore:.*imp module.*:DeprecationWarning",
+
+]

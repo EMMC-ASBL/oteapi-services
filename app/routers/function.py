@@ -73,11 +73,25 @@ async def get_function(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = FunctionConfig(**json.loads(await cache.get(function_id)))
+    cache_value = await cache.get(function_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {function_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = FunctionConfig(**json.loads(cache_value))
 
     function_strategy = create_strategy("function", config)
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
     session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+        None if not session_id else json.loads(cache_value)
     )
     session_update = function_strategy.get(session=session_data)
 
@@ -107,11 +121,25 @@ async def initialize_function(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = FunctionConfig(**json.loads(await cache.get(function_id)))
+    cache_value = await cache.get(function_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {function_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = FunctionConfig(**json.loads(cache_value))
 
     function_strategy = create_strategy("function", config)
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
     session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+        None if not session_id else json.loads(cache_value)
     )
     session_update = function_strategy.initialize(session=session_data)
 

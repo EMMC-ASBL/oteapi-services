@@ -1,6 +1,6 @@
 """Data Filter."""
 import json
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from fastapi import APIRouter, status
 from oteapi.models import FilterConfig
@@ -15,6 +15,11 @@ from app.models.datafilter import (
 from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
 from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
+
+if TYPE_CHECKING:  # pragma: no cover
+    from typing import Any
+
+    from oteapi.interfaces import IFilterStrategy
 
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
@@ -67,10 +72,26 @@ async def get_filter(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = FilterConfig(**json.loads(await cache.get(filter_id)))
+    cache_value = await cache.get(filter_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {filter_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = FilterConfig(**json.loads(cache_value))
 
-    strategy = create_strategy("filter", config)
-    session_data = None if not session_id else json.loads(await cache.get(session_id))
+    strategy: "IFilterStrategy" = create_strategy("filter", config)
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
+    )
     session_update = strategy.get(session=session_data)
 
     if session_update and session_id:
@@ -99,10 +120,26 @@ async def initialize_filter(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = FilterConfig(**json.loads(await cache.get(filter_id)))
+    cache_value = await cache.get(filter_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {filter_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = FilterConfig(**json.loads(cache_value))
 
-    strategy = create_strategy("filter", config)
-    session_data = None if not session_id else json.loads(await cache.get(session_id))
+    strategy: "IFilterStrategy" = create_strategy("filter", config)
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
+    )
     session_update = strategy.initialize(session=session_data)
 
     if session_update and session_id:
