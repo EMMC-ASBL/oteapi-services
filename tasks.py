@@ -60,7 +60,7 @@ def compile_version(
 
     repo = Repo(TOP_DIR)
     for ref in [
-        f"refs/remotes/{default_branch}".encode("utf-8"),
+        f"refs/remotes/{default_branch}".encode(),
         b"refs/remotes/origin/master",
         b"refs/remotes/origin/main",
     ]:
@@ -113,7 +113,7 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
     return any(
         ref in repo.get_refs()
         for ref in [
-            f"refs/remotes/{default_branch}".encode("utf-8"),
+            f"refs/remotes/{default_branch}".encode(),
             b"refs/remotes/origin/master",
             b"refs/remotes/origin/main",
         ]

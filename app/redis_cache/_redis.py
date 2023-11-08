@@ -71,13 +71,9 @@ class RedisSettings(BaseSettings):
         if self.redis_url:
             return self.redis_url
         elif self.redis_db:
-            return "redis://%s:%s/%s" % (
-                self.redis_host,
-                self.redis_port,
-                self.redis_db,
-            )
+            return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
         else:
-            return "redis://%s:%s" % (self.redis_host, self.redis_port)
+            return f"redis://{self.redis_host}:{self.redis_port}"
 
     def get_sentinels(self) -> list:
         if self.redis_sentinels:
