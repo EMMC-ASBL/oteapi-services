@@ -1,5 +1,5 @@
 """Session-specific pydantic response models."""
-from typing import List
+from typing import Annotated
 from uuid import uuid4
 
 from pydantic import Field
@@ -15,14 +15,17 @@ class CreateSessionResponse(CreateResponse):
     Router: `POST /session`
     """
 
-    session_id: str = Field(
-        default_factory=lambda: f"{IDPREFIX}-{uuid4()}",
-        description="The session id.",
-        regex=(
-            rf"^{IDPREFIX}-[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-"
-            r"[0-9a-f]{12}$"
+    session_id: Annotated[
+        str,
+        Field(
+            default_factory=lambda: f"{IDPREFIX}-{uuid4()}",
+            description="The session id.",
+            pattern=(
+                rf"^{IDPREFIX}-[0-9a-f]{{8}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-[0-9a-f]{{4}}-"
+                r"[0-9a-f]{12}$"
+            ),
         ),
-    )
+    ]
 
 
 class InitializeSessionResponse(InitializeResponse):
@@ -38,9 +41,10 @@ class ListSessionsResponse(Session):
     Router: `GET /session`
     """
 
-    keys_: List[str] = Field(
-        ..., description="List of all session ids in the cache.", alias="keys"
-    )
+    keys_: Annotated[
+        list[str],
+        Field(description="List of all session ids in the cache.", alias="keys"),
+    ]
 
 
 class DeleteAllSessionsResponse(Session):
@@ -49,9 +53,9 @@ class DeleteAllSessionsResponse(Session):
     Router: `DELETE /session`
     """
 
-    number_of_deleted_sessions: int = Field(
-        ..., description="The number of deleted sessions in the Redis cache."
-    )
+    number_of_deleted_sessions: Annotated[
+        int, Field(description="The number of deleted sessions in the Redis cache.")
+    ]
 
 
 class DeleteSessionResponse(Session):
@@ -60,6 +64,6 @@ class DeleteSessionResponse(Session):
     Router: `DELETE /session/{session_id}`
     """
 
-    success: bool = Field(
-        ..., description="Whether or not the session was successfully deleted."
-    )
+    success: Annotated[
+        bool, Field(description="Whether or not the session was successfully deleted.")
+    ]

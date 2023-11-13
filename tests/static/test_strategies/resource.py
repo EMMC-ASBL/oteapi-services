@@ -1,5 +1,5 @@
 """Demo resource strategy class."""
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated, Optional
 
 from oteapi.models.resourceconfig import ResourceConfig
 from oteapi.models.sessionupdate import SessionUpdate
@@ -8,13 +8,13 @@ from pydantic import Field
 from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Optional
+    from typing import Any
 
 
 class ResourceResult(SessionUpdate):
     """Update session with the FilterResult model"""
 
-    output: "Optional[str]" = Field(None, description="Optional result")
+    output: Annotated[Optional[str], Field(description="Optional result")] = None
 
 
 @dataclass
@@ -23,14 +23,14 @@ class DemoResourceStrategy:
 
     resource_config: ResourceConfig
 
-    def initialize(self, session: "Optional[Dict[str, Any]]" = None) -> ResourceResult:
+    def initialize(self, session: "Optional[dict[str, Any]]" = None) -> ResourceResult:
         """Initialize"""
 
         del self.resource_config
         del session  # unused
         return ResourceResult()
 
-    def get(self, session: "Optional[Dict[str, Any]]" = None) -> ResourceResult:
+    def get(self, session: "Optional[dict[str, Any]]" = None) -> ResourceResult:
         """Manage mapping and return shared map"""
         # Example of the plugin using the download strategy to fetch the data
         download_strategy = create_strategy("download", self.resource_config)

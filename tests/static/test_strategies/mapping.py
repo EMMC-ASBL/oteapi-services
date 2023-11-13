@@ -6,7 +6,7 @@ from oteapi.models.mappingconfig import MappingConfig
 from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Optional
+    from typing import Any, Optional
 
 
 @dataclass
@@ -16,15 +16,15 @@ class DemoMappingStrategy:
     mapping_config: MappingConfig
 
     def initialize(
-        self, session: "Optional[Dict[str, Any]]" = None
-    ) -> "Dict[str, Any]":
+        self, session: "Optional[dict[str, Any]]" = None
+    ) -> "dict[str, Any]":
         """Initialize mapping"""
 
         del session  # unused
         del self.mapping_config  # unused
         return {}
 
-    def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
+    def get(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
         """Manage mapping and return shared map"""
 
         del session  # unused

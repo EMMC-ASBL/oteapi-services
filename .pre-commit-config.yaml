@@ -24,6 +24,12 @@ repos:
     - id: isort
       args: ["--profile", "black", "--filter-files", "--skip-gitignore"]
 
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+    - id: pyupgrade
+      args: ["--py39-plus"]
+
   - repo: https://github.com/ambv/black
     rev: 23.11.0
     hooks:
@@ -41,13 +47,17 @@ repos:
     hooks:
     - id: mypy
       exclude: ^tests/.*$
+      additional_dependencies:
+        - "types-requests"
+        - "pydantic>=2,<3"
+        - "types-redis"
 
   - repo: local
     hooks:
     - id: pylint
       name: pylint
       entry: pylint
-      args: ["--rcfile=.pylintrc", "--extension-pkg-whitelist='pydantic'"]
+      args: ["--rcfile=pyproject.toml", "--extension-pkg-whitelist='pydantic'"]
       language: python
       types: [python]
       require_serial: true
@@ -56,7 +66,7 @@ repos:
     - id: pylint-tests
       name: pylint - tests
       entry: pylint
-      args: ["--rcfile=.pylintrc", "--extension-pkg-whitelist='pydantic'", "--disable=C0415,W0621"]
+      args: ["--rcfile=pyproject.toml", "--extension-pkg-whitelist='pydantic'", "--disable=C0415,W0621"]
       language: python
       types: [python]
       require_serial: true
