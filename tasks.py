@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING
 from invoke import task
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Optional, Tuple
+    from typing import Optional
 
     from dulwich.objects import Commit
 
@@ -22,7 +22,7 @@ TOP_DIR = Path(__file__).parent.resolve()
 
 
 def update_file(
-    filename: Path, sub_line: "Tuple[str, str]", strip: "Optional[str]" = None
+    filename: Path, sub_line: "tuple[str, str]", strip: "Optional[str]" = None
 ) -> None:
     """Utility function for tasks to read, update, and write files.
 
@@ -60,7 +60,7 @@ def compile_version(
 
     repo = Repo(TOP_DIR)
     for ref in [
-        f"refs/remotes/{default_branch}".encode("utf-8"),
+        f"refs/remotes/{default_branch}".encode(),
         b"refs/remotes/origin/master",
         b"refs/remotes/origin/main",
     ]:
@@ -113,7 +113,7 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
     return any(
         ref in repo.get_refs()
         for ref in [
-            f"refs/remotes/{default_branch}".encode("utf-8"),
+            f"refs/remotes/{default_branch}".encode(),
             b"refs/remotes/origin/master",
             b"refs/remotes/origin/main",
         ]

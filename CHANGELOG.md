@@ -4,6 +4,10 @@
 
 [Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20230324.302...HEAD)
 
+**Implemented enhancements:**
+
+- Migrate to pydantic v2 [\#338](https://github.com/EMMC-ASBL/oteapi-services/issues/338)
+
 **Closed issues:**
 
 - Revert update of codecov-action from v4 to v3 [\#325](https://github.com/EMMC-ASBL/oteapi-services/issues/325)
@@ -12,7 +16,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#350](https://github.com/EMMC-ASBL/oteapi-services/pull/350) ([TEAM4-0](https://github.com/TEAM4-0))
+- Upgrade to pydantic v2 [\#351](https://github.com/EMMC-ASBL/oteapi-services/pull/351) ([CasperWA](https://github.com/CasperWA))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
 

@@ -2,9 +2,7 @@
 import json
 from typing import TYPE_CHECKING, Optional
 
-from aioredis import Redis
-from fastapi import APIRouter, Depends, Request, status
-from fastapi_plugins import depends_redis
+from fastapi import APIRouter, Request, status
 from oteapi.models import FunctionConfig
 from oteapi.plugins import create_strategy
 
@@ -15,10 +13,11 @@ from app.models.function import (
     GetFunctionResponse,
     InitializeFunctionResponse,
 )
+from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+    from typing import Any
 
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
@@ -29,17 +28,17 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
 async def create_function(
+    cache: TRedisPlugin,
     config: FunctionConfig,
     request: Request,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> CreateFunctionResponse:
     """Create a new function configuration."""
     new_function = CreateFunctionResponse()
 
     config.token = request.headers.get("Authorization") or config.token
 
-    function_config = config.json()
+    function_config = config.model_dump_json()
 
     await cache.set(new_function.function_id, function_config)
 
@@ -64,9 +63,9 @@ async def create_function(
     },
 )
 async def get_function(
+    cache: TRedisPlugin,
     function_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> GetFunctionResponse:
     """Get (execute) function."""
     if not await cache.exists(function_id):
@@ -74,11 +73,25 @@ async def get_function(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = FunctionConfig(**json.loads(await cache.get(function_id)))
+    cache_value = await cache.get(function_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {function_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = FunctionConfig(**json.loads(cache_value))
 
     function_strategy = create_strategy("function", config)
-    session_data: "Optional[Dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
     )
     session_update = function_strategy.get(session=session_data)
 
@@ -98,9 +111,9 @@ async def get_function(
     },
 )
 async def initialize_function(
+    cache: TRedisPlugin,
     function_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> InitializeFunctionResponse:
     """Initialize and update function."""
     if not await cache.exists(function_id):
@@ -108,11 +121,25 @@ async def initialize_function(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = FunctionConfig(**json.loads(await cache.get(function_id)))
+    cache_value = await cache.get(function_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {function_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = FunctionConfig(**json.loads(cache_value))
 
     function_strategy = create_strategy("function", config)
-    session_data: "Optional[Dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
     )
     session_update = function_strategy.initialize(session=session_data)
 

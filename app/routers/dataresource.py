@@ -2,9 +2,7 @@
 import json
 from typing import TYPE_CHECKING, Optional
 
-from aioredis import Redis
-from fastapi import APIRouter, Depends, Request, status
-from fastapi_plugins import depends_redis
+from fastapi import APIRouter, Request, status
 from oteapi.models import ResourceConfig
 from oteapi.plugins import create_strategy
 
@@ -20,10 +18,11 @@ from app.models.error import (
     httpexception_404_item_id_does_not_exist,
     httpexception_422_resource_id_is_unprocessable,
 )
+from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+    from typing import Any
 
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
@@ -36,10 +35,10 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     },
 )
 async def create_dataresource(
+    cache: TRedisPlugin,
     config: ResourceConfig,
     request: Request,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> CreateResourceResponse:
     """### Register an external data resource.
 
@@ -58,7 +57,7 @@ async def create_dataresource(
 
     config.token = request.headers.get("Authorization") or config.token
 
-    resource_config = config.json()
+    resource_config = config.model_dump_json()
 
     await cache.set(new_resource.resource_id, resource_config)
 
@@ -83,14 +82,20 @@ async def create_dataresource(
     },
 )
 async def info_dataresource(
+    cache: TRedisPlugin,
     resource_id: str,
-    cache: Redis = Depends(depends_redis),
 ) -> ResourceConfig:
     """Get data resource info."""
     if not await cache.exists(resource_id):
         raise httpexception_404_item_id_does_not_exist(resource_id, "resource_id")
 
-    return ResourceConfig(**json.loads(await cache.get(resource_id)))
+    cache_value = await cache.get(resource_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {resource_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    return ResourceConfig(**json.loads(cache_value))
 
 
 @ROUTER.get(
@@ -103,9 +108,9 @@ async def info_dataresource(
     },
 )
 async def read_dataresource(
+    cache: TRedisPlugin,
     resource_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> GetResourceResponse:
     """Read data from dataresource using the appropriate download strategy.
 
@@ -116,10 +121,23 @@ async def read_dataresource(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = ResourceConfig(**json.loads(await cache.get(resource_id)))
+    cache_value = await cache.get(resource_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {resource_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = ResourceConfig(**json.loads(cache_value))
 
-    session_data: "Optional[Dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
     )
 
     if config.downloadUrl and config.mediaType:
@@ -154,9 +172,9 @@ async def read_dataresource(
     },
 )
 async def initialize_dataresource(
+    cache: TRedisPlugin,
     resource_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> InitializeResourceResponse:
     """Initialize data resource."""
     if not await cache.exists(resource_id):
@@ -164,10 +182,23 @@ async def initialize_dataresource(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = ResourceConfig(**json.loads(await cache.get(resource_id)))
+    cache_value = await cache.get(resource_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {resource_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = ResourceConfig(**json.loads(cache_value))
 
-    session_data: "Optional[Dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
     )
 
     if config.downloadUrl and config.mediaType:
