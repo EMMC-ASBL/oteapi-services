@@ -48,6 +48,7 @@ six==1.16.0
 sniffio==1.3.0
 starlette==0.27.0
 taskgroup==0.0.0a4
+tenacity==8.2.3
 tomli==2.0.1
 typing_extensions==4.8.0
 tzdata==2023.3
