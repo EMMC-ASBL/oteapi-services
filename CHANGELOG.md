@@ -8,6 +8,10 @@
 
 - Migrate to pydantic v2 [\#338](https://github.com/EMMC-ASBL/oteapi-services/issues/338)
 
+**Fixed bugs:**
+
+- Docker compose failing in CI test workflows [\#370](https://github.com/EMMC-ASBL/oteapi-services/issues/370)
+
 **Closed issues:**
 
 - Revert update of codecov-action from v4 to v3 [\#325](https://github.com/EMMC-ASBL/oteapi-services/issues/325)
@@ -16,7 +20,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#364](https://github.com/EMMC-ASBL/oteapi-services/pull/364) ([TEAM4-0](https://github.com/TEAM4-0))
+- Fix docker compose CI job [\#372](https://github.com/EMMC-ASBL/oteapi-services/pull/372) ([CasperWA](https://github.com/CasperWA))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
 
