@@ -6,6 +6,7 @@ on:
     branches:
       - 'master'
       - 'push-action/**'  # Allow pushing to protected branches (using CasperWA/push-protected)
+      - 'cwa/fix-370**'
 
 jobs:
 
@@ -141,9 +142,10 @@ jobs:
 
     - name: Build OTEAPI Services Dockerfiles
       run: |
-        # Need to re-install docker-compose from pip:
-        # https://github.com/docker/compose/issues/7686
-        sudo apt-get update && sudo pip install docker-compose
+        # # Need to re-install docker-compose from pip:
+        # # https://github.com/docker/compose/issues/7686
+        # sudo apt-get update && sudo pip install docker-compose
+        docker-compose --version
         docker-compose -f docker-compose_dev.yml --verbose -- build
         docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- build
 
