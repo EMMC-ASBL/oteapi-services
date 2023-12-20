@@ -152,7 +152,7 @@ jobs:
 
     - name: Start the Docker services
       run: |
-        docker compose -f docker-compose_dev.yml up -d
+        docker compose -f docker-compose_dev.yml up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         sleep 15
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
@@ -166,7 +166,7 @@ jobs:
       if: matrix.docker-target == 'development'
       run: |
         docker compose -f docker-compose_dev.yml down
-        docker compose -f docker-compose_dev.yml up -d
+        docker compose -f docker-compose_dev.yml up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         # Sleep for longer, since it takes a while to install `oteapi-core`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
@@ -178,7 +178,7 @@ jobs:
     - name: Start the Docker services with plugins
       run: |
         docker compose -f docker-compose_dev.yml down
-        docker compose -f .github/utils/docker-compose_ci_plugins.yml up -d
+        docker compose -f .github/utils/docker-compose_ci_plugins.yml up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         # Sleep for longer, since it takes a while to install `oteapi-core[dev]`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
