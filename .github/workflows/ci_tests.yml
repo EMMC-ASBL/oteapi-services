@@ -6,7 +6,6 @@ on:
     branches:
       - 'master'
       - 'push-action/**'  # Allow pushing to protected branches (using CasperWA/push-protected)
-      - 'cwa/fix-370**'
 
 jobs:
 
