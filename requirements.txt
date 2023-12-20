@@ -1,9 +1,9 @@
-agraph-python==102.0.0
+agraph-python==102.1.1
 amqp==5.2.0
 annotated-types==0.6.0
 anyio==3.7.1
 async-timeout==4.0.3
-bcrypt==4.1.1
+bcrypt==4.1.2
 billiard==4.2.0
 celery==5.3.6
 certifi==2023.11.17
@@ -17,7 +17,7 @@ cryptography==41.0.7
 diskcache==5.6.3
 et-xmlfile==1.1.0
 exceptiongroup==1.2.0
-fastapi==0.104.1
+fastapi==0.105.0
 future==0.18.3
 h11==0.14.0
 h2==4.1.0
@@ -29,11 +29,11 @@ iso8601==2.1.0
 kombu==5.3.4
 openpyxl==3.1.2
 oteapi-core==0.6.1
-paramiko==3.3.1
+paramiko==3.4.0
 Pillow==10.1.0
 priority==2.0.0
-prompt-toolkit==3.0.41
-psycopg==3.1.14
+prompt-toolkit==3.0.43
+psycopg==3.1.16
 pycparser==2.21
 pydantic==2.5.2
 pydantic-settings==2.1.0
@@ -50,7 +50,7 @@ starlette==0.27.0
 taskgroup==0.0.0a4
 tenacity==8.2.3
 tomli==2.0.1
-typing_extensions==4.8.0
+typing_extensions==4.9.0
 tzdata==2023.3
 urllib3==1.26.18
 vine==5.1.0
