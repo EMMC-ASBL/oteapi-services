@@ -1,6 +1,6 @@
 dulwich~=0.21.7
 fakeredis~=2.20
-httpx~=0.25.2
+httpx~=0.26.0
 invoke~=2.2
 pre-commit~=3.6
 pylint~=3.0
