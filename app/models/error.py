@@ -1,5 +1,5 @@
 """Pydantic models for handling errors."""
-from typing import List, Optional
+from typing import Annotated, Optional
 
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
@@ -8,15 +8,15 @@ from pydantic import BaseModel, Field
 class ValidationError(BaseModel):
     """Validation Error response Model."""
 
-    loc: List[str] = Field(..., title="Location")
-    msg: str = Field(..., title="Message")
-    type: str = Field(..., title="Error Type")
+    loc: Annotated[list[str], Field(title="Location")]
+    msg: Annotated[str, Field(title="Message")]
+    type: Annotated[str, Field(title="Error Type")]
 
 
 class HTTPValidationError(BaseModel):
     """HTTPValidation Error Response model."""
 
-    detail: Optional[List[ValidationError]]
+    detail: Optional[list[ValidationError]] = None
 
 
 class HTTPNotFoundError(HTTPValidationError):

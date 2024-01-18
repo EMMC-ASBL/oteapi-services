@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.9
 
@@ -45,7 +45,7 @@ jobs:
         fetch-depth: 2
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.9
 
@@ -58,10 +58,10 @@ jobs:
         pip install safety
 
     - name: Run pylint
-      run: pylint --rcfile=.pylintrc --ignore-paths=tests/ --extension-pkg-whitelist='pydantic' *.py app
+      run: pylint --rcfile=pyproject.toml --ignore-paths=tests/ --extension-pkg-whitelist='pydantic' --recursive=yes *.py app
 
     - name: Run pylint - tests
-      run: pylint --rcfile=.pylintrc --extension-pkg-whitelist='pydantic' --disable=C0415,W0621 tests
+      run: pylint --rcfile=pyproject.toml --extension-pkg-whitelist='pydantic' --disable=C0415,W0621 tests
 
     # Ignore ID 44715 for now.
     # See this NumPy issue for more information: https://github.com/numpy/numpy/issues/19038
@@ -100,7 +100,7 @@ jobs:
         fetch-depth: 2
 
     - name: Set up Python ${{ matrix.python-version}}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version}}
 
@@ -141,15 +141,13 @@ jobs:
 
     - name: Build OTEAPI Services Dockerfiles
       run: |
-        # Need to re-install docker-compose from pip:
-        # https://github.com/docker/compose/issues/7686
-        sudo apt-get update && sudo pip install docker-compose
-        docker-compose -f docker-compose_dev.yml --verbose -- build
-        docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- build
+        docker compose version
+        docker compose -f docker-compose_dev.yml build
+        docker compose -f .github/utils/docker-compose_ci_plugins.yml build
 
     - name: Start the Docker services
       run: |
-        docker-compose -f docker-compose_dev.yml --verbose -- up &
+        docker compose -f docker-compose_dev.yml up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         sleep 15
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
@@ -162,8 +160,8 @@ jobs:
     - name: Start the Docker services with local `oteapi-core`
       if: matrix.docker-target == 'development'
       run: |
-        docker-compose -f docker-compose_dev.yml down
-        docker-compose -f docker-compose_dev.yml --verbose -- up &
+        docker compose -f docker-compose_dev.yml down
+        docker compose -f docker-compose_dev.yml up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
         # Sleep for longer, since it takes a while to install `oteapi-core`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
@@ -174,12 +172,12 @@ jobs:
 
     - name: Start the Docker services with plugins
       run: |
-        docker-compose -f docker-compose_dev.yml down
-        docker-compose -f .github/utils/docker-compose_ci_plugins.yml --verbose -- up &
+        docker compose -f docker-compose_dev.yml down
+        docker compose -f .github/utils/docker-compose_ci_plugins.yml up &
         .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
-        # Sleep for longer, since it takes a while to install `oteapi-core`
+        # Sleep for longer, since it takes a while to install `oteapi-core[dev]`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
-        sleep 60
+        sleep 90
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
         CONTAINER_PLUGIN_PATH: /special-plugin

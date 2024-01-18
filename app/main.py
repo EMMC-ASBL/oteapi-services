@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, status
 from fastapi.openapi.utils import get_openapi
-from fastapi_plugins import RedisSettings, redis_plugin
 from oteapi.plugins import load_strategies
 from oteapi.settings import OteApiCoreSettings
 from pydantic import Field
 
 from app import __version__
 from app.models.error import HTTPValidationError
+from app.redis_cache import RedisSettings, redis_plugin
 from app.routers import (
     admin,
     datafilter,
@@ -25,7 +25,7 @@ from app.routers import (
 )
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict, List
+    from typing import Any
 
 
 logger = logging.getLogger(__name__)
@@ -56,11 +56,6 @@ class AppSettings(RedisSettings, OteApiCoreSettings):
         f"/api/v{__version__.split('.', maxsplit=1)[0]}",
         description="Application route prefix.",
     )
-
-    class Config:
-        """OTE-API Services application configuration."""
-
-        env_prefix = "OTEAPI_"
 
 
 def create_app() -> FastAPI:
@@ -111,7 +106,7 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
     return app
 
 
-def get_auth_deps() -> "List[Depends]":
+def get_auth_deps() -> "list[Depends]":
     """Get authentication dependencies
 
     Fetch dependencies for authentication through the
@@ -124,7 +119,9 @@ def get_auth_deps() -> "List[Depends]":
     if CONFIG.authentication_dependencies:
         modules = [
             module.strip().split(":")
-            for module in CONFIG.authentication_dependencies.split("|")
+            for module in CONFIG.authentication_dependencies.split(  # pylint: disable=no-member
+                "|"
+            )
         ]
         imports = [
             getattr(import_module(module), classname) for (module, classname) in modules
@@ -139,7 +136,7 @@ def get_auth_deps() -> "List[Depends]":
     return dependencies
 
 
-def custom_openapi() -> "Dict[str, Any]":
+def custom_openapi() -> "dict[str, Any]":
     """Improve the default look & feel when rendering using ReDocs."""
     if APP.openapi_schema:
         return APP.openapi_schema

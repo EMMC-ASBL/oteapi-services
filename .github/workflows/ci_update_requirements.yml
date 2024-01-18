@@ -25,7 +25,7 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Python 3.9
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.9"
 
@@ -81,7 +81,7 @@ jobs:
     - name: Fetch PR body
       if: env.UPDATE_DEPS == 'true'
       id: pr_body
-      uses: chuhlomin/render-template@v1.7
+      uses: chuhlomin/render-template@v1.9
       with:
         template: .github/utils/requirements_update_pr_body.txt
 

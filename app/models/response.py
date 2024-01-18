@@ -1,12 +1,8 @@
 """Pydantic response models."""
 import re
-from typing import TYPE_CHECKING
 
 from oteapi.models import AttrDict
-from pydantic import root_validator
-
-if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+from pydantic import model_validator
 
 
 class Session(AttrDict):
@@ -19,17 +15,21 @@ class CreateResponse(Session):
     The subclasses of this model should _always_ contain a `*_id` attribute.
     """
 
-    @root_validator(allow_reuse=True)
-    def ensure_id_attribute(cls, values: "Dict[str, Any]") -> "Dict[str, Any]":
+    @model_validator(mode="after")
+    def ensure_id_attribute(self) -> "CreateResponse":
         """Ensure a `*_id` attribute exists."""
-        if issubclass(cls, CreateResponse) and cls != CreateResponse:
-            # `cls` is a subclass of `CreateResponse`
-            if not any(re.match(r"^.+_id$", field) for field in values):
+        if (
+            issubclass(self.__class__, CreateResponse)
+            and self.__class__ != CreateResponse
+        ):
+            # Validating on a subclassed instance of `CreateResponse`
+            if not any(re.match(r"^.+_id$", field) for field, _ in self):
                 raise AttributeError(
                     "A '*_id' attribute MUST be defined for a subclass of "
                     "`CreateResponse`."
                 )
-        return values
+
+        return self
 
 
 class GetResponse(Session):

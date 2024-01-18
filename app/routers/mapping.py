@@ -2,9 +2,7 @@
 import json
 from typing import TYPE_CHECKING, Optional
 
-from aioredis import Redis
-from fastapi import APIRouter, Depends, status
-from fastapi_plugins import depends_redis
+from fastapi import APIRouter, status
 from oteapi.models import MappingConfig
 from oteapi.plugins import create_strategy
 
@@ -15,10 +13,11 @@ from app.models.mapping import (
     GetMappingResponse,
     InitializeMappingResponse,
 )
+from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+    from typing import Any
 
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
@@ -29,9 +28,9 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
 async def create_mapping(
+    cache: TRedisPlugin,
     config: MappingConfig,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> CreateMappingResponse:
     """Define a new mapping configuration (ontological representation)
     Mapping (ontology alignment), is the process of defining
@@ -39,7 +38,7 @@ async def create_mapping(
     """
     new_mapping = CreateMappingResponse()
 
-    await cache.set(new_mapping.mapping_id, config.json())
+    await cache.set(new_mapping.mapping_id, config.model_dump_json())
 
     if session_id:
         if not await cache.exists(session_id):
@@ -62,9 +61,9 @@ async def create_mapping(
     },
 )
 async def get_mapping(
+    cache: TRedisPlugin,
     mapping_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> GetMappingResponse:
     """Run and return data"""
     if not await cache.exists(mapping_id):
@@ -72,11 +71,25 @@ async def get_mapping(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = MappingConfig(**json.loads(await cache.get(mapping_id)))
+    cache_value = await cache.get(mapping_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {mapping_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = MappingConfig(**json.loads(cache_value))
 
     mapping_strategy = create_strategy("mapping", config)
-    session_data: "Optional[Dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
     )
     session_update = mapping_strategy.get(session=session_data)
 
@@ -96,9 +109,9 @@ async def get_mapping(
     },
 )
 async def initialize_mapping(
+    cache: TRedisPlugin,
     mapping_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> InitializeMappingResponse:
     """Initialize and update session."""
     if not await cache.exists(mapping_id):
@@ -106,11 +119,25 @@ async def initialize_mapping(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = MappingConfig(**json.loads(await cache.get(mapping_id)))
+    cache_value = await cache.get(mapping_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {mapping_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = MappingConfig(**json.loads(cache_value))
 
     mapping_strategy = create_strategy("mapping", config)
-    session_data: "Optional[Dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
     )
     session_update = mapping_strategy.initialize(session=session_data)
 

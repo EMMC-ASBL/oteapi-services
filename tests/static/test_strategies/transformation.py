@@ -9,7 +9,7 @@ from oteapi.models.transformationconfig import (
 from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from typing import Any, Dict, Optional
+    from typing import Any, Optional
 
 
 @dataclass
@@ -18,15 +18,15 @@ class DummyTransformationStrategy:
 
     transformation_config: TransformationConfig
 
-    def run(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
+    def run(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
         """Run a job, return a jobid"""
         del session
         del self.transformation_config
         return {"result": "a01d"}
 
     def initialize(
-        self, session: "Optional[Dict[str, Any]]" = None
-    ) -> "Dict[str, Any]":
+        self, session: "Optional[dict[str, Any]]" = None
+    ) -> "dict[str, Any]":
         """Initialize a job"""
         del session
         del self.transformation_config
@@ -46,7 +46,7 @@ class DummyTransformationStrategy:
             finishTime=datetime.utcnow(),
         )
 
-    def get(self, session: "Optional[Dict[str, Any]]" = None) -> "Dict[str, Any]":
+    def get(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
         """get transformation"""
         del session  # unused
         del self.transformation_config  # unused

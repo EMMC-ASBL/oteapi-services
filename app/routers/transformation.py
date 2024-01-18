@@ -2,9 +2,7 @@
 import json
 from typing import TYPE_CHECKING, Optional
 
-from aioredis import Redis
-from fastapi import APIRouter, Depends, Request, status
-from fastapi_plugins import depends_redis
+from fastapi import APIRouter, Request, status
 from oteapi.models import TransformationConfig, TransformationStatus
 from oteapi.plugins import create_strategy
 
@@ -16,10 +14,11 @@ from app.models.transformation import (
     GetTransformationResponse,
     InitializeTransformationResponse,
 )
+from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Dict
+    from typing import Any
 
     from oteapi.interfaces import ITransformationStrategy
 
@@ -34,17 +33,17 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     },
 )
 async def create_transformation(
+    cache: TRedisPlugin,
     config: TransformationConfig,
     request: Request,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> CreateTransformationResponse:
     """Create a new transformation configuration."""
     new_transformation = CreateTransformationResponse()
 
     config.token = request.headers.get("Authorization") or config.token
 
-    transformation_config = config.json()
+    transformation_config = config.model_dump_json()
 
     await cache.set(new_transformation.transformation_id, transformation_config)
 
@@ -69,9 +68,9 @@ async def create_transformation(
     },
 )
 async def get_transformation_status(
+    cache: TRedisPlugin,
     transformation_id: str,
     task_id: str,
-    cache: Redis = Depends(depends_redis),
 ) -> TransformationStatus:
     """Get the current status of a defined transformation."""
     if not await cache.exists(transformation_id):
@@ -79,7 +78,13 @@ async def get_transformation_status(
             transformation_id, "transformation_id"
         )
 
-    config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
+    cache_value = await cache.get(transformation_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {transformation_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = TransformationConfig(**json.loads(cache_value))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
     return strategy.status(task_id=task_id)
@@ -93,9 +98,9 @@ async def get_transformation_status(
     },
 )
 async def get_transformation(
+    cache: TRedisPlugin,
     transformation_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> GetTransformationResponse:
     """Get transformation."""
     if not await cache.exists(transformation_id):
@@ -105,11 +110,25 @@ async def get_transformation(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
+    cache_value = await cache.get(transformation_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {transformation_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = TransformationConfig(**json.loads(cache_value))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
-    session_data: "Optional[Dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
     )
     session_update = strategy.get(session=session_data)
 
@@ -129,9 +148,9 @@ async def get_transformation(
     },
 )
 async def execute_transformation(
+    cache: TRedisPlugin,
     transformation_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> ExecuteTransformationResponse:
     """Execute (run) a transformation."""
     # Fetch transformation info from cache
@@ -142,11 +161,25 @@ async def execute_transformation(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
+    cache_value = await cache.get(transformation_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {transformation_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = TransformationConfig(**json.loads(cache_value))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
-    session_data: "Optional[Dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
     )
     session_update = strategy.get(session=session_data)
 
@@ -166,9 +199,9 @@ async def execute_transformation(
     },
 )
 async def initialize_transformation(
+    cache: TRedisPlugin,
     transformation_id: str,
     session_id: Optional[str] = None,
-    cache: Redis = Depends(depends_redis),
 ) -> InitializeTransformationResponse:
     """Initialize a transformation."""
     # Fetch transformation info from cache
@@ -179,11 +212,25 @@ async def initialize_transformation(
     if session_id and not await cache.exists(session_id):
         raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
 
-    config = TransformationConfig(**json.loads(await cache.get(transformation_id)))
+    cache_value = await cache.get(transformation_id)
+    if not isinstance(cache_value, (str, bytes)):
+        raise TypeError(
+            f"Expected cache value of {transformation_id} to be a string or bytes, "
+            f"found it to be of type {type(cache_value)!r}."
+        )
+    config = TransformationConfig(**json.loads(cache_value))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
-    session_data: "Optional[Dict[str, Any]]" = (
-        None if not session_id else json.loads(await cache.get(session_id))
+
+    if session_id:
+        cache_value = await cache.get(session_id)
+        if not isinstance(cache_value, (str, bytes)):
+            raise TypeError(
+                f"Expected cache value of {session_id} to be a string or bytes, "
+                f"found it to be of type {type(cache_value)!r}."
+            )
+    session_data: "Optional[dict[str, Any]]" = (
+        None if not session_id else json.loads(cache_value)
     )
     session_update = strategy.initialize(session=session_data)
 

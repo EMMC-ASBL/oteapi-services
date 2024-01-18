@@ -4,7 +4,7 @@
 #   pre-commit autoupdate
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
     - id: end-of-file-fixer
     - id: debug-statements
@@ -19,35 +19,45 @@ repos:
       args: [--markdown-linebreak-ext=md]
 
   - repo: https://github.com/timothycrosley/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
     - id: isort
       args: ["--profile", "black", "--filter-files", "--skip-gitignore"]
 
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+    - id: pyupgrade
+      args: ["--py39-plus"]
+
   - repo: https://github.com/ambv/black
-    rev: 23.9.1
+    rev: 23.12.1
     hooks:
     - id: black
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
+    rev: 1.7.6
     hooks:
     - id: bandit
       args: ["-r"]
       files: ^app/.*$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.5.1
+    rev: v1.8.0
     hooks:
     - id: mypy
       exclude: ^tests/.*$
+      additional_dependencies:
+        - "types-requests"
+        - "pydantic>=2,<3"
+        - "types-redis"
 
   - repo: local
     hooks:
     - id: pylint
       name: pylint
       entry: pylint
-      args: ["--rcfile=.pylintrc", "--extension-pkg-whitelist='pydantic'"]
+      args: ["--rcfile=pyproject.toml", "--extension-pkg-whitelist='pydantic'"]
       language: python
       types: [python]
       require_serial: true
@@ -56,7 +66,7 @@ repos:
     - id: pylint-tests
       name: pylint - tests
       entry: pylint
-      args: ["--rcfile=.pylintrc", "--extension-pkg-whitelist='pydantic'", "--disable=C0415,W0621"]
+      args: ["--rcfile=pyproject.toml", "--extension-pkg-whitelist='pydantic'", "--disable=C0415,W0621"]
       language: python
       types: [python]
       require_serial: true
