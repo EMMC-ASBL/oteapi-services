@@ -1,4 +1,5 @@
 """Pydantic response models."""
+
 import re
 
 from oteapi.models import AttrDict

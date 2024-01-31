@@ -1,4 +1,5 @@
 """Demo resource strategy class."""
+
 from typing import TYPE_CHECKING, Annotated, Optional
 
 from oteapi.models.resourceconfig import ResourceConfig
