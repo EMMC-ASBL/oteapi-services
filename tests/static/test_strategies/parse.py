@@ -1,4 +1,5 @@
 """Demo strategy class for text/json."""
+
 # pylint: disable=unused-argument
 import json
 from typing import TYPE_CHECKING

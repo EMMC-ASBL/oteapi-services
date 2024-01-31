@@ -1,4 +1,5 @@
 """Data resource-specific pydantic response models."""
+
 from typing import Annotated
 from uuid import uuid4
 

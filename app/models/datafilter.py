@@ -1,4 +1,5 @@
 """Data filter-specific pydantic response models."""
+
 from typing import Annotated
 from uuid import uuid4
 
