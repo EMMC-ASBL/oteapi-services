@@ -7,7 +7,7 @@ from franz.openrdf.connect import ag_connect
 from oteapi.models import TripleStoreConfig
 from oteapi.triplestore import TripleStore
 
-ROUTER = APIRouter(prefix="/triples")
+ROUTER = APIRouter(prefix="/triples", tags=["triplestore"])
 
 
 @ROUTER.post("/fetch")

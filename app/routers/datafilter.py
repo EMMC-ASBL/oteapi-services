@@ -30,6 +30,7 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["datafilter"],
 )
 async def create_filter(
     cache: TRedisPlugin,
@@ -60,6 +61,7 @@ async def create_filter(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["datafilter"],
 )
 async def get_filter(
     cache: TRedisPlugin,
@@ -108,6 +110,7 @@ async def get_filter(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["datafilter"],
 )
 async def initialize_filter(
     cache: TRedisPlugin,

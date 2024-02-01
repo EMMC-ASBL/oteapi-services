@@ -10,7 +10,7 @@ from app.redis_cache import TRedisPlugin
 ROUTER = APIRouter(prefix="/redis")
 
 
-@ROUTER.get("/{key}", include_in_schema=False)
+@ROUTER.get("/{key}", include_in_schema=False, tags=["admin"])
 async def get_key(
     cache: TRedisPlugin,
     key: str,

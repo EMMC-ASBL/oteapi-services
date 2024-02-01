@@ -31,6 +31,7 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["transformation"],
 )
 async def create_transformation(
     cache: TRedisPlugin,
@@ -66,6 +67,7 @@ async def create_transformation(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["transformation"],
 )
 async def get_transformation_status(
     cache: TRedisPlugin,
@@ -96,6 +98,7 @@ async def get_transformation_status(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["transformation"],
 )
 async def get_transformation(
     cache: TRedisPlugin,
@@ -146,6 +149,7 @@ async def get_transformation(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["transformation"],
 )
 async def execute_transformation(
     cache: TRedisPlugin,
@@ -197,6 +201,7 @@ async def execute_transformation(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["transformation"],
 )
 async def initialize_transformation(
     cache: TRedisPlugin,

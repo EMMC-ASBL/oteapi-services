@@ -3,7 +3,7 @@ import json
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, status
-from oteapi.models import SessionUpdate
+from oteapi.models import AttrDict
 
 from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
 from app.models.response import Session
@@ -20,6 +20,10 @@ if TYPE_CHECKING:  # pragma: no cover
     from typing import Any, Union
 
 
+class SessionUpdate(AttrDict):
+    """Session Update Data Model for returning values."""
+
+
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 
 
@@ -27,6 +31,7 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     "/",
     response_model=CreateSessionResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
+    tags=["session"],
 )
 async def create_session(
     cache: TRedisPlugin,
@@ -47,7 +52,6 @@ async def create_session(
 
     """
     new_session = CreateSessionResponse()
-
     await cache.set(new_session.session_id, session.model_dump_json())
     return new_session
 
@@ -56,6 +60,7 @@ async def create_session(
     "/",
     response_model=ListSessionsResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
+    tags=["session"],
 )
 async def list_sessions(
     cache: TRedisPlugin,
@@ -63,12 +68,12 @@ async def list_sessions(
     """Get all session keys"""
     keylist = []
     for key in await cache.keys(pattern=f"{IDPREFIX}*"):
-        if not isinstance(key, bytes):
+        if not isinstance(key, (str, bytes)):
             raise TypeError(
                 "Found a key that is not stored as bytes (stored as type "
                 f"{type(key)!r})."
             )
-        keylist.append(key.decode(encoding="utf-8"))
+        keylist.append(key)
     return ListSessionsResponse(keys=keylist)
 
 
@@ -76,6 +81,7 @@ async def list_sessions(
     "/",
     response_model=DeleteAllSessionsResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
+    tags=["session"],
 )
 async def delete_all_sessions(
     cache: TRedisPlugin,
@@ -154,6 +160,7 @@ async def _update_session_list_item(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["session"],
 )
 async def update_session(
     cache: TRedisPlugin,
@@ -182,6 +189,7 @@ async def update_session(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["session"],
 )
 async def get_session(
     cache: TRedisPlugin,
@@ -207,6 +215,7 @@ async def get_session(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["session"],
 )
 async def delete_session(
     cache: TRedisPlugin,

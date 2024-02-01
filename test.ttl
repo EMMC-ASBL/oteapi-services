@@ -1,0 +1,40 @@
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ex: <http://example.org/> .
+
+ex:InitialMethodDevelopmentOutcomes
+  a prov:Activity ;
+  rdfs:label "Initial method development outcomes at SINTEF" ;
+  prov:qualifiedAssociation [
+    a prov:Association ;
+    prov:agent ex:SINTEFOcean ;
+  ] .
+
+ex:SINTEFOcean
+  a prov:Agent ;
+  rdfs:label "SINTEF Ocean" .
+
+ex:PolymerSolubility
+  a prov:Entity ;
+  rdfs:label "Solubility of polymers" ;
+  prov:wasGeneratedBy ex:InitialMethodDevelopmentOutcomes .
+
+ex:PyGCMSMethodTestingOutcomes
+  a prov:Entity ;
+  rdfs:label "Py-GCMS method testing and initial outcome and observations" ;
+  prov:wasGeneratedBy ex:InitialMethodDevelopmentOutcomes .
+
+ex:CalibrationCurvesAndLOD
+  a prov:Entity ;
+  rdfs:label "Calibration curves and LOD" ;
+  prov:wasGeneratedBy ex:InitialMethodDevelopmentOutcomes .
+
+ex:AnalysisMethods
+  a prov:Entity ;
+  rdfs:label "Analysis methods" ;
+  prov:wasGeneratedBy ex:InitialMethodDevelopmentOutcomes .
+
+ex:PSTestRecovery
+  a prov:Entity ;
+  rdfs:label "Test of PS NP recovery from MilliQ and Novachem" ;
+  prov:wasGeneratedBy ex:InitialMethodDevelopmentOutcomes .

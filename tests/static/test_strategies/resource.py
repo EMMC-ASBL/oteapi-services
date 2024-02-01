@@ -1,8 +1,8 @@
 """Demo resource strategy class."""
 from typing import TYPE_CHECKING, Annotated, Optional
 
+from oteapi.models import AttrDict
 from oteapi.models.resourceconfig import ResourceConfig
-from oteapi.models.sessionupdate import SessionUpdate
 from oteapi.plugins.factories import create_strategy
 from pydantic import Field
 from pydantic.dataclasses import dataclass
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from typing import Any
 
 
-class ResourceResult(SessionUpdate):
+class ResourceResult(AttrDict):
     """Update session with the FilterResult model"""
 
     output: Annotated[Optional[str], Field(description="Optional result")] = None

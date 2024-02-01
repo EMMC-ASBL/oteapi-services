@@ -26,6 +26,7 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     "/",
     response_model=CreateFunctionResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
+    tags=["function"],
 )
 async def create_function(
     cache: TRedisPlugin,
@@ -61,6 +62,7 @@ async def create_function(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["function"],
 )
 async def get_function(
     cache: TRedisPlugin,
@@ -109,6 +111,7 @@ async def get_function(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["function"],
 )
 async def initialize_function(
     cache: TRedisPlugin,

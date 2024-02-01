@@ -26,6 +26,7 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     "/",
     response_model=CreateMappingResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
+    tags=["mapping"],
 )
 async def create_mapping(
     cache: TRedisPlugin,
@@ -59,6 +60,7 @@ async def create_mapping(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["mapping"],
 )
 async def get_mapping(
     cache: TRedisPlugin,
@@ -107,13 +109,19 @@ async def get_mapping(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
+    tags=["mapping"],
 )
 async def initialize_mapping(
     cache: TRedisPlugin,
     mapping_id: str,
     session_id: Optional[str] = None,
 ) -> InitializeMappingResponse:
-    """Initialize and update session."""
+    """
+    Initialize and update session.
+
+    - **mapping_id**: Unique identifier of a mapping configuration
+    - **session_id**: Optional reference to a session object
+    """
     if not await cache.exists(mapping_id):
         raise httpexception_404_item_id_does_not_exist(mapping_id, "mapping_id")
     if session_id and not await cache.exists(session_id):
