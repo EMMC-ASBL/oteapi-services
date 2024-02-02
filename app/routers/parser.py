@@ -149,8 +149,8 @@ async def get_parser(
     if session_id:
         await _validate_cache_key(cache, session_id, "session_id")
         session_data = json.loads(await cache.get(session_id))
-
-    populate_config_from_session(session_data, config)
+        populate_config_from_session(session_data, config)
+        
     strategy: "IParseStrategy" = create_strategy("parse", config)
 
     logger.debug(str(strategy.parse_config.model_dump()))
@@ -160,3 +160,4 @@ async def get_parser(
         await _update_session(session_id=session_id, updated_session=session_update, redis=cache)
 
     return GetParserResponse(**session_update)
+

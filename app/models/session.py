@@ -1,5 +1,5 @@
 """Session-specific pydantic response models."""
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import uuid4
 
 from pydantic import Field
@@ -56,6 +56,10 @@ class DeleteAllSessionsResponse(Session):
     number_of_deleted_sessions: Annotated[
         int, Field(description="The number of deleted sessions in the Redis cache.")
     ]
+    message: Optional[str] = Field(
+        "All session keys deleted.",
+        description="Optional message indicating the result of the operation."
+    )
 
 
 class DeleteSessionResponse(Session):

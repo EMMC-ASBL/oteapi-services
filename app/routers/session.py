@@ -93,6 +93,10 @@ async def delete_all_sessions(
 
     """
     keylist = await cache.keys(pattern=f"{IDPREFIX}*")
+    # Check if the keylist is empty
+    if not keylist:
+        return DeleteAllSessionsResponse(number_of_deleted_sessions=0,message="No session keys found to delete.")
+    
     return DeleteAllSessionsResponse(
         number_of_deleted_sessions=await cache.delete(*keylist)
     )
