@@ -143,22 +143,10 @@ async def read_dataresource(
         None if not session_id else json.loads(cache_value)
     )
 
-    if config.downloadUrl and config.mediaType:
-        # Download strategy
-        session_update = create_strategy("download", config).get(session=session_data)
-        if session_update and session_id:
-            session_data = await _update_session(session_id, session_update, cache)
 
-        # Parse strategy
-        session_update = create_strategy("parse", config).get(session=session_data)
-        if session_update and session_id:
-            await _update_session(session_id, session_update, cache)
-
-    elif config.accessUrl and config.accessService:
-        # Resource strategy
-        session_update = create_strategy("resource", config).get(session=session_data)
-        if session_update and session_id:
-            await _update_session(session_id, session_update, cache)
+    session_update = create_strategy("resource", config).get(session=session_data)
+    if session_update and session_id:
+        await _update_session(session_id, session_update, cache)
 
     else:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
