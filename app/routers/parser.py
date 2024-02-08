@@ -2,7 +2,7 @@ from typing import Optional, Any, TYPE_CHECKING
 import json
 import logging
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, status
 from oteapi.models import ParserConfig
 from oteapi.plugins import create_strategy
 from oteapi.utils.config_updater import populate_config_from_session
@@ -11,15 +11,12 @@ from app.models.parser import (
     IDPREFIX,
     CreateParserResponse,
     GetParserResponse,
-    InitializeParserResponse,
     DeleteAllParsersResponse,
     ListParsersResponse
 )
 from app.models.error import (
     HTTPNotFoundError,
-    HTTPValidationError,
     httpexception_404_item_id_does_not_exist,
-    httpexception_422_resource_id_is_unprocessable,
 )
 from app.redis_cache import TRedisPlugin
 from app.routers.session import _update_session, _update_session_list_item
@@ -60,7 +57,6 @@ async def _validate_cache_key(
 async def create_parser(
     cache: TRedisPlugin,
     config: ParserConfig,
-    request: Request,
     session_id: Optional[str] = None
     ) -> CreateParserResponse:
 
@@ -92,8 +88,9 @@ async def delete_all_parsers(
     """
     Delete all parser configurations in the current memory database
     """
-
     keylist = await cache.keys(pattern=f"{IDPREFIX}*")
+    if not keylist:
+        return DeleteAllParsersResponse(number_of_deleted_parsers=0)
     return DeleteAllParsersResponse(
         number_of_deleted_parsers = await cache.delete(*keylist)
     )
@@ -159,4 +156,3 @@ async def get_parser(
         await _update_session(session_id=session_id, updated_session=session_update, redis=cache)
 
     return GetParserResponse(**session_update)
-
