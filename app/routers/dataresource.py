@@ -38,7 +38,6 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
 async def create_dataresource(
     cache: TRedisPlugin,
     config: ResourceConfig,
-    request: Request,
     session_id: Optional[str] = None,
 ) -> CreateResourceResponse:
     """### Register an external data resource.
@@ -56,7 +55,7 @@ async def create_dataresource(
     """
     new_resource = CreateResourceResponse()
 
-    config.token = request.headers.get("Authorization") or config.token
+    # config.token = request.headers.get("Authorization") or config.token
 
     resource_config = config.model_dump_json()
 
@@ -139,18 +138,26 @@ async def read_dataresource(
                 f"Expected cache value of {session_id} to be a string or bytes, "
                 f"found it to be of type {type(cache_value)!r}."
             )
-    session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(cache_value)
-    )
+    
+    
+    if not config.resourceType:
+        raise httpexception_422_resource_id_is_unprocessable(resource_id)
+    
+    if config.downloadUrl and config.mediaType:
+        session_update = create_strategy("resource", config).get()
+        if session_update and session_id:
+            await _update_session(
+                session_id=session_id, updated_session=session_update, redis=cache
+            )
 
-
-    session_update = create_strategy("resource", config).get(session=session_data)
-    if session_update and session_id:
-        await _update_session(session_id, session_update, cache)
+    elif config.accessUrl and config.accessService:
+        session_update = create_strategy("resource", config).get()
+        if session_update and session_id:
+            await _update_session(session_id, session_update, cache)
 
     else:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
-
+    
     return GetResourceResponse(**session_update)
 
 
@@ -189,36 +196,23 @@ async def initialize_dataresource(
                 f"Expected cache value of {session_id} to be a string or bytes, "
                 f"found it to be of type {type(cache_value)!r}."
             )
-    session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(cache_value)
-    )
+    
+    if not config.resourceType:
+        raise httpexception_422_resource_id_is_unprocessable(resource_id)
 
     if config.downloadUrl and config.mediaType:
         # Download strategy
-        session_update = create_strategy("download", config).initialize(
-            session=session_data
-        )
+        session_update = create_strategy("resource", config).initialize()
         if session_update and session_id:
-            session_data = await _update_session(
-                session_id=session_id, updated_session=session_update, redis=cache
-            )
-
-        # Parse strategy
-        session_update = create_strategy("parse", config).initialize(
-            session=session_data
-        )
-        if session_update and session_id:
-            session_data = await _update_session(
+            await _update_session(
                 session_id=session_id, updated_session=session_update, redis=cache
             )
 
     elif config.accessUrl and config.accessService:
         # Resource strategy
-        session_update = create_strategy("resource", config).initialize(
-            session=session_data
-        )
+        session_update = create_strategy("resource", config).initialize()
         if session_update and session_id:
-            session_data = await _update_session(
+            await _update_session(
                 session_id=session_id, updated_session=session_update, redis=cache
             )
 

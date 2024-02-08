@@ -46,7 +46,7 @@ def httpexception_422_resource_id_is_unprocessable(resource_id: str) -> HTTPExce
         detail=[
             {
                 "loc": ["resource_id"],
-                "msg": "Missing downloadUrl/mediaType or "
+                "msg": "Missing resourceType or downloadUrl/mediaType or "
                 f"accessUrl/accessService identifier in {resource_id=}",
                 "type": "Error",
             }
