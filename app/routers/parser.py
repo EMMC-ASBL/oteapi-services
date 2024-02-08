@@ -143,15 +143,14 @@ async def get_parser(
     ) -> GetParserResponse:
     """Retrieve and parse data using a specified parser."""
     await _validate_cache_key(cache, parser_id, "parser_id")
-    config = ParserConfig(**json.loads(await cache.get(parser_id)))
-
+    config = json.loads(await cache.get(parser_id))
     session_data: "Optional[dict[str, Any]]" = None
     if session_id:
         await _validate_cache_key(cache, session_id, "session_id")
         session_data = json.loads(await cache.get(session_id))
         populate_config_from_session(session_data, config)
         
-    strategy: "IParseStrategy" = create_strategy("parse", config)
+    strategy: "IParseStrategy" = create_strategy("parse", ParserConfig(**config))
 
     logger.debug(str(strategy.parse_config.model_dump()))
     session_update = strategy.get()
