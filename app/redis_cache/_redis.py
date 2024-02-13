@@ -7,6 +7,7 @@ The original code is available at:
 https://github.com/madkote/fastapi-plugins/blob/26f31177634ba84ca73c63f84535af205135d781/fastapi_plugins/_redis.py
 
 """
+
 from enum import Enum, unique
 from typing import TYPE_CHECKING, Annotated, Any, Optional, Union
 
