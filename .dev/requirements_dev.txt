@@ -1,5 +1,5 @@
 dulwich~=0.21.7
-fakeredis~=2.20
+fakeredis~=2.21
 httpx~=0.26.0
 invoke~=2.2
 pre-commit~=3.6
