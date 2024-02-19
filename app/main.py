@@ -17,11 +17,11 @@ from app.routers import (
     dataresource,
     function,
     mapping,
+    parser,
     redisadmin,
     session,
     transformation,
     triplestore,
-    parser
 )
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -88,7 +88,6 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
         function,
         transformation,
         triplestore,
-
     ]
     if CONFIG.include_redisadmin:
         available_routers.append(redisadmin)

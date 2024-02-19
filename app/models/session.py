@@ -58,7 +58,7 @@ class DeleteAllSessionsResponse(Session):
     ]
     message: Optional[str] = Field(
         "All session keys deleted.",
-        description="Optional message indicating the result of the operation."
+        description="Optional message indicating the result of the operation.",
     )
 
 

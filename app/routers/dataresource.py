@@ -1,4 +1,5 @@
 """Data Resource."""
+
 import json
 from typing import TYPE_CHECKING, Optional
 
@@ -138,26 +139,21 @@ async def read_dataresource(
                 f"Expected cache value of {session_id} to be a string or bytes, "
                 f"found it to be of type {type(cache_value)!r}."
             )
-    
-    
+
     if not config.resourceType:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
-    
-    if config.downloadUrl and config.mediaType:
+
+    if (config.downloadUrl and config.mediaType) or (
+        config.accessUrl and config.accessService
+    ):
         session_update = create_strategy("resource", config).get()
         if session_update and session_id:
             await _update_session(
                 session_id=session_id, updated_session=session_update, redis=cache
             )
-
-    elif config.accessUrl and config.accessService:
-        session_update = create_strategy("resource", config).get()
-        if session_update and session_id:
-            await _update_session(session_id, session_update, cache)
-
     else:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
-    
+
     return GetResourceResponse(**session_update)
 
 
@@ -196,26 +192,19 @@ async def initialize_dataresource(
                 f"Expected cache value of {session_id} to be a string or bytes, "
                 f"found it to be of type {type(cache_value)!r}."
             )
-    
+
     if not config.resourceType:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
 
-    if config.downloadUrl and config.mediaType:
+    if (config.downloadUrl and config.mediaType) or (
+        config.accessUrl and config.accessService
+    ):
         # Download strategy
         session_update = create_strategy("resource", config).initialize()
         if session_update and session_id:
             await _update_session(
                 session_id=session_id, updated_session=session_update, redis=cache
             )
-
-    elif config.accessUrl and config.accessService:
-        # Resource strategy
-        session_update = create_strategy("resource", config).initialize()
-        if session_update and session_id:
-            await _update_session(
-                session_id=session_id, updated_session=session_update, redis=cache
-            )
-
     else:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
 

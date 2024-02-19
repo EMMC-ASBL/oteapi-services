@@ -2,22 +2,20 @@
 from typing import Annotated
 from uuid import uuid4
 
-from pydantic import Field
 from oteapi.models import AttrDict
-from app.models.response import Session
-from app.models.response import (
-    CreateResponse,
-    GetResponse,
-    InitializeResponse,
-)
+from pydantic import Field
+
+from app.models.response import CreateResponse, GetResponse, InitializeResponse, Session
 
 IDPREFIX = "parser"
 
+
 class CreateParserResponse(CreateResponse):
-    """ Create a response resource
+    """Create a response resource
 
     Router: `POST /parser`
     """
+
     parser_id: Annotated[
         str,
         Field(
@@ -30,17 +28,20 @@ class CreateParserResponse(CreateResponse):
         ),
     ]
 
+
 class GetParserResponse(GetResponse):
-    """ Get a parser resource
+    """Get a parser resource
 
     Router: `GET /parser/{parser_id}`
     """
 
+
 class InitializeParserResponse(InitializeResponse):
-    """ Initialize a parser resource
+    """Initialize a parser resource
 
     Router: `POST /parser/{parser_id}/initialize`
     """
+
 
 class DeleteAllParsersResponse(AttrDict):
     """### Delete all sessions
@@ -54,7 +55,7 @@ class DeleteAllParsersResponse(AttrDict):
 
 
 class ListParsersResponse(Session):
-    """ List all parser ids
+    """List all parser ids
 
     Router: `GET /parser`
     """
