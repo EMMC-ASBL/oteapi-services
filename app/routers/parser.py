@@ -166,7 +166,7 @@ async def get_parser(
     },
     tags=["parser"],
 )
-async def initialize_dataresource(
+async def initialize_parser(
     cache: TRedisPlugin,
     parser_id: str,
     session_id: Optional[str] = None,
