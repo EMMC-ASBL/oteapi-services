@@ -1,4 +1,5 @@
 """Helper service for fetching triples."""
+
 import os
 
 import requests

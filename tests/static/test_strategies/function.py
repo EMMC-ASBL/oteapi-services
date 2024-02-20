@@ -1,4 +1,5 @@
 """Demo function strategy class."""
+
 from typing import TYPE_CHECKING
 
 from oteapi.models import AttrDict, FunctionConfig

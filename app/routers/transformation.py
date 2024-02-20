@@ -1,4 +1,5 @@
 """Transformation."""
+
 import json
 from typing import TYPE_CHECKING, Optional
 

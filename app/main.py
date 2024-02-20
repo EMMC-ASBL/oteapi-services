@@ -1,4 +1,5 @@
 """OTE-API FastAPI application."""
+
 import logging
 from importlib import import_module
 from typing import TYPE_CHECKING

@@ -1,4 +1,5 @@
 """Helper service for viewing redis objects."""
+
 import json
 from typing import Any
 

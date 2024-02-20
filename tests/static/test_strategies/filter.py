@@ -1,4 +1,5 @@
 """Demo filter strategy."""
+
 from typing import TYPE_CHECKING, Annotated
 
 from oteapi.models.filterconfig import FilterConfig

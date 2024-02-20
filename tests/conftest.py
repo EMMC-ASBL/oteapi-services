@@ -1,4 +1,5 @@
 """Fixtures and configuration for PyTest."""
+
 # pylint: disable=invalid-name,redefined-builtin,unused-argument,comparison-with-callable
 from typing import TYPE_CHECKING
 

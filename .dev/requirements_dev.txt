@@ -1,11 +1,11 @@
 dulwich~=0.21.7
 debugpy>=1.8.0
-fakeredis~=2.20
+fakeredis~=2.21
 httpx~=0.26.0
 invoke~=2.2
 pre-commit~=3.6
 pylint~=3.0
-pytest~=7.4
+pytest~=8.0
 pytest-cov~=4.1
 safety~=2.3
 

@@ -1,4 +1,5 @@
 """Microservice Session."""
+
 import json
 from typing import TYPE_CHECKING
 

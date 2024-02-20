@@ -1,4 +1,5 @@
 """Pydantic models for handling errors."""
+
 from typing import Annotated, Optional
 
 from fastapi import HTTPException, status
