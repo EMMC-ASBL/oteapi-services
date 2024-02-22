@@ -57,10 +57,12 @@ class DeleteAllSessionsResponse(Session):
     number_of_deleted_sessions: Annotated[
         int, Field(description="The number of deleted sessions in the Redis cache.")
     ]
-    message: Optional[str] = Field(
-        "All session keys deleted.",
-        description="Optional message indicating the result of the operation.",
-    )
+    message: Annotated[
+        Optional[str],
+        Field(
+            description="Optional message indicating the result of the operation.",
+        ),
+    ] = "All session keys deleted."
 
 
 class DeleteSessionResponse(Session):
