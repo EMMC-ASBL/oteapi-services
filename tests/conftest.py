@@ -39,6 +39,11 @@ class DummyCache:
         """Mock `exists()` method."""
         return key in self.obj.keys()
 
+    async def delete(self, *keys):
+        for key in keys:
+            if key in self.obj:  # Use self.obj instead of self.cache
+                del self.obj[key]
+
 
 def pytest_configure(config):
     """Method that runs before pytest collects tests so no modules are imported"""
@@ -75,6 +80,12 @@ def test_data() -> "dict[str, str]":
                 "functionType": "function/demo",
                 "configuration": {},
             },
+            # dataresource
+            "dataresource-910c9965-a318-4ac4-9123-9c55d5b86f2e": {
+                "downloadUrl": "https://raw.githubusercontent.com/EMMC-ASBL/oteapi-core/master/tests/static/sample2.json",
+                "mediaType": "application/json",
+                "resourceType": "resource/demo",
+            },
             # mapping
             "mapping-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": {
                 "mappingType": "mapping/demo",
@@ -90,6 +101,15 @@ def test_data() -> "dict[str, str]":
                 "transformationType": "script/demo",
                 "name": "script/dummy",
                 "configuration": {},
+            },
+            # parser
+            "parser-f752c613-fde0-4d43-a7f6-c50f68642daa": {
+                "parserType": "parser/demo",
+                "entity": "http://example.com/entity",
+                "configuration": {
+                    "downloadUrl": "https://raw.githubusercontent.com/EMMC-ASBL/oteapi-core/master/tests/static/sample2.json",
+                    "mediaType": "application/json",
+                },
             },
         }.items()
     }
@@ -108,8 +128,8 @@ def load_test_strategies() -> None:
 
     test_strategies = [
         {
-            "name": "tests.file",
-            "value": "tests.static.test_strategies.download:FileStrategy",
+            "name": "tests.https",
+            "value": "tests.static.test_strategies.download:HTTPSStrategy",
             "group": "oteapi.download",
         },
         {
@@ -128,12 +148,12 @@ def load_test_strategies() -> None:
             "group": "oteapi.mapping",
         },
         {
-            "name": "tests.text/json",
+            "name": "tests.parser/demo",
             "value": "tests.static.test_strategies.parse:DemoJSONDataParseStrategy",
             "group": "oteapi.parse",
         },
         {
-            "name": "tests.demo-access-service",
+            "name": "tests.resource/demo",
             "value": "tests.static.test_strategies.resource:DemoResourceStrategy",
             "group": "oteapi.resource",
         },

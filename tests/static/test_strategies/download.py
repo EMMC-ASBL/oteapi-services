@@ -2,9 +2,10 @@
 
 from typing import TYPE_CHECKING, Annotated, Optional
 
+import requests
 from oteapi.datacache.datacache import DataCache
-from oteapi.models.resourceconfig import ResourceConfig
-from pydantic import BaseModel, Field
+from oteapi.models import AttrDict, DataCacheConfig, ResourceConfig
+from pydantic import AnyHttpUrl, BaseModel, Field
 from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
@@ -64,3 +65,65 @@ class FileStrategy:
                 key = cache.add(handle.read())
 
         return {"key": key}
+
+
+class HTTPSConfig(AttrDict):
+    """HTTP(S)-specific Configuration Data Model."""
+
+    datacache_config: Optional[DataCacheConfig] = Field(
+        None,
+        description=(
+            "Configurations for the data cache for storing the downloaded file "
+            "content."
+        ),
+    )
+
+
+class HTTPSDemoConfig(ResourceConfig):
+    """HTTP(S) download strategy filter config."""
+
+    downloadUrl: AnyHttpUrl = Field(
+        ..., description="The HTTP(S) URL, which will be downloaded."
+    )
+    configuration: HTTPSConfig = Field(
+        HTTPSConfig(), description="HTTP(S) download strategy-specific configuration."
+    )
+
+
+class HTTPDownloadContent(AttrDict):
+    """Class for returning values from Download HTTPS strategy."""
+
+    key: str = Field(..., description="Key to access the data in the cache.")
+
+
+@dataclass
+class HTTPSStrategy:
+    """Strategy for retrieving data via http.
+
+    **Registers strategies**:
+
+    - `("scheme", "http")`
+    - `("scheme", "https")`
+
+    """
+
+    download_config: HTTPSDemoConfig
+
+    def initialize(self) -> AttrDict:
+        """Initialize."""
+        return AttrDict()
+
+    def get(self) -> HTTPDownloadContent:
+        """Download via http/https and store on local cache."""
+        cache = DataCache(self.download_config.configuration.datacache_config)
+        if cache.config.accessKey and cache.config.accessKey in cache:
+            key = cache.config.accessKey
+        else:
+            req = requests.get(
+                str(self.download_config.downloadUrl),
+                allow_redirects=True,
+                timeout=(3, 27),  # timeout: (connect, read) in seconds
+            )
+            key = cache.add(req.content)
+
+        return HTTPDownloadContent(key=key)

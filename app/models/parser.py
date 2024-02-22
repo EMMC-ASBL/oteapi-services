@@ -1,6 +1,6 @@
 """Parser specific pydantic response models."""
 
-from typing import Annotated
+from typing import Annotated, Optional
 from uuid import uuid4
 
 from oteapi.models import AttrDict
@@ -51,7 +51,8 @@ class DeleteAllParsersResponse(AttrDict):
     """
 
     number_of_deleted_parsers: Annotated[
-        int, Field(description="The number of deleted parsers in the Redis cache.")
+        Optional[int],
+        Field(description="The number of deleted parsers in the Redis cache."),
     ]
 
 

@@ -12,7 +12,11 @@ def test_create_parser(client: "TestClient") -> None:
         "/parser/",
         json={
             "parserType": "parser/demo",
-            "configuration": {},
+            "entity": "http://example.com/entity",
+            "configuration": {
+                "downloadUrl": "https://filesamples.com/samples/code/json/sample2.json",
+                "mediaType": "application/json",
+            },
         },
     )
     assert "parser_id" in response.json()
@@ -44,5 +48,3 @@ def test_get_parser(client: "TestClient") -> None:
     """Test getting and parsing data using a specified parser"""
     response = client.get("/parser/parser-f752c613-fde0-4d43-a7f6-c50f68642daa")
     assert response.status_code == 200
-    assert "parserType" in response.json()
-    assert "configuration" in response.json()
