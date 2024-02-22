@@ -1,3 +1,5 @@
+"""Parser"""
+
 import json
 import logging
 from typing import TYPE_CHECKING, Any, Optional
@@ -25,7 +27,7 @@ if TYPE_CHECKING:  # pragma: no cover
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("app.routers.parser")
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
+ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["parser"])
 
 
 async def _validate_cache_key(cache: TRedisPlugin, key: str, key_type: str) -> None:
@@ -46,7 +48,6 @@ async def _validate_cache_key(cache: TRedisPlugin, key: str, key_type: str) -> N
     "/",
     response_model=CreateParserResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["parser"],
 )
 async def create_parser(
     cache: TRedisPlugin, config: ParserConfig, session_id: Optional[str] = None
@@ -72,7 +73,6 @@ async def create_parser(
     "/",
     response_model=DeleteAllParsersResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["parser"],
 )
 async def delete_all_parsers(
     cache: TRedisPlugin,
@@ -93,7 +93,6 @@ async def delete_all_parsers(
     "/",
     response_model=ListParsersResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["parser"],
 )
 async def list_parsers(cache: TRedisPlugin) -> ListParsersResponse:
     """Retrieve all parser IDs from cache."""
@@ -110,13 +109,15 @@ async def list_parsers(cache: TRedisPlugin) -> ListParsersResponse:
     "/{parser_id}/info",
     response_model=ParserConfig,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["parser"],
 )
 async def info_parser(cache: TRedisPlugin, parser_id: str) -> ParserConfig:
     """Get information about a specific parser."""
     await _validate_cache_key(cache, parser_id, "parser_id")
     cache_value = await cache.get(parser_id)
-    return ParserConfig(**json.loads(cache_value))
+    if cache_value is None:
+        raise ValueError("Cache value is None")
+    config_dict = json.loads(cache_value)
+    return ParserConfig(**config_dict)
 
 
 # Run `get` on parser
@@ -124,19 +125,24 @@ async def info_parser(cache: TRedisPlugin, parser_id: str) -> ParserConfig:
     "/{parser_id}",
     response_model=GetParserResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["parser"],
 )
 async def get_parser(
     cache: TRedisPlugin, parser_id: str, session_id: Optional[str] = None
 ) -> GetParserResponse:
     """Retrieve and parse data using a specified parser."""
     await _validate_cache_key(cache, parser_id, "parser_id")
-    config = ParserConfig(**json.loads(await cache.get(parser_id)))
+    cache_value = await cache.get(parser_id)
+    if cache_value is None:
+        raise ValueError("Cache value is None")
+    config_dict = json.loads(cache_value)
+    config = ParserConfig(**config_dict)
     session_data: "Optional[dict[str, Any]]" = None
     if session_id:
         await _validate_cache_key(cache, session_id, "session_id")
-        session_data = json.loads(await cache.get(session_id))
-        populate_config_from_session(session_data, config)
+        session_data = await cache.get(session_id)
+        if session_data is None:
+            raise ValueError("Session data is None")
+        populate_config_from_session(json.loads(session_data), config)
 
     strategy: "IParseStrategy" = create_strategy("parse", config)
 
@@ -157,7 +163,6 @@ async def get_parser(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["parser"],
 )
 async def initialize_parser(
     cache: TRedisPlugin,
@@ -166,12 +171,22 @@ async def initialize_parser(
 ) -> InitializeParserResponse:
     """Initialize parser."""
     await _validate_cache_key(cache, parser_id, "parser_id")
-    config = ParserConfig(**json.loads(await cache.get(parser_id)))
+    cache_value = await cache.get(parser_id)
+    if cache_value is None:
+        raise ValueError("Cache value is None")
+    config_dict = json.loads(cache_value)
+    cache_value = await cache.get(parser_id)
+    if cache_value is None:
+        raise ValueError("Cache value is None")
+    config_dict = json.loads(cache_value)
+    config = ParserConfig(**config_dict)
     session_data: "Optional[dict[str, Any]]" = None
     if session_id:
         await _validate_cache_key(cache, session_id, "session_id")
-        session_data = json.loads(await cache.get(session_id))
-        populate_config_from_session(session_data, config)
+        session_data = await cache.get(session_id)
+        if session_data is None:
+            raise ValueError("Session data is None")
+        populate_config_from_session(json.loads(session_data), config)
 
     strategy: "IParseStrategy" = create_strategy("parse", config)
 

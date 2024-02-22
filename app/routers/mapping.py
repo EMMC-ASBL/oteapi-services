@@ -20,14 +20,13 @@ from app.routers.session import _update_session, _update_session_list_item
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
+ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["mapping"])
 
 
 @ROUTER.post(
     "/",
     response_model=CreateMappingResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["mapping"],
 )
 async def create_mapping(
     cache: TRedisPlugin,
@@ -61,7 +60,6 @@ async def create_mapping(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["mapping"],
 )
 async def get_mapping(
     cache: TRedisPlugin,
@@ -110,7 +108,6 @@ async def get_mapping(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["mapping"],
 )
 async def initialize_mapping(
     cache: TRedisPlugin,

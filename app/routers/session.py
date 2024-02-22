@@ -25,14 +25,13 @@ class SessionUpdate(AttrDict):
     """Session Update Data Model for returning values."""
 
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
+ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["session"])
 
 
 @ROUTER.post(
     "/",
     response_model=CreateSessionResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["session"],
 )
 async def create_session(
     cache: TRedisPlugin,
@@ -61,7 +60,6 @@ async def create_session(
     "/",
     response_model=ListSessionsResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["session"],
 )
 async def list_sessions(
     cache: TRedisPlugin,
@@ -82,7 +80,6 @@ async def list_sessions(
     "/",
     response_model=DeleteAllSessionsResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["session"],
 )
 async def delete_all_sessions(
     cache: TRedisPlugin,
@@ -167,7 +164,6 @@ async def _update_session_list_item(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["session"],
 )
 async def update_session(
     cache: TRedisPlugin,
@@ -196,7 +192,6 @@ async def update_session(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["session"],
 )
 async def get_session(
     cache: TRedisPlugin,
@@ -222,7 +217,6 @@ async def get_session(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["session"],
 )
 async def delete_session(
     cache: TRedisPlugin,

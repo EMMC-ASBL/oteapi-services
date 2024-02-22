@@ -3,7 +3,7 @@
 import json
 from typing import TYPE_CHECKING, Optional
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, status
 from oteapi.models import ResourceConfig
 from oteapi.plugins import create_strategy
 
@@ -25,7 +25,7 @@ from app.routers.session import _update_session, _update_session_list_item
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
+ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["dataresource"])
 
 
 @ROUTER.post(
@@ -34,7 +34,6 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["dataresource"],
 )
 async def create_dataresource(
     cache: TRedisPlugin,
@@ -81,7 +80,6 @@ async def create_dataresource(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["dataresource"],
 )
 async def info_dataresource(
     cache: TRedisPlugin,
@@ -108,7 +106,6 @@ async def info_dataresource(
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
         status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
     },
-    tags=["dataresource"],
 )
 async def read_dataresource(
     cache: TRedisPlugin,
@@ -164,7 +161,6 @@ async def read_dataresource(
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
         status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
     },
-    tags=["dataresource"],
 )
 async def initialize_dataresource(
     cache: TRedisPlugin,

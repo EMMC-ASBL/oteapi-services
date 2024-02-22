@@ -20,14 +20,13 @@ from app.routers.session import _update_session, _update_session_list_item
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
+ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["function"])
 
 
 @ROUTER.post(
     "/",
     response_model=CreateFunctionResponse,
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-    tags=["function"],
 )
 async def create_function(
     cache: TRedisPlugin,
@@ -63,7 +62,6 @@ async def create_function(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["function"],
 )
 async def get_function(
     cache: TRedisPlugin,
@@ -112,7 +110,6 @@ async def get_function(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["function"],
 )
 async def initialize_function(
     cache: TRedisPlugin,

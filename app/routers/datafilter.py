@@ -22,7 +22,7 @@ if TYPE_CHECKING:  # pragma: no cover
 
     from oteapi.interfaces import IFilterStrategy
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
+ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["datafilter"])
 
 
 @ROUTER.post(
@@ -31,7 +31,6 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["datafilter"],
 )
 async def create_filter(
     cache: TRedisPlugin,
@@ -62,7 +61,6 @@ async def create_filter(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["datafilter"],
 )
 async def get_filter(
     cache: TRedisPlugin,
@@ -111,7 +109,6 @@ async def get_filter(
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
     },
-    tags=["datafilter"],
 )
 async def initialize_filter(
     cache: TRedisPlugin,
