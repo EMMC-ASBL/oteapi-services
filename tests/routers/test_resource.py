@@ -10,7 +10,7 @@ def test_create_dataresource(client: "TestClient"):
     response = client.post(
         "/dataresource/",
         json={
-            "downloadUrl": "https://raw.githubusercontent.com/EMMC-ASBL/oteapi-core/master/tests/static/sample2.json",
+            "downloadUrl": "https://filesamples.com/samples/code/json/sample.json",
             "mediaType": "application/json",
             "resourceType": "resource/demo",
         },

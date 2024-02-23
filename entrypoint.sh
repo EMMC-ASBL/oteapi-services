@@ -33,4 +33,5 @@ else
     echo "No extra plugin packages provided. Specify 'OTEAPI_PLUGIN_PACKAGES' to specify plugin packages."
 fi
 
-python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 --reload asgi:app "$@"
+hypercorn --bind 0.0.0.0:8080 asgi:app "$@"
+# python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 --reload asgi:app "$@"
