@@ -25,13 +25,13 @@ repos:
       args: ["--profile", "black", "--filter-files", "--skip-gitignore"]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.0
+    rev: v3.15.1
     hooks:
     - id: pyupgrade
       args: ["--py39-plus"]
 
   - repo: https://github.com/ambv/black
-    rev: 24.1.1
+    rev: 24.2.0
     hooks:
     - id: black
 
