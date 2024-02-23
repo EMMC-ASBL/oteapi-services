@@ -108,7 +108,10 @@ def test_data() -> "dict[str, str]":
                 "parserType": "parser/demo",
                 "entity": "http://example.com/entity",
                 "configuration": {
-                    "downloadUrl": "https://filesamples.com/samples/code/json/sample.json",
+                    "downloadUrl": (
+                        "https://raw.githubusercontent.com/EMMC-ASBL/"
+                        "oteapi-core/master/tests/static/sample2.json"
+                    ),
                     "mediaType": "application/json",
                 },
             },

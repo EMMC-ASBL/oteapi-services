@@ -54,13 +54,8 @@ class DemoJSONDataParseStrategy:
 
     parse_config: DEMOParserConfig
 
-    def initialize(
-        self, session: "Optional[dict[str, Any]]" = None
-    ) -> "dict[str, Any]":
+    def initialize(self) -> "dict[str, Any]":
         """Initialize"""
-
-        del session  # unused
-        del self.parse_config  # unused
         return {}
 
     def get(self) -> "dict[str, Any]":

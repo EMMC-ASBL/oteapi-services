@@ -175,10 +175,6 @@ async def initialize_parser(
     if cache_value is None:
         raise ValueError("Cache value is None")
     config_dict = json.loads(cache_value)
-    cache_value = await cache.get(parser_id)
-    if cache_value is None:
-        raise ValueError("Cache value is None")
-    config_dict = json.loads(cache_value)
     config = ParserConfig(**config_dict)
     session_data: "Optional[dict[str, Any]]" = None
     if session_id:
