@@ -21,10 +21,6 @@ if TYPE_CHECKING:  # pragma: no cover
     from typing import Any, Union
 
 
-class SessionUpdate(AttrDict):
-    """Session Update Data Model for returning values."""
-
-
 ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["session"])
 
 
@@ -120,7 +116,7 @@ async def _get_session(
 
 async def _update_session(
     session_id: str,
-    updated_session: "Union[SessionUpdate, dict[str, Any]]",
+    updated_session: "Union[AttrDict, dict[str, Any]]",
     redis: TRedisPlugin,
 ) -> Session:
     """Update an existing session (to be called internally)."""
@@ -168,7 +164,7 @@ async def _update_session_list_item(
 async def update_session(
     cache: TRedisPlugin,
     session_id: str,
-    updated_session: SessionUpdate,
+    updated_session: AttrDict,
 ) -> Session:
     """Update session object."""
     if not await cache.exists(session_id):

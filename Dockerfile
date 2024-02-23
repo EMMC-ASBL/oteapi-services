@@ -28,12 +28,7 @@ COPY .dev/requirements_dev.txt .pre-commit-config.yaml pyproject.toml ./
 
 # Run static security check, linters, and pytest with code coverage
 RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
-# Ignore ID 44715 for now.
-# See this NumPy issue for more information: https://github.com/numpy/numpy/issues/19038
-#  && pre-commit run --all-files
-#  && safety check -r requirements.txt -r requirements_dev.txt --ignore 44715
-# && pytest --cov app
-
+ENV DEV_ENV=1
 # Run app with reload option
 EXPOSE 8080
 CMD if [ "${PATH_TO_OTEAPI_CORE}" != "/dev/null" ] && [ -n "${PATH_TO_OTEAPI_CORE}" ]; then \

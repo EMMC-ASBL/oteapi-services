@@ -3,9 +3,10 @@
 import json
 from typing import TYPE_CHECKING, Optional
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Request, status
 from oteapi.models import ResourceConfig
 from oteapi.plugins import create_strategy
+from oteapi.utils.config_updater import populate_config_from_session
 
 from app.models.dataresource import (
     IDPREFIX,
@@ -20,6 +21,7 @@ from app.models.error import (
     httpexception_422_resource_id_is_unprocessable,
 )
 from app.redis_cache import TRedisPlugin
+from app.routers.parser import _validate_cache_key
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -37,6 +39,7 @@ ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["dataresource"])
 )
 async def create_dataresource(
     cache: TRedisPlugin,
+    request: Request,
     config: ResourceConfig,
     session_id: Optional[str] = None,
 ) -> CreateResourceResponse:
@@ -55,7 +58,7 @@ async def create_dataresource(
     """
     new_resource = CreateResourceResponse()
 
-    # config.token = request.headers.get("Authorization") or config.token
+    config.token = request.headers.get("Authorization") or config.token
 
     resource_config = config.model_dump_json()
 
@@ -130,12 +133,11 @@ async def read_dataresource(
     config = ResourceConfig(**json.loads(cache_value))
 
     if session_id:
-        cache_value = await cache.get(session_id)
-        if not isinstance(cache_value, (str, bytes)):
-            raise TypeError(
-                f"Expected cache value of {session_id} to be a string or bytes, "
-                f"found it to be of type {type(cache_value)!r}."
-            )
+        await _validate_cache_key(cache, session_id, "session_id")
+        session_data = await cache.get(session_id)
+        if session_data is None:
+            raise ValueError("Session data is None")
+        populate_config_from_session(json.loads(session_data), config)
 
     if not config.resourceType:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
@@ -182,12 +184,12 @@ async def initialize_dataresource(
     config = ResourceConfig(**json.loads(cache_value))
 
     if session_id:
+        await _validate_cache_key(cache, session_id, "session_id")
         cache_value = await cache.get(session_id)
-        if not isinstance(cache_value, (str, bytes)):
-            raise TypeError(
-                f"Expected cache value of {session_id} to be a string or bytes, "
-                f"found it to be of type {type(cache_value)!r}."
-            )
+        session_data = await cache.get(session_id)
+        if session_data is None:
+            raise ValueError("Session data is None")
+        populate_config_from_session(json.loads(session_data), config)
 
     if not config.resourceType:
         raise httpexception_422_resource_id_is_unprocessable(resource_id)
