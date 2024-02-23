@@ -16,4 +16,4 @@ class DemoResourceStrategy:
 
     def get(self) -> dict:
         """resource distribution."""
-        return dict(self.resource_config)
+        return self.resource_config.model_dump()
