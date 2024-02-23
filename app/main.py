@@ -14,6 +14,7 @@ from app import __version__
 from app.models.error import HTTPValidationError
 from app.redis_cache import RedisSettings, redis_plugin
 from app.routers import (
+    admin,
     datafilter,
     dataresource,
     function,
@@ -80,6 +81,7 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
 """,
     )
     available_routers = [
+        admin,
         session,
         dataresource,
         datafilter,

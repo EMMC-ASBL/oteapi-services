@@ -23,7 +23,6 @@ if [ -n "${OTEAPI_PLUGIN_PACKAGES}" ]; then
     IFS="|"
     for plugin in ${OTEAPI_PLUGIN_PACKAGES}; do echo "* ${plugin}"; done
     for plugin in ${OTEAPI_PLUGIN_PACKAGES}; do eval "pip install -q -c constraints.txt ${plugin}" || FAILED_PLUGIN_INSTALLS=${FAILED_PLUGIN_INSTALLS:+$FAILED_PLUGIN_INSTALLS:}${plugin} && continue; done
-    current_packages="$(pip freeze)"
     if [ -n "${FAILED_PLUGIN_INSTALLS}" ]; then
         echo "The following plugins failed to install:"
         for plugin in ${FAILED_PLUGIN_INSTALLS}; do echo "* ${plugin}"; done
