@@ -21,7 +21,7 @@ from app.models.error import (
     httpexception_422_resource_id_is_unprocessable,
 )
 from app.redis_cache import TRedisPlugin
-from app.routers.parser import _validate_cache_key
+from app.redis_cache._cache import _validate_cache_key
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
