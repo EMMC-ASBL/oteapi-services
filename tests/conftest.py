@@ -83,7 +83,7 @@ def test_data() -> "dict[str, str]":
             },
             # dataresource
             "dataresource-910c9965-a318-4ac4-9123-9c55d5b86f2e": {
-                "downloadUrl": "https://filesamples.com/samples/code/json/sample.json",
+                "downloadUrl": "https://filesamples.com/sample.json",
                 "mediaType": "application/json",
                 "resourceType": "resource/demo",
             },
@@ -108,10 +108,7 @@ def test_data() -> "dict[str, str]":
                 "parserType": "parser/demo",
                 "entity": "http://example.com/entity",
                 "configuration": {
-                    "downloadUrl": (
-                        "https://raw.githubusercontent.com/EMMC-ASBL/"
-                        "oteapi-core/master/tests/static/sample2.json"
-                    ),
+                    "downloadUrl": ("https://example.org/sample2.json"),
                     "mediaType": "application/json",
                 },
             },

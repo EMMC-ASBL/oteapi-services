@@ -34,7 +34,7 @@ else
 fi
 
 if [ "$DEV_ENV" = "1" ]; then
-    python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 --reload asgi:app "$@"
+    python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 asgi:app "$@"
 else
     hypercorn --bind 0.0.0.0:8080 asgi:app "$@"
 fi

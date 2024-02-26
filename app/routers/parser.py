@@ -57,33 +57,6 @@ async def create_parser(
     return new_parser
 
 
-@ROUTER.delete("/", response_model=DeleteAllParsersResponse)
-async def delete_all_parsers(
-    cache: TRedisPlugin,
-) -> DeleteAllParsersResponse:
-    """
-    Delete all parser configurations in the current memory database
-    """
-    keylist = await cache.keys(pattern=f"{IDPREFIX}*")
-    if not keylist:
-        return DeleteAllParsersResponse(number_of_deleted_parsers=0)
-    return DeleteAllParsersResponse(
-        number_of_deleted_parsers=await cache.delete(*keylist)
-    )
-
-
-# List parsers
-@ROUTER.get("/", response_model=ListParsersResponse)
-async def list_parsers(cache: TRedisPlugin) -> ListParsersResponse:
-    """Retrieve all parser IDs from cache."""
-    keylist = [
-        key
-        for key in await cache.keys(pattern=f"{IDPREFIX}*")
-        if isinstance(key, (str, bytes))
-    ]
-    return ListParsersResponse(keys=keylist)
-
-
 # Get parser info
 @ROUTER.get("/{parser_id}/info", response_model=ParserConfig)
 async def info_parser(cache: TRedisPlugin, parser_id: str) -> ParserConfig:

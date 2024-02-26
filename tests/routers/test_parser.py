@@ -14,26 +14,13 @@ def test_create_parser(client: "TestClient") -> None:
             "parserType": "parser/demo",
             "entity": "http://example.com/entity",
             "configuration": {
-                "downloadUrl": "https://filesamples.com/samples/code/json/sample2.json",
+                "downloadUrl": "https://filesamples.com/sample2.json",
                 "mediaType": "application/json",
             },
         },
     )
     assert "parser_id" in response.json()
     assert response.status_code == 200
-
-
-def test_delete_all_parsers(client: "TestClient") -> None:
-    """Test deleting all parsers"""
-    response = client.delete("/parser/")
-    assert response.status_code == 200
-
-
-def test_list_parsers(client: "TestClient") -> None:
-    """Test listing parsers"""
-    response = client.get("/parser/")
-    assert response.status_code == 200
-    assert "keys" in response.json()
 
 
 def test_info_parser(client: "TestClient") -> None:

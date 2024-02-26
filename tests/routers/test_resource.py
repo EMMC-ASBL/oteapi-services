@@ -10,7 +10,7 @@ def test_create_dataresource(client: "TestClient"):
     response = client.post(
         "/dataresource/",
         json={
-            "downloadUrl": "https://filesamples.com/samples/code/json/sample.json",
+            "downloadUrl": "https://filesamples.com/sample2.json",
             "mediaType": "application/json",
             "resourceType": "resource/demo",
         },

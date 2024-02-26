@@ -119,11 +119,6 @@ class HTTPSStrategy:
         if cache.config.accessKey and cache.config.accessKey in cache:
             key = cache.config.accessKey
         else:
-            req = requests.get(
-                str(self.download_config.downloadUrl),
-                allow_redirects=True,
-                timeout=(3, 27),  # timeout: (connect, read) in seconds
-            )
-            key = cache.add(req.content)
+            key = cache.add({"dummy_content": "dummycontent"})
 
         return HTTPDownloadContent(key=key)
