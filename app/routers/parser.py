@@ -2,24 +2,22 @@
 
 import json
 import logging
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Optional
 
 from fastapi import APIRouter, status
 from oteapi.models import ParserConfig
 from oteapi.plugins import create_strategy
 from oteapi.utils.config_updater import populate_config_from_session
 
-from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
+from app.models.error import HTTPNotFoundError
 from app.models.parser import (
     IDPREFIX,
     CreateParserResponse,
-    DeleteAllParsersResponse,
     GetParserResponse,
     InitializeParserResponse,
-    ListParsersResponse,
 )
 from app.redis_cache import TRedisPlugin
-from app.redis_cache._cache import _validate_cache_key
+from app.redis_cache._cache import _fetch_cache_value
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -46,7 +44,7 @@ async def create_parser(
     await cache.set(new_parser.parser_id, config.model_dump_json())
 
     if session_id:
-        await _validate_cache_key(cache, session_id, "session_id")
+        await _fetch_cache_value(cache, session_id, "session_id")
         await _update_session_list_item(
             session_id=session_id,
             list_key="resource_info",
@@ -61,7 +59,7 @@ async def create_parser(
 @ROUTER.get("/{parser_id}/info", response_model=ParserConfig)
 async def info_parser(cache: TRedisPlugin, parser_id: str) -> ParserConfig:
     """Get information about a specific parser."""
-    await _validate_cache_key(cache, parser_id, "parser_id")
+    await _fetch_cache_value(cache, parser_id, "parser_id")
     cache_value = await cache.get(parser_id)
     if cache_value is None:
         raise ValueError("Cache value is None")
@@ -75,7 +73,7 @@ async def get_parser(
     cache: TRedisPlugin, parser_id: str, session_id: Optional[str] = None
 ) -> GetParserResponse:
     """Retrieve and parse data using a specified parser."""
-    await _validate_cache_key(cache, parser_id, "parser_id")
+    await _fetch_cache_value(cache, parser_id, "parser_id")
     cache_value = await cache.get(parser_id)
     if cache_value is None:
         raise ValueError("Cache value is None")
@@ -83,7 +81,7 @@ async def get_parser(
     config = ParserConfig(**config_dict)
 
     if session_id:
-        await _validate_cache_key(cache, session_id, "session_id")
+        await _fetch_cache_value(cache, session_id, "session_id")
         session_data = await cache.get(session_id)
         if session_data is None:
             raise ValueError("Session data is None")
@@ -109,7 +107,7 @@ async def initialize_parser(
     session_id: Optional[str] = None,
 ) -> InitializeParserResponse:
     """Initialize parser."""
-    await _validate_cache_key(cache, parser_id, "parser_id")
+    await _fetch_cache_value(cache, parser_id, "parser_id")
     cache_value = await cache.get(parser_id)
     if cache_value is None:
         raise ValueError("Cache value is None")
@@ -117,7 +115,7 @@ async def initialize_parser(
     config = ParserConfig(**config_dict)
 
     if session_id:
-        await _validate_cache_key(cache, session_id, "session_id")
+        await _fetch_cache_value(cache, session_id, "session_id")
         session_data = await cache.get(session_id)
         if session_data is None:
             raise ValueError("Session data is None")

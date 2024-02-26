@@ -21,7 +21,7 @@ from app.models.error import (
     httpexception_422_resource_id_is_unprocessable,
 )
 from app.redis_cache import TRedisPlugin
-from app.redis_cache._cache import _validate_cache_key
+from app.redis_cache._cache import _fetch_cache_value
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -124,7 +124,7 @@ async def read_dataresource(
     config = ResourceConfig(**json.loads(cache_value))
 
     if session_id:
-        await _validate_cache_key(cache, session_id, "session_id")
+        await _fetch_cache_value(cache, session_id, "session_id")
         session_data = await cache.get(session_id)
         if session_data is None:
             raise ValueError("Session data is None")
@@ -168,7 +168,7 @@ async def initialize_dataresource(
     config = ResourceConfig(**json.loads(cache_value))
 
     if session_id:
-        await _validate_cache_key(cache, session_id, "session_id")
+        await _fetch_cache_value(cache, session_id, "session_id")
         cache_value = await cache.get(session_id)
         session_data = await cache.get(session_id)
         if session_data is None:

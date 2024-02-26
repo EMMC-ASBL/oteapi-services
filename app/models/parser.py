@@ -42,27 +42,3 @@ class InitializeParserResponse(InitializeResponse):
 
     Router: `POST /parser/{parser_id}/initialize`
     """
-
-
-class DeleteAllParsersResponse(AttrDict):
-    """### Delete all sessions
-
-    Router: `DELETE /parser`
-    """
-
-    number_of_deleted_parsers: Annotated[
-        Optional[int],
-        Field(description="The number of deleted parsers in the Redis cache."),
-    ]
-
-
-class ListParsersResponse(Session):
-    """List all parser ids
-
-    Router: `GET /parser`
-    """
-
-    keys_: Annotated[
-        list[str],
-        Field(description="List of all parser ids in the cache.", alias="keys"),
-    ]
