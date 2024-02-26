@@ -2,17 +2,15 @@
 
 # pylint: disable=unused-argument
 import json
-from typing import TYPE_CHECKING, Annotated, Literal, Optional
+from typing import TYPE_CHECKING, Literal, Optional
 
 from oteapi.datacache import DataCache
 from oteapi.datacache.datacache import DataCache
-from oteapi.models import AttrDict, DataCacheConfig, ParserConfig
+from oteapi.models import AttrDict, DataCacheConfig, HostlessAnyUrl, ParserConfig
 from oteapi.plugins import create_strategy
 from pydantic import Field
 from pydantic.dataclasses import dataclass
-from pydantic.networks import Url, UrlConstraints
 
-HostlessAnyUrl = Annotated[Url, UrlConstraints(host_required=False)]
 if TYPE_CHECKING:
     from typing import Any, Optional
 

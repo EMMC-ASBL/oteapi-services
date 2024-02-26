@@ -20,14 +20,14 @@ from app.routers.session import _update_session, _update_session_list_item
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["mapping"])
-
-
-@ROUTER.post(
-    "/",
-    response_model=CreateMappingResponse,
+ROUTER = APIRouter(
+    prefix=f"/{IDPREFIX}",
+    tags=["mapping"],
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
+
+
+@ROUTER.post("/", response_model=CreateMappingResponse)
 async def create_mapping(
     cache: TRedisPlugin,
     config: MappingConfig,
@@ -54,13 +54,7 @@ async def create_mapping(
     return new_mapping
 
 
-@ROUTER.get(
-    "/{mapping_id}",
-    response_model=GetMappingResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.get("/{mapping_id}", response_model=GetMappingResponse)
 async def get_mapping(
     cache: TRedisPlugin,
     mapping_id: str,
@@ -102,13 +96,7 @@ async def get_mapping(
     return GetMappingResponse(**session_update)
 
 
-@ROUTER.post(
-    "/{mapping_id}/initialize",
-    response_model=InitializeMappingResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.post("/{mapping_id}/initialize", response_model=InitializeMappingResponse)
 async def initialize_mapping(
     cache: TRedisPlugin,
     mapping_id: str,

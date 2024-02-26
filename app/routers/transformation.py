@@ -23,16 +23,14 @@ if TYPE_CHECKING:  # pragma: no cover
 
     from oteapi.interfaces import ITransformationStrategy
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["transformation"])
-
-
-@ROUTER.post(
-    "/",
-    response_model=CreateTransformationResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
+ROUTER = APIRouter(
+    prefix=f"/{IDPREFIX}",
+    tags=["transformation"],
+    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
+
+
+@ROUTER.post("/", response_model=CreateTransformationResponse)
 async def create_transformation(
     cache: TRedisPlugin,
     config: TransformationConfig,
@@ -61,13 +59,7 @@ async def create_transformation(
     return new_transformation
 
 
-@ROUTER.get(
-    "/{transformation_id}/status",
-    response_model=TransformationStatus,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.get("/{transformation_id}/status", response_model=TransformationStatus)
 async def get_transformation_status(
     cache: TRedisPlugin,
     transformation_id: str,
@@ -91,13 +83,7 @@ async def get_transformation_status(
     return strategy.status(task_id=task_id)
 
 
-@ROUTER.get(
-    "/{transformation_id}",
-    response_model=GetTransformationResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.get("/{transformation_id}", response_model=GetTransformationResponse)
 async def get_transformation(
     cache: TRedisPlugin,
     transformation_id: str,
@@ -142,11 +128,7 @@ async def get_transformation(
 
 
 @ROUTER.post(
-    "/{transformation_id}/execute",
-    response_model=ExecuteTransformationResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
+    "/{transformation_id}/execute", response_model=ExecuteTransformationResponse
 )
 async def execute_transformation(
     cache: TRedisPlugin,
@@ -193,11 +175,7 @@ async def execute_transformation(
 
 
 @ROUTER.post(
-    "/{transformation_id}/initialize",
-    response_model=InitializeTransformationResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
+    "/{transformation_id}/initialize", response_model=InitializeTransformationResponse
 )
 async def initialize_transformation(
     cache: TRedisPlugin,

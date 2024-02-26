@@ -22,16 +22,14 @@ if TYPE_CHECKING:  # pragma: no cover
 
     from oteapi.interfaces import IFilterStrategy
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["datafilter"])
-
-
-@ROUTER.post(
-    "/",
-    response_model=CreateFilterResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
+ROUTER = APIRouter(
+    prefix=f"/{IDPREFIX}",
+    tags=["datafilter"],
+    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
+
+
+@ROUTER.post("/", response_model=CreateFilterResponse)
 async def create_filter(
     cache: TRedisPlugin,
     config: FilterConfig,
@@ -55,13 +53,7 @@ async def create_filter(
     return new_filter
 
 
-@ROUTER.get(
-    "/{filter_id}",
-    response_model=GetFilterResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.get("/{filter_id}", response_model=GetFilterResponse)
 async def get_filter(
     cache: TRedisPlugin,
     filter_id: str,
@@ -103,13 +95,7 @@ async def get_filter(
     return GetFilterResponse(**session_update)
 
 
-@ROUTER.post(
-    "/{filter_id}/initialize",
-    response_model=InitializeFilterResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.post("/{filter_id}/initialize", response_model=InitializeFilterResponse)
 async def initialize_filter(
     cache: TRedisPlugin,
     filter_id: str,

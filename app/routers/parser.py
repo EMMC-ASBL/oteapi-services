@@ -27,7 +27,11 @@ if TYPE_CHECKING:  # pragma: no cover
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("app.routers.parser")
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["parser"])
+ROUTER = APIRouter(
+    prefix=f"/{IDPREFIX}",
+    tags=["parser"],
+    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
+)
 
 
 async def _validate_cache_key(cache: TRedisPlugin, key: str, key_type: str) -> None:
@@ -44,11 +48,7 @@ async def _validate_cache_key(cache: TRedisPlugin, key: str, key_type: str) -> N
 
 
 # Create parser
-@ROUTER.post(
-    "/",
-    response_model=CreateParserResponse,
-    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-)
+@ROUTER.post("/", response_model=CreateParserResponse)
 async def create_parser(
     cache: TRedisPlugin, config: ParserConfig, session_id: Optional[str] = None
 ) -> CreateParserResponse:
@@ -69,11 +69,7 @@ async def create_parser(
     return new_parser
 
 
-@ROUTER.delete(
-    "/",
-    response_model=DeleteAllParsersResponse,
-    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-)
+@ROUTER.delete("/", response_model=DeleteAllParsersResponse)
 async def delete_all_parsers(
     cache: TRedisPlugin,
 ) -> DeleteAllParsersResponse:
@@ -89,11 +85,7 @@ async def delete_all_parsers(
 
 
 # List parsers
-@ROUTER.get(
-    "/",
-    response_model=ListParsersResponse,
-    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-)
+@ROUTER.get("/", response_model=ListParsersResponse)
 async def list_parsers(cache: TRedisPlugin) -> ListParsersResponse:
     """Retrieve all parser IDs from cache."""
     keylist = [
@@ -105,11 +97,7 @@ async def list_parsers(cache: TRedisPlugin) -> ListParsersResponse:
 
 
 # Get parser info
-@ROUTER.get(
-    "/{parser_id}/info",
-    response_model=ParserConfig,
-    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-)
+@ROUTER.get("/{parser_id}/info", response_model=ParserConfig)
 async def info_parser(cache: TRedisPlugin, parser_id: str) -> ParserConfig:
     """Get information about a specific parser."""
     await _validate_cache_key(cache, parser_id, "parser_id")
@@ -121,11 +109,7 @@ async def info_parser(cache: TRedisPlugin, parser_id: str) -> ParserConfig:
 
 
 # Run `get` on parser
-@ROUTER.get(
-    "/{parser_id}",
-    response_model=GetParserResponse,
-    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-)
+@ROUTER.get("/{parser_id}", response_model=GetParserResponse)
 async def get_parser(
     cache: TRedisPlugin, parser_id: str, session_id: Optional[str] = None
 ) -> GetParserResponse:
@@ -136,7 +120,7 @@ async def get_parser(
         raise ValueError("Cache value is None")
     config_dict = json.loads(cache_value)
     config = ParserConfig(**config_dict)
-    session_data: "Optional[dict[str, Any]]" = None
+
     if session_id:
         await _validate_cache_key(cache, session_id, "session_id")
         session_data = await cache.get(session_id)
@@ -157,13 +141,7 @@ async def get_parser(
     return GetParserResponse(**session_update)
 
 
-@ROUTER.post(
-    "/{parser_id}/initialize",
-    response_model=InitializeParserResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.post("/{parser_id}/initialize", response_model=InitializeParserResponse)
 async def initialize_parser(
     cache: TRedisPlugin,
     parser_id: str,
@@ -176,7 +154,7 @@ async def initialize_parser(
         raise ValueError("Cache value is None")
     config_dict = json.loads(cache_value)
     config = ParserConfig(**config_dict)
-    session_data: "Optional[dict[str, Any]]" = None
+
     if session_id:
         await _validate_cache_key(cache, session_id, "session_id")
         session_data = await cache.get(session_id)

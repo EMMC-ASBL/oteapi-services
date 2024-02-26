@@ -21,14 +21,14 @@ if TYPE_CHECKING:  # pragma: no cover
     from typing import Any, Union
 
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["session"])
-
-
-@ROUTER.post(
-    "/",
-    response_model=CreateSessionResponse,
+ROUTER = APIRouter(
+    prefix=f"/{IDPREFIX}",
+    tags=["session"],
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
+
+
+@ROUTER.post("/", response_model=CreateSessionResponse)
 async def create_session(
     cache: TRedisPlugin,
     session: Session,
@@ -52,31 +52,26 @@ async def create_session(
     return new_session
 
 
-@ROUTER.get(
-    "/",
-    response_model=ListSessionsResponse,
-    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-)
+@ROUTER.get("/", response_model=ListSessionsResponse)
 async def list_sessions(
     cache: TRedisPlugin,
 ) -> ListSessionsResponse:
     """Get all session keys"""
-    keylist: list = []
+    keylist: list[Union[str, bytes]] = []
     for key in await cache.keys(pattern=f"{IDPREFIX}*"):
         if not isinstance(key, (str, bytes)):
             raise TypeError(
                 "Found a key that is not stored as bytes (stored as type "
                 f"{type(key)!r})."
             )
+        if isinstance(key, bytes):
+            key = key.decode(encoding="utf-8")
         keylist.append(key)
+
     return ListSessionsResponse(keys=keylist)
 
 
-@ROUTER.delete(
-    "/",
-    response_model=DeleteAllSessionsResponse,
-    responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
-)
+@ROUTER.delete("/", response_model=DeleteAllSessionsResponse)
 async def delete_all_sessions(
     cache: TRedisPlugin,
 ) -> DeleteAllSessionsResponse:
@@ -154,13 +149,7 @@ async def _update_session_list_item(
     return session
 
 
-@ROUTER.put(
-    "/{session_id}",
-    response_model=Session,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.put("/{session_id}", response_model=Session)
 async def update_session(
     cache: TRedisPlugin,
     session_id: str,
@@ -182,13 +171,7 @@ async def update_session(
     return session
 
 
-@ROUTER.get(
-    "/{session_id}",
-    response_model=Session,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.get("/{session_id}", response_model=Session)
 async def get_session(
     cache: TRedisPlugin,
     session_id: str,
@@ -207,13 +190,7 @@ async def get_session(
     return Session(**json.loads(cache_value))
 
 
-@ROUTER.delete(
-    "/{session_id}",
-    response_model=DeleteSessionResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.delete("/{session_id}", response_model=DeleteSessionResponse)
 async def delete_session(
     cache: TRedisPlugin,
     session_id: str,

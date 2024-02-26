@@ -20,14 +20,14 @@ from app.routers.session import _update_session, _update_session_list_item
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["function"])
-
-
-@ROUTER.post(
-    "/",
-    response_model=CreateFunctionResponse,
+ROUTER = APIRouter(
+    prefix=f"/{IDPREFIX}",
+    tags=["function"],
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
+
+
+@ROUTER.post("/", response_model=CreateFunctionResponse)
 async def create_function(
     cache: TRedisPlugin,
     config: FunctionConfig,
@@ -56,13 +56,7 @@ async def create_function(
     return new_function
 
 
-@ROUTER.get(
-    "/{function_id}",
-    response_model=GetFunctionResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.get("/{function_id}", response_model=GetFunctionResponse)
 async def get_function(
     cache: TRedisPlugin,
     function_id: str,
@@ -104,13 +98,7 @@ async def get_function(
     return GetFunctionResponse(**session_update)
 
 
-@ROUTER.post(
-    "/{function_id}/initialize",
-    response_model=InitializeFunctionResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.post("/{function_id}/initialize", response_model=InitializeFunctionResponse)
 async def initialize_function(
     cache: TRedisPlugin,
     function_id: str,

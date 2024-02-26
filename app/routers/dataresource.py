@@ -27,16 +27,17 @@ from app.routers.session import _update_session, _update_session_list_item
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}", tags=["dataresource"])
-
-
-@ROUTER.post(
-    "/",
-    response_model=CreateResourceResponse,
+ROUTER = APIRouter(
+    prefix=f"/{IDPREFIX}",
+    tags=["dataresource"],
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
+        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
     },
 )
+
+
+@ROUTER.post("/", response_model=CreateResourceResponse)
 async def create_dataresource(
     cache: TRedisPlugin,
     request: Request,
@@ -77,13 +78,7 @@ async def create_dataresource(
     return new_resource
 
 
-@ROUTER.get(
-    "/{resource_id}/info",
-    response_model=ResourceConfig,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.get("/{resource_id}/info", response_model=ResourceConfig)
 async def info_dataresource(
     cache: TRedisPlugin,
     resource_id: str,
@@ -105,10 +100,6 @@ async def info_dataresource(
     "/{resource_id}",
     response_model=GetResourceResponse,
     response_model_exclude_unset=True,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
-    },
 )
 async def read_dataresource(
     cache: TRedisPlugin,
@@ -156,14 +147,7 @@ async def read_dataresource(
     return GetResourceResponse(**session_update)
 
 
-@ROUTER.post(
-    "/{resource_id}/initialize",
-    response_model=InitializeResourceResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
-    },
-)
+@ROUTER.post("/{resource_id}/initialize", response_model=InitializeResourceResponse)
 async def initialize_dataresource(
     cache: TRedisPlugin,
     resource_id: str,
