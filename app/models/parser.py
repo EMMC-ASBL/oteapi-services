@@ -1,12 +1,11 @@
 """Parser specific pydantic response models."""
 
-from typing import Annotated, Optional
+from typing import Annotated
 from uuid import uuid4
 
-from oteapi.models import AttrDict
 from pydantic import Field
 
-from app.models.response import CreateResponse, GetResponse, InitializeResponse, Session
+from app.models.response import CreateResponse, GetResponse, InitializeResponse
 
 IDPREFIX = "parser"
 

@@ -7,7 +7,6 @@ from fastapi import APIRouter
 
 from app.models.error import httpexception_404_item_id_does_not_exist
 from app.redis_cache import TRedisPlugin
-from app.redis_cache._cache import _fetch_cache_value
 
 ROUTER = APIRouter(prefix="/redis", tags=["admin"])
 

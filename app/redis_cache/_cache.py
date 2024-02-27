@@ -17,8 +17,7 @@ async def _fetch_cache_value(cache: TRedisPlugin, key: str, key_type: str) -> An
             f"Expected cache value of {key} to be a string or bytes, "
             f"found it to be of type: `{type(cache_value)!r}`."
         )
-    else:
-        return cache_value
+    return cache_value
 
 
 async def _validate_cache_key(cache: TRedisPlugin, key: str, key_type: str) -> None:
