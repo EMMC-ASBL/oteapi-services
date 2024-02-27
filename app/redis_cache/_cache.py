@@ -12,7 +12,7 @@ async def _fetch_cache_value(cache: TRedisPlugin, key: str, key_type: str) -> An
     cache_value = await cache.get(key)
     if cache_value is None:
         raise ValueError(f"Cache value for key '{key}' is None.")
-    elif not isinstance(cache_value, (str, bytes)):
+    if not isinstance(cache_value, (str, bytes)):
         raise TypeError(
             f"Expected cache value of {key} to be a string or bytes, "
             f"found it to be of type: `{type(cache_value)!r}`."
