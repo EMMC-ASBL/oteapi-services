@@ -17,11 +17,10 @@ from app.models.dataresource import (
 from app.models.error import (
     HTTPNotFoundError,
     HTTPValidationError,
-    httpexception_404_item_id_does_not_exist,
     httpexception_422_resource_id_is_unprocessable,
 )
 from app.redis_cache import TRedisPlugin
-from app.redis_cache._cache import _fetch_cache_value
+from app.redis_cache._cache import _fetch_cache_value, _validate_cache_key
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -66,8 +65,7 @@ async def create_dataresource(
     await cache.set(new_resource.resource_id, resource_config)
 
     if session_id:
-        if not await cache.exists(session_id):
-            raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
+        await _validate_cache_key(cache, session_id, "session_id")
         await _update_session_list_item(
             session_id=session_id,
             list_key="resource_info",
@@ -84,15 +82,7 @@ async def info_dataresource(
     resource_id: str,
 ) -> ResourceConfig:
     """Get data resource info."""
-    if not await cache.exists(resource_id):
-        raise httpexception_404_item_id_does_not_exist(resource_id, "resource_id")
-
-    cache_value = await cache.get(resource_id)
-    if not isinstance(cache_value, (str, bytes)):
-        raise TypeError(
-            f"Expected cache value of {resource_id} to be a string or bytes, "
-            f"found it to be of type {type(cache_value)!r}."
-        )
+    cache_value = await _fetch_cache_value(cache, resource_id, "resource_id")
     return ResourceConfig(**json.loads(cache_value))
 
 
@@ -110,24 +100,11 @@ async def read_dataresource(
 
     Parse data information using the appropriate parser.
     """
-    if not await cache.exists(resource_id):
-        raise httpexception_404_item_id_does_not_exist(resource_id, "resource_id")
-    if session_id and not await cache.exists(session_id):
-        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-
-    cache_value = await cache.get(resource_id)
-    if not isinstance(cache_value, (str, bytes)):
-        raise TypeError(
-            f"Expected cache value of {resource_id} to be a string or bytes, "
-            f"found it to be of type {type(cache_value)!r}."
-        )
+    cache_value = await _fetch_cache_value(cache, resource_id, "resource_id")
     config = ResourceConfig(**json.loads(cache_value))
 
     if session_id:
-        await _fetch_cache_value(cache, session_id, "session_id")
-        session_data = await cache.get(session_id)
-        if session_data is None:
-            raise ValueError("Session data is None")
+        session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
     if not config.resourceType:
@@ -154,25 +131,11 @@ async def initialize_dataresource(
     session_id: Optional[str] = None,
 ) -> InitializeResourceResponse:
     """Initialize data resource."""
-    if not await cache.exists(resource_id):
-        raise httpexception_404_item_id_does_not_exist(resource_id, "resource_id")
-    if session_id and not await cache.exists(session_id):
-        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-
-    cache_value = await cache.get(resource_id)
-    if not isinstance(cache_value, (str, bytes)):
-        raise TypeError(
-            f"Expected cache value of {resource_id} to be a string or bytes, "
-            f"found it to be of type {type(cache_value)!r}."
-        )
+    cache_value = await _fetch_cache_value(cache, resource_id, "resource_id")
     config = ResourceConfig(**json.loads(cache_value))
 
     if session_id:
-        await _fetch_cache_value(cache, session_id, "session_id")
-        cache_value = await cache.get(session_id)
-        session_data = await cache.get(session_id)
-        if session_data is None:
-            raise ValueError("Session data is None")
+        session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
     if not config.resourceType:

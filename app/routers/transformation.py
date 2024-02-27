@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING, Optional
 from fastapi import APIRouter, Request, status
 from oteapi.models import TransformationConfig, TransformationStatus
 from oteapi.plugins import create_strategy
+from oteapi.utils.config_updater import populate_config_from_session
 
-from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
+from app.models.error import HTTPNotFoundError
 from app.models.transformation import (
     IDPREFIX,
     CreateTransformationResponse,
@@ -16,6 +17,7 @@ from app.models.transformation import (
     InitializeTransformationResponse,
 )
 from app.redis_cache import TRedisPlugin
+from app.redis_cache._cache import _fetch_cache_value, _validate_cache_key
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -47,8 +49,7 @@ async def create_transformation(
     await cache.set(new_transformation.transformation_id, transformation_config)
 
     if session_id:
-        if not await cache.exists(session_id):
-            raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
+        await _validate_cache_key(cache, session_id, "session_id")
         await _update_session_list_item(
             session_id=session_id,
             list_key="transformation_info",
@@ -66,17 +67,9 @@ async def get_transformation_status(
     task_id: str,
 ) -> TransformationStatus:
     """Get the current status of a defined transformation."""
-    if not await cache.exists(transformation_id):
-        raise httpexception_404_item_id_does_not_exist(
-            transformation_id, "transformation_id"
-        )
-
-    cache_value = await cache.get(transformation_id)
-    if not isinstance(cache_value, (str, bytes)):
-        raise TypeError(
-            f"Expected cache value of {transformation_id} to be a string or bytes, "
-            f"found it to be of type {type(cache_value)!r}."
-        )
+    cache_value = await _fetch_cache_value(
+        cache, transformation_id, "transformation_id"
+    )
     config = TransformationConfig(**json.loads(cache_value))
 
     strategy: "ITransformationStrategy" = create_strategy("transformation", config)
@@ -90,34 +83,17 @@ async def get_transformation(
     session_id: Optional[str] = None,
 ) -> GetTransformationResponse:
     """Get transformation."""
-    if not await cache.exists(transformation_id):
-        raise httpexception_404_item_id_does_not_exist(
-            transformation_id, "transformation_id"
-        )
-    if session_id and not await cache.exists(session_id):
-        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-
-    cache_value = await cache.get(transformation_id)
-    if not isinstance(cache_value, (str, bytes)):
-        raise TypeError(
-            f"Expected cache value of {transformation_id} to be a string or bytes, "
-            f"found it to be of type {type(cache_value)!r}."
-        )
+    cache_value = await _fetch_cache_value(
+        cache, transformation_id, "transformation_id"
+    )
     config = TransformationConfig(**json.loads(cache_value))
 
-    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
-
     if session_id:
-        cache_value = await cache.get(session_id)
-        if not isinstance(cache_value, (str, bytes)):
-            raise TypeError(
-                f"Expected cache value of {session_id} to be a string or bytes, "
-                f"found it to be of type {type(cache_value)!r}."
-            )
-    session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(cache_value)
-    )
-    session_update = strategy.get(session=session_data)
+        session_data = await _fetch_cache_value(cache, session_id, "session_id")
+        populate_config_from_session(json.loads(session_data), config)
+
+    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
+    session_update = strategy.get()
 
     if session_update and session_id:
         await _update_session(
@@ -137,34 +113,17 @@ async def execute_transformation(
 ) -> ExecuteTransformationResponse:
     """Execute (run) a transformation."""
     # Fetch transformation info from cache
-    if not await cache.exists(transformation_id):
-        raise httpexception_404_item_id_does_not_exist(
-            transformation_id, "transformation_id"
-        )
-    if session_id and not await cache.exists(session_id):
-        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-
-    cache_value = await cache.get(transformation_id)
-    if not isinstance(cache_value, (str, bytes)):
-        raise TypeError(
-            f"Expected cache value of {transformation_id} to be a string or bytes, "
-            f"found it to be of type {type(cache_value)!r}."
-        )
+    cache_value = await _fetch_cache_value(
+        cache, transformation_id, "transformation_id"
+    )
     config = TransformationConfig(**json.loads(cache_value))
 
-    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
-
     if session_id:
-        cache_value = await cache.get(session_id)
-        if not isinstance(cache_value, (str, bytes)):
-            raise TypeError(
-                f"Expected cache value of {session_id} to be a string or bytes, "
-                f"found it to be of type {type(cache_value)!r}."
-            )
-    session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(cache_value)
-    )
-    session_update = strategy.get(session=session_data)
+        session_data = await _fetch_cache_value(cache, session_id, "session_id")
+        populate_config_from_session(json.loads(session_data), config)
+
+    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
+    session_update = strategy.get()
 
     if session_update and session_id:
         await _update_session(
@@ -184,34 +143,17 @@ async def initialize_transformation(
 ) -> InitializeTransformationResponse:
     """Initialize a transformation."""
     # Fetch transformation info from cache
-    if not await cache.exists(transformation_id):
-        raise httpexception_404_item_id_does_not_exist(
-            transformation_id, "transformation_id"
-        )
-    if session_id and not await cache.exists(session_id):
-        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-
-    cache_value = await cache.get(transformation_id)
-    if not isinstance(cache_value, (str, bytes)):
-        raise TypeError(
-            f"Expected cache value of {transformation_id} to be a string or bytes, "
-            f"found it to be of type {type(cache_value)!r}."
-        )
+    cache_value = await _fetch_cache_value(
+        cache, transformation_id, "transformation_id"
+    )
     config = TransformationConfig(**json.loads(cache_value))
 
-    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
-
     if session_id:
-        cache_value = await cache.get(session_id)
-        if not isinstance(cache_value, (str, bytes)):
-            raise TypeError(
-                f"Expected cache value of {session_id} to be a string or bytes, "
-                f"found it to be of type {type(cache_value)!r}."
-            )
-    session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(cache_value)
-    )
-    session_update = strategy.initialize(session=session_data)
+        session_data = await _fetch_cache_value(cache, session_id, "session_id")
+        populate_config_from_session(json.loads(session_data), config)
+
+    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
+    session_update = strategy.initialize()
 
     if session_update and session_id:
         await _update_session(
