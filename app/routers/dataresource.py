@@ -1,7 +1,7 @@
 """Data Resource."""
 
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from fastapi import APIRouter, Request, status
 from oteapi.models import ResourceConfig
@@ -22,9 +22,6 @@ from app.models.error import (
 from app.redis_cache import TRedisPlugin
 from app.redis_cache._cache import _fetch_cache_value, _validate_cache_key
 from app.routers.session import _update_session, _update_session_list_item
-
-if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any
 
 ROUTER = APIRouter(
     prefix=f"/{IDPREFIX}",

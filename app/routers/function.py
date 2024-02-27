@@ -20,8 +20,6 @@ from app.redis_cache._cache import _fetch_cache_value, _validate_cache_key
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any
-
     from oteapi.interfaces import IFunctionStrategy
 
 ROUTER = APIRouter(

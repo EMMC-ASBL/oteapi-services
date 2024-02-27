@@ -1,4 +1,5 @@
-"Cache operations"
+"""Cache operations."""
+
 from typing import Any
 
 from app.models.error import httpexception_404_item_id_does_not_exist
