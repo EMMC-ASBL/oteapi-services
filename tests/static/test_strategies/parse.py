@@ -5,14 +5,13 @@ import json
 from typing import TYPE_CHECKING, Literal, Optional
 
 from oteapi.datacache import DataCache
-from oteapi.datacache.datacache import DataCache
 from oteapi.models import AttrDict, DataCacheConfig, HostlessAnyUrl, ParserConfig
 from oteapi.plugins import create_strategy
 from pydantic import Field
 from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from typing import Any, Optional
+    from typing import Any
 
 
 class DEMOConfig(AttrDict):

@@ -2,7 +2,6 @@
 
 from typing import TYPE_CHECKING, Annotated, Optional
 
-import requests
 from oteapi.datacache.datacache import DataCache
 from oteapi.models import AttrDict, DataCacheConfig, ResourceConfig
 from pydantic import AnyHttpUrl, BaseModel, Field

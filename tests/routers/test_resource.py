@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 
 
 def test_create_dataresource(client: "TestClient"):
+    """Test create dataresource."""
     response = client.post(
         "/dataresource/",
         json={
@@ -19,6 +20,7 @@ def test_create_dataresource(client: "TestClient"):
 
 
 def test_get_dataresource_info(client: "TestClient"):
+    """Test get dataresource info."""
     response = client.get(
         "/dataresource/dataresource-910c9965-a318-4ac4-9123-9c55d5b86f2e/info"
     )
@@ -26,6 +28,7 @@ def test_get_dataresource_info(client: "TestClient"):
 
 
 def test_read_dataresource(client: "TestClient"):
+    """Test read dataresource."""
     response = client.get(
         "/dataresource/dataresource-910c9965-a318-4ac4-9123-9c55d5b86f2e"
     )
@@ -33,6 +36,7 @@ def test_read_dataresource(client: "TestClient"):
 
 
 def test_initialize_dataresource(client: "TestClient"):
+    """Test initialize dataresource."""
     response = client.post(
         "/dataresource/dataresource-910c9965-a318-4ac4-9123-9c55d5b86f2e/initialize"
     )
