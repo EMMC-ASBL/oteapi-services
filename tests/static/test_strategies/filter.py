@@ -1,41 +1,37 @@
 """Demo filter strategy."""
 
-from typing import TYPE_CHECKING, Annotated
+from typing import Annotated
 
+from oteapi.models import AttrDict
 from oteapi.models.filterconfig import FilterConfig
-from pydantic import BaseModel, Field
+from pydantic import Field
 from pydantic.dataclasses import dataclass
 
-if TYPE_CHECKING:
-    from typing import Any, Optional
 
-
-class DemoDataModel(BaseModel):
+class DemoDataConfiguration(AttrDict):
     """Demo filter data model."""
 
     demo_data: Annotated[list[int], Field(description="List of demo data.")] = []
+
+
+class DemoFilterConfig(FilterConfig):
+    """Demo filter configuration."""
+
+    configuration: DemoDataConfiguration = Field(
+        ..., description=FilterConfig.model_fields["configuration"].description
+    )
 
 
 @dataclass
 class DemoFilter:
     """Filter Strategy."""
 
-    filter_config: FilterConfig
+    filter_config: DemoFilterConfig
 
-    def initialize(
-        self, session: "Optional[dict[str, Any]]" = None
-    ) -> "dict[str, Any]":
+    def initialize(self) -> "AttrDict":
         """Initialize strategy and return a dictionary"""
-        del session  # unused
-        del self.filter_config  # unused
+        return AttrDict(result="collectionid")
 
-        return {"result": "collectionid"}
-
-    def get(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
+    def get(self) -> "AttrDict":
         """Execute strategy and return a dictionary"""
-        del session  # unused
-        model = DemoDataModel(
-            **self.filter_config.configuration  # pylint: disable=not-a-mapping
-        )
-
-        return {"key": model.demo_data}
+        return AttrDict(key=self.filter_config.configuration.demo_data)

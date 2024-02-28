@@ -1,34 +1,47 @@
 """Fixtures and configuration for PyTest."""
 
 # pylint: disable=invalid-name,redefined-builtin,unused-argument,comparison-with-callable
+import logging
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from typing import Union
 
     from fastapi.testclient import TestClient
+
+logging.getLogger("test_strategies").setLevel(logging.DEBUG)
 
 
 class DummyCache:
     """Mock cache for RedisCache."""
 
-    obj = {}
+    obj: dict[str, "Union[str, bytes]"] = {}
 
     def __init__(self, o=None):
         self.obj = o or {}
 
     async def set(self, id, data) -> None:
         """Mock `set()` method."""
+        import json
+
         if data:
-            self.obj[id] = data
+            if isinstance(data, (str, bytes)):
+                self.obj[id] = data
+            else:
+                self.obj[id] = json.dumps(data)
 
     async def get(self, id) -> dict:
         """Mock `get()` method."""
         import json
+        from copy import deepcopy
 
-        return json.loads(json.dumps(self.obj[id]))
+        if isinstance(self.obj[id], (str, bytes)):
+            return deepcopy(self.obj[id])
+
+        return json.dumps(self.obj[id])
 
     async def keys(self, pattern: str) -> "list[bytes]":
         """Mock `keys()` method."""
@@ -63,7 +76,7 @@ def top_dir() -> "Path":
     return Path(__file__).resolve().parent.parent.resolve()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def test_data() -> "dict[str, str]":
     """Test data stored in DummyCache."""
     import json
@@ -95,8 +108,8 @@ def test_data() -> "dict[str, str]":
                 "configuration": {},
             },
             # sessions
-            "1": {"foo": "bar"},
-            "2": {"foo": "bar"},
+            "session-f752c613-fde0-4d43-a7f6-c50f68642daa": {"foo": "bar"},
+            "session-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": {"foo": ["bar", "baz"]},
             # transformation
             "transformation-f752c613-fde0-4d43-a7f6-c50f68642daa": {
                 "transformationType": "script/demo",
@@ -174,7 +187,7 @@ def load_test_strategies() -> None:
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def client(test_data: "dict[str, dict]") -> "TestClient":
     """Return a test client."""
     from fastapi.testclient import TestClient

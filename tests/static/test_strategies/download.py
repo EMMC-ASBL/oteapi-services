@@ -1,14 +1,11 @@
 """Demo download strategy class for file."""
 
-from typing import TYPE_CHECKING, Annotated, Optional
+from typing import Annotated, Optional
 
 from oteapi.datacache.datacache import DataCache
 from oteapi.models import AttrDict, DataCacheConfig, ResourceConfig
 from pydantic import AnyHttpUrl, BaseModel, Field
 from pydantic.dataclasses import dataclass
-
-if TYPE_CHECKING:
-    from typing import Any
 
 
 class FileConfig(BaseModel):
@@ -33,17 +30,12 @@ class FileStrategy:
 
     resource_config: ResourceConfig
 
-    def initialize(
-        self, session: "Optional[dict[str, Any]]" = None
-    ) -> "dict[str, Any]":
+    def initialize(self) -> "AttrDict":
         """Initialize"""
-        del session
-        del self.resource_config
-        return {}
+        return AttrDict()
 
-    def get(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
+    def get(self) -> "AttrDict":
         """Read local file."""
-        del session  # fix ignore-unused-argument
         assert self.resource_config.downloadUrl
         assert (
             self.resource_config.downloadUrl.scheme  # pylint: disable=no-member
@@ -63,7 +55,7 @@ class FileStrategy:
             with open(filename, mode, encoding=config.encoding) as handle:
                 key = cache.add(handle.read())
 
-        return {"key": key}
+        return AttrDict(key=key)
 
 
 class HTTPSConfig(AttrDict):
@@ -97,14 +89,7 @@ class HTTPDownloadContent(AttrDict):
 
 @dataclass
 class HTTPSStrategy:
-    """Strategy for retrieving data via http.
-
-    **Registers strategies**:
-
-    - `("scheme", "http")`
-    - `("scheme", "https")`
-
-    """
+    """Strategy for retrieving data via http."""
 
     download_config: HTTPSDemoConfig
 
