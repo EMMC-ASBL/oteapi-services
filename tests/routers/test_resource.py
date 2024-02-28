@@ -91,8 +91,14 @@ def test_session_config_merge(
 
         # THIS is where we test the session has been properly merged into the strategy
         # configuration !
+        # Cannot use exclude_unset because the 'configuration' is not set originally.
+        # When 'configuration' is updated, this does not change the original pydantic
+        # model understanding that the 'configuration' is not set.
+        # So instead, we use exclude_none to include the 'configuration' key in the
+        # dumped dict, but exclude the non-overwritten/snon-set 'description' value.
         assert (
-            config.model_dump(mode="json", exclude_unset=True) == expected_merged_config
+            config.model_dump(mode="json", exclude_none=True, exclude=["description"])
+            == expected_merged_config
         )
 
         return original_create_strategy(strategy_type, config)
