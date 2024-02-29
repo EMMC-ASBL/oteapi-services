@@ -8,6 +8,10 @@
 # This is relevant for, e.g., the `development` target.
 set -e
 
+if [ "${DEV_ENV}" == "1" ]; then
+    set -x
+fi
+
 # If a custom `oteapi-core` version is installed, the version for it may differ from
 # that given in `requirements.txt`. To work around this, we copy the `requirements.txt`
 # file into a `constraints.txt` file and replace the `oteapi-core` version there with
@@ -33,7 +37,7 @@ else
     echo "No extra plugin packages provided. Specify 'OTEAPI_PLUGIN_PACKAGES' to specify plugin packages."
 fi
 
-if [ "${DEV_ENV}" = "1" ]; then
+if [ "${DEV_ENV}" == "1" ] && [ "${CI}" == "" ]; then
     python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 asgi:app "$@"
 else
     hypercorn --bind 0.0.0.0:8080 asgi:app "$@"

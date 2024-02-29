@@ -18,6 +18,7 @@ services:
       PATH_TO_OTEAPI_CORE:
       OTEAPI_PLUGIN_PACKAGES:
       OTEAPI_AUTHENTICATION_DEPENDENCIES:
+      CI:
     depends_on:
       - redis
     networks:
