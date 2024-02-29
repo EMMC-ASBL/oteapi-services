@@ -1,7 +1,6 @@
 """Fixtures and configuration for PyTest."""
 
 # pylint: disable=invalid-name,redefined-builtin,unused-argument,comparison-with-callable
-import logging
 from typing import TYPE_CHECKING
 
 import pytest
@@ -11,8 +10,6 @@ if TYPE_CHECKING:
     from typing import Union
 
     from fastapi.testclient import TestClient
-
-logging.getLogger("test_strategies").setLevel(logging.DEBUG)
 
 
 class DummyCache:
