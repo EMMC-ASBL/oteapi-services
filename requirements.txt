@@ -28,8 +28,7 @@ idna==3.6
 iso8601==2.1.0
 kombu==5.3.5
 openpyxl==3.1.2
-# oteapi-core==0.6.1
-oteapi-core @ git+https://github.com/EMMC-ASBL/oteapi-core@master
+oteapi-core==0.7.0.dev0
 paramiko==3.4.0
 pillow==10.2.0
 priority==2.0.0

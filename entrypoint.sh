@@ -15,7 +15,7 @@ set -e
 # constraint when installing the plugin packages. I.e., the plugin packages cannot change the versions of the
 # already installed packages.
 oteapi_core_requirement="$(pip list --format=freeze --include-editable | grep 'oteapi-core')"
-sed -E -e "s|oteapi-core==[0-9.]+|${oteapi_core_requirement}|" requirements.txt > constraints.txt
+sed -E -e "s|oteapi-core==.*|${oteapi_core_requirement}|" requirements.txt > constraints.txt
 
 if [ -n "${OTEAPI_PLUGIN_PACKAGES}" ]; then
     echo "Installing plugins:"
