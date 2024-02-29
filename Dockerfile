@@ -30,7 +30,7 @@ COPY .dev/requirements_dev.txt .pre-commit-config.yaml pyproject.toml ./
 RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
 ENV DEV_ENV=1
 # Run app with reload option
-EXPOSE 8080
+EXPOSE 8080 5678
 CMD if [ "${PATH_TO_OTEAPI_CORE}" != "/dev/null" ] && [ -n "${PATH_TO_OTEAPI_CORE}" ]; then \
   pip install -U --force-reinstall -e /oteapi_core; fi \
   && ./entrypoint.sh --reload --debug --log-level debug

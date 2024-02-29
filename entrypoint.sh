@@ -33,7 +33,7 @@ else
     echo "No extra plugin packages provided. Specify 'OTEAPI_PLUGIN_PACKAGES' to specify plugin packages."
 fi
 
-if [ "$DEV_ENV" = "1" ]; then
+if [ "${DEV_ENV}" = "1" ]; then
     python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 asgi:app "$@"
 else
     hypercorn --bind 0.0.0.0:8080 asgi:app "$@"
