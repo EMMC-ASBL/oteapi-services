@@ -56,7 +56,7 @@ async def create_parser(
 
 
 # Get parser info
-@ROUTER.get("/{parser_id}/info", response_model=ParserConfig)
+@ROUTER.get("/{parser_id}/info", response_model=ParserConfig, include_in_schema=False)
 async def info_parser(cache: TRedisPlugin, parser_id: str) -> ParserConfig:
     """Get information about a specific parser."""
     cache_value = await _fetch_cache_value(cache, parser_id, "parser_id")

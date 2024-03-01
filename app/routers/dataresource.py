@@ -73,7 +73,9 @@ async def create_dataresource(
     return new_resource
 
 
-@ROUTER.get("/{resource_id}/info", response_model=ResourceConfig)
+@ROUTER.get(
+    "/{resource_id}/info", response_model=ResourceConfig, include_in_schema=False
+)
 async def info_dataresource(
     cache: TRedisPlugin,
     resource_id: str,
@@ -100,23 +102,23 @@ async def read_dataresource(
     cache_value = await _fetch_cache_value(cache, resource_id, "resource_id")
     config = ResourceConfig(**json.loads(cache_value))
 
+    if (not config.resourceType) or (
+        not (
+            (config.downloadUrl and config.mediaType)
+            or (config.accessUrl and config.accessService)
+        )
+    ):
+        raise httpexception_422_resource_id_is_unprocessable(resource_id)
+
     if session_id:
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    if not config.resourceType:
-        raise httpexception_422_resource_id_is_unprocessable(resource_id)
-
-    if (config.downloadUrl and config.mediaType) or (
-        config.accessUrl and config.accessService
-    ):
-        session_update = create_strategy("resource", config).get()
-        if session_update and session_id:
-            await _update_session(
-                session_id=session_id, updated_session=session_update, redis=cache
-            )
-    else:
-        raise httpexception_422_resource_id_is_unprocessable(resource_id)
+    session_update = create_strategy("resource", config).get()
+    if session_update and session_id:
+        await _update_session(
+            session_id=session_id, updated_session=session_update, redis=cache
+        )
 
     return GetResourceResponse(**session_update)
 
@@ -131,23 +133,22 @@ async def initialize_dataresource(
     cache_value = await _fetch_cache_value(cache, resource_id, "resource_id")
     config = ResourceConfig(**json.loads(cache_value))
 
+    if (not config.resourceType) or (
+        not (
+            (config.downloadUrl and config.mediaType)
+            or (config.accessUrl and config.accessService)
+        )
+    ):
+        raise httpexception_422_resource_id_is_unprocessable(resource_id)
+
     if session_id:
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    if not config.resourceType:
-        raise httpexception_422_resource_id_is_unprocessable(resource_id)
-
-    if (config.downloadUrl and config.mediaType) or (
-        config.accessUrl and config.accessService
-    ):
-        # Download strategy
-        session_update = create_strategy("resource", config).initialize()
-        if session_update and session_id:
-            await _update_session(
-                session_id=session_id, updated_session=session_update, redis=cache
-            )
-    else:
-        raise httpexception_422_resource_id_is_unprocessable(resource_id)
+    session_update = create_strategy("resource", config).initialize()
+    if session_update and session_id:
+        await _update_session(
+            session_id=session_id, updated_session=session_update, redis=cache
+        )
 
     return InitializeResourceResponse(**session_update)
