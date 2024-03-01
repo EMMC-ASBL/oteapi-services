@@ -1,5 +1,9 @@
 # Open Translation Environment (OTE) API
 
+**Important**: The latest [`oteapi` Docker image](https://github.com/EMMC-ASBL/oteapi-services/pkgs/container/oteapi) is using a development version of [`oteapi-core`](https://github.com/EMMC-ASBL/oteapi-core).
+To use a version of the `oteapi` Docker image that runs only on the latest stable version of `oteapi-core`, use the version tag `1.20240228.345` or earlier.
+Example: `ghcr.io/emmc-asbl/oteapi:1.20240228.345`.
+
 ## Run in Docker
 
 ### Development target
