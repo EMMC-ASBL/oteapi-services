@@ -58,7 +58,7 @@ async def list_sessions(
     cache: TRedisPlugin,
 ) -> ListSessionsResponse:
     """Get all session keys"""
-    keylist: list[Union[str, bytes]] = []
+    keylist: list[str] = []
     for key in await cache.keys(pattern=f"{IDPREFIX}*"):
         if not isinstance(key, (str, bytes)):
             raise TypeError(
