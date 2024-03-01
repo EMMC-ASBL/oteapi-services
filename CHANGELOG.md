@@ -7,6 +7,7 @@
 **Implemented enhancements:**
 
 - Migrate to pydantic v2 [\#338](https://github.com/EMMC-ASBL/oteapi-services/issues/338)
+- Separate parse and download [\#55](https://github.com/EMMC-ASBL/oteapi-services/issues/55)
 
 **Fixed bugs:**
 
@@ -21,7 +22,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#401](https://github.com/EMMC-ASBL/oteapi-services/pull/401) ([TEAM4-0](https://github.com/TEAM4-0))
+- Major/410 session update [\#395](https://github.com/EMMC-ASBL/oteapi-services/pull/395) ([Treesarj](https://github.com/Treesarj))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
 

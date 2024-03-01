@@ -1,14 +1,11 @@
 """Demo download strategy class for file."""
 
-from typing import TYPE_CHECKING, Annotated, Optional
+from typing import Annotated, Optional
 
 from oteapi.datacache.datacache import DataCache
-from oteapi.models.resourceconfig import ResourceConfig
-from pydantic import BaseModel, Field
+from oteapi.models import AttrDict, DataCacheConfig, ResourceConfig
+from pydantic import AnyHttpUrl, BaseModel, Field
 from pydantic.dataclasses import dataclass
-
-if TYPE_CHECKING:
-    from typing import Any
 
 
 class FileConfig(BaseModel):
@@ -33,17 +30,12 @@ class FileStrategy:
 
     resource_config: ResourceConfig
 
-    def initialize(
-        self, session: "Optional[dict[str, Any]]" = None
-    ) -> "dict[str, Any]":
+    def initialize(self) -> "AttrDict":
         """Initialize"""
-        del session
-        del self.resource_config
-        return {}
+        return AttrDict()
 
-    def get(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
+    def get(self) -> "AttrDict":
         """Read local file."""
-        del session  # fix ignore-unused-argument
         assert self.resource_config.downloadUrl
         assert (
             self.resource_config.downloadUrl.scheme  # pylint: disable=no-member
@@ -63,4 +55,54 @@ class FileStrategy:
             with open(filename, mode, encoding=config.encoding) as handle:
                 key = cache.add(handle.read())
 
-        return {"key": key}
+        return AttrDict(key=key)
+
+
+class HTTPSConfig(AttrDict):
+    """HTTP(S)-specific Configuration Data Model."""
+
+    datacache_config: Optional[DataCacheConfig] = Field(
+        None,
+        description=(
+            "Configurations for the data cache for storing the downloaded file "
+            "content."
+        ),
+    )
+
+
+class HTTPSDemoConfig(ResourceConfig):
+    """HTTP(S) download strategy filter config."""
+
+    downloadUrl: AnyHttpUrl = Field(
+        ..., description="The HTTP(S) URL, which will be downloaded."
+    )
+    configuration: HTTPSConfig = Field(
+        HTTPSConfig(), description="HTTP(S) download strategy-specific configuration."
+    )
+
+
+class HTTPDownloadContent(AttrDict):
+    """Class for returning values from Download HTTPS strategy."""
+
+    key: str = Field(..., description="Key to access the data in the cache.")
+
+
+@dataclass
+class HTTPSStrategy:
+    """Strategy for retrieving data via http."""
+
+    download_config: HTTPSDemoConfig
+
+    def initialize(self) -> AttrDict:
+        """Initialize."""
+        return AttrDict()
+
+    def get(self) -> HTTPDownloadContent:
+        """Download via http/https and store on local cache."""
+        cache = DataCache(self.download_config.configuration.datacache_config)
+        if cache.config.accessKey and cache.config.accessKey in cache:
+            key = cache.config.accessKey
+        else:
+            key = cache.add({"dummy_content": "dummycontent"})
+
+        return HTTPDownloadContent(key=key)

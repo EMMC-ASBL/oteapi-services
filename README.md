@@ -1,5 +1,9 @@
 # Open Translation Environment (OTE) API
 
+**Important**: The latest [`oteapi` Docker image](https://github.com/EMMC-ASBL/oteapi-services/pkgs/container/oteapi) is using a development version of [`oteapi-core`](https://github.com/EMMC-ASBL/oteapi-core).
+To use a version of the `oteapi` Docker image that runs only on the latest stable version of `oteapi-core`, use the version tag `1.20240228.345` or earlier.
+Example: `ghcr.io/emmc-asbl/oteapi:1.20240228.345`.
+
 ## Run in Docker
 
 ### Development target
@@ -332,6 +336,74 @@ volumes:
 networks:
   otenet:
 ```
+
+## Debugging OTEAPI Service in Visual Studio
+
+### Prerequisites
+  * Ensure you have `docker` and `docker-compose` installed on your system.
+  * Install Visual Studio Code along with the Python extension and the Remote - Containers extension.
+  * Have the docker-compose_dev.yml file configured for your OTEAPI Service.
+  * Ensure `debugpy` is installed in your virtual environment
+
+### Configuring Visual Studio Code:
+
+  * Open your project in Visual Studio Code.
+  * Go to the Run and Debug view (Ctrl+Shift+D or ⌘+Shift+D on macOS).
+  * Create a launch.json file in the .vscode folder at the root of your project (if not already present). This file should contain something like this:
+
+  ```json
+    {
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "name": "Python: Remote Attach",
+          "type": "python",
+          "request": "attach",
+          "connect": {
+            "host": "localhost",
+            "port": 5678
+          },
+          "pathMappings": [
+            {
+              "localRoot": "${workspaceFolder}",
+              "remoteRoot": "/app"
+            }
+          ]
+        }
+      ]
+    }
+  ```
+
+### Update the entrypoint.sh
+In order to enable remote debugging, update the file `entrypoint.sh` such that the oteapi is started using the following command:
+
+```
+python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 --reload asgi:app "$@"
+```
+
+This will run the OTEAPI service in remote debug mode. The debugpy debugger will wait until a remote debuggin client is attached to port 5678. This happens when activating the "Run and Debug | Python: Remote Attach" from Visual Studio Code. For other IDEs please follow the relevant documentation.
+
+
+
+### Starting the docker-compose
+  * Open a terminal and navigate to the directory containing your docker-compose_dev.yml file.
+  * Start the service using the command:
+
+  ```sh
+  docker-compose -f docker-compose_dev.yml up -d
+  ```
+
+The `-d` option starts the OTEAPI sevice in detached mode. In order to  access and follow the logs output you can run `docker-compose logs -f`.
+
+### Attaching to the Remote Process:
+
+  * With the `launch.json` configured, go to the Run and Debug view in Visual Studio Code.
+  * Select the "Python: Remote Attach" configuration from the dropdown menu.* Click the green play button or press F5 to start the debugging session.
+  * Visual Studio Code will attach to the remote debugging session running inside the Docker container.
+
+### Debugging the Application:
+
+Set breakpoints in your code as needed. Interact with your FastAPI application as you normally would. Visual Studio Code will pause execution when a breakpoint is hit, allowing you to inspect variables, step through code, and debug your application.
 
 ## Acknowledgment
 

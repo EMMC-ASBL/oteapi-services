@@ -7,6 +7,7 @@ import pytest
 
 if TYPE_CHECKING:
     from pathlib import Path
+    from typing import Union
 
     from fastapi.testclient import TestClient
 
@@ -14,21 +15,30 @@ if TYPE_CHECKING:
 class DummyCache:
     """Mock cache for RedisCache."""
 
-    obj = {}
+    obj: dict[str, "Union[str, bytes]"] = {}
 
     def __init__(self, o=None):
         self.obj = o or {}
 
     async def set(self, id, data) -> None:
         """Mock `set()` method."""
+        import json
+
         if data:
-            self.obj[id] = data
+            if isinstance(data, (str, bytes)):
+                self.obj[id] = data
+            else:
+                self.obj[id] = json.dumps(data)
 
     async def get(self, id) -> dict:
         """Mock `get()` method."""
         import json
+        from copy import deepcopy
 
-        return json.loads(json.dumps(self.obj[id]))
+        if isinstance(self.obj[id], (str, bytes)):
+            return deepcopy(self.obj[id])
+
+        return json.dumps(self.obj[id])
 
     async def keys(self, pattern: str) -> "list[bytes]":
         """Mock `keys()` method."""
@@ -38,6 +48,12 @@ class DummyCache:
     async def exists(self, key: str) -> bool:
         """Mock `exists()` method."""
         return key in self.obj.keys()
+
+    async def delete(self, *keys):
+        """Delete Keys"""
+        for key in keys:
+            if key in self.obj:  # Use self.obj instead of self.cache
+                del self.obj[key]
 
 
 def pytest_configure(config):
@@ -57,7 +73,7 @@ def top_dir() -> "Path":
     return Path(__file__).resolve().parent.parent.resolve()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def test_data() -> "dict[str, str]":
     """Test data stored in DummyCache."""
     import json
@@ -75,6 +91,12 @@ def test_data() -> "dict[str, str]":
                 "functionType": "function/demo",
                 "configuration": {},
             },
+            # dataresource
+            "dataresource-910c9965-a318-4ac4-9123-9c55d5b86f2e": {
+                "downloadUrl": "https://filesamples.com/sample.json",
+                "mediaType": "application/json",
+                "resourceType": "resource/demo",
+            },
             # mapping
             "mapping-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": {
                 "mappingType": "mapping/demo",
@@ -83,13 +105,22 @@ def test_data() -> "dict[str, str]":
                 "configuration": {},
             },
             # sessions
-            "1": {"foo": "bar"},
-            "2": {"foo": "bar"},
+            "session-f752c613-fde0-4d43-a7f6-c50f68642daa": {"foo": "bar"},
+            "session-a2d6b3d5-9b6b-48a3-8756-ae6d4fd6b81e": {"foo": ["bar", "baz"]},
             # transformation
             "transformation-f752c613-fde0-4d43-a7f6-c50f68642daa": {
                 "transformationType": "script/demo",
                 "name": "script/dummy",
                 "configuration": {},
+            },
+            # parser
+            "parser-f752c613-fde0-4d43-a7f6-c50f68642daa": {
+                "parserType": "parser/demo",
+                "entity": "http://example.com/entity",
+                "configuration": {
+                    "downloadUrl": ("https://example.org/sample2.json"),
+                    "mediaType": "application/json",
+                },
             },
         }.items()
     }
@@ -108,8 +139,8 @@ def load_test_strategies() -> None:
 
     test_strategies = [
         {
-            "name": "tests.file",
-            "value": "tests.static.test_strategies.download:FileStrategy",
+            "name": "tests.https",
+            "value": "tests.static.test_strategies.download:HTTPSStrategy",
             "group": "oteapi.download",
         },
         {
@@ -128,12 +159,12 @@ def load_test_strategies() -> None:
             "group": "oteapi.mapping",
         },
         {
-            "name": "tests.text/json",
+            "name": "tests.parser/demo",
             "value": "tests.static.test_strategies.parse:DemoJSONDataParseStrategy",
             "group": "oteapi.parse",
         },
         {
-            "name": "tests.demo-access-service",
+            "name": "tests.resource/demo",
             "value": "tests.static.test_strategies.resource:DemoResourceStrategy",
             "group": "oteapi.resource",
         },
@@ -153,7 +184,7 @@ def load_test_strategies() -> None:
     }
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def client(test_data: "dict[str, dict]") -> "TestClient":
     """Return a test client."""
     from fastapi.testclient import TestClient

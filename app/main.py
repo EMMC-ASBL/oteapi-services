@@ -18,6 +18,7 @@ from app.routers import (
     dataresource,
     function,
     mapping,
+    parser,
     redisadmin,
     session,
     transformation,
@@ -82,9 +83,10 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
     available_routers = [
         session,
         dataresource,
+        parser,
+        mapping,
         datafilter,
         function,
-        mapping,
         transformation,
         triplestore,
     ]
