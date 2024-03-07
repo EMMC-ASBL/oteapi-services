@@ -22,7 +22,7 @@
 
 **Merged pull requests:**
 
-- Major/410 session update [\#395](https://github.com/EMMC-ASBL/oteapi-services/pull/395) ([Treesarj](https://github.com/Treesarj))
+- \[Auto-generated\] Update dependencies [\#404](https://github.com/EMMC-ASBL/oteapi-services/pull/404) ([TEAM4-0](https://github.com/TEAM4-0))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
 
