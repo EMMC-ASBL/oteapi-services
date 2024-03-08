@@ -1,6 +1,6 @@
 fastapi>=0.110.0
 hypercorn>=0.14.4
-oteapi-core>=0.7.0.dev0
+oteapi-core>=0.7.0.dev1
 pydantic>=2.6.3
 pydantic-settings>=2.2.1
 redis>=5.0.2
