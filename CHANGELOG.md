@@ -22,7 +22,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#404](https://github.com/EMMC-ASBL/oteapi-services/pull/404) ([TEAM4-0](https://github.com/TEAM4-0))
+- Cache only the set parameters in the configurations [\#405](https://github.com/EMMC-ASBL/oteapi-services/pull/405) ([CasperWA](https://github.com/CasperWA))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
 
