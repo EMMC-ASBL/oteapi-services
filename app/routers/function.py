@@ -39,9 +39,10 @@ async def create_function(
     """Create a new function configuration."""
     new_function = CreateFunctionResponse()
 
-    config.token = request.headers.get("Authorization") or config.token
+    if request.headers.get("Authorization") or config.token:
+        config.token = request.headers.get("Authorization") or config.token
 
-    function_config = config.model_dump_json()
+    function_config = config.model_dump_json(exclude_unset=True)
 
     await cache.set(new_function.function_id, function_config)
 

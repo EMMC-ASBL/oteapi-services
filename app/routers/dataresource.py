@@ -55,9 +55,10 @@ async def create_dataresource(
     """
     new_resource = CreateResourceResponse()
 
-    config.token = request.headers.get("Authorization") or config.token
+    if request.headers.get("Authorization") or config.token:
+        config.token = request.headers.get("Authorization") or config.token
 
-    resource_config = config.model_dump_json()
+    resource_config = config.model_dump_json(exclude_unset=True)
 
     await cache.set(new_resource.resource_id, resource_config)
 

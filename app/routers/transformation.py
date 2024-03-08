@@ -40,9 +40,10 @@ async def create_transformation(
     """Create a new transformation configuration."""
     new_transformation = CreateTransformationResponse()
 
-    config.token = request.headers.get("Authorization") or config.token
+    if request.headers.get("Authorization") or config.token:
+        config.token = request.headers.get("Authorization") or config.token
 
-    transformation_config = config.model_dump_json()
+    transformation_config = config.model_dump_json(exclude_unset=True)
 
     await cache.set(new_transformation.transformation_id, transformation_config)
 
