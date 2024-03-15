@@ -123,14 +123,17 @@ jobs:
       run: |
         if [ "${{ matrix.live-redis }}" == "true" ]; then
             LIVE_REDIS=--live-redis
+            REDIS_HOST=localhost
         else
             LIVE_REDIS=
+
+            # An incorrect host, which will ensure we fallback to using 'fakeredis'
+            REDIS_HOST=redis
         fi
 
-        pytest -vvv --cov-report=xml --cov=app ${LIVE_REDIS}
+        OTEAPI_REDIS_HOST=${REDIS_HOST} pytest -vvv --cov-report=xml --cov=app ${LIVE_REDIS}
       env:
         OTEAPI_REDIS_TYPE: redis
-        OTEAPI_REDIS_HOST: localhost
         OTEAPI_REDIS_PORT: 6379
 
     - name: Upload coverage to Codecov
