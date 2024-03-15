@@ -1,6 +1,7 @@
 """OTE-API FastAPI application."""
 
 import logging
+from contextlib import asynccontextmanager
 from importlib import import_module
 from typing import TYPE_CHECKING
 
@@ -59,12 +60,90 @@ class AppSettings(RedisSettings, OteApiCoreSettings):
     )
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """FastAPI Server lifespan events.
+
+    On startup:
+    - Initialize the cache
+    - Load OTEAPI strategies
+
+    On shutdown:
+    - Terminate the cache
+    """
+    # Initialize the Redis cache
+    await redis_plugin.init_app(app, config=CONFIG)
+    await redis_plugin.init()
+
+    # Load OTEAPI strategies
+    load_strategies()
+
+    # Run server
+    yield
+
+    # Terminate the Redis cache
+    await redis_plugin.terminate()
+
+
+def get_auth_deps() -> "list[Depends]":
+    """Get authentication dependencies
+
+    Fetch dependencies for authentication through the
+    `OTEAPI_AUTH_DEPS` environment variable.
+
+    Returns:
+        List of FastAPI dependencies with authentication functions.
+
+    """
+    if CONFIG.authentication_dependencies:
+        modules = [
+            module.strip().split(":")
+            for module in CONFIG.authentication_dependencies.split(  # pylint: disable=no-member
+                "|"
+            )
+        ]
+        imports = [
+            getattr(import_module(module), classname) for (module, classname) in modules
+        ]
+        logger.info(
+            "Imported the following dependencies for authentication: %s", imports
+        )
+        dependencies = [Depends(dependency) for dependency in imports]
+    else:
+        dependencies = []
+        logger.info("No dependencies for authentication assigned.")
+    return dependencies
+
+
+def custom_openapi(app: FastAPI) -> "dict[str, Any]":
+    """Improve the default look & feel when rendering using ReDocs."""
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    app.openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        openapi_version=app.openapi_version,
+        description=app.description,
+        routes=app.routes,
+        tags=app.openapi_tags,
+        servers=app.servers,
+    )
+    app.openapi_schema["info"]["x-logo"] = {
+        "url": "https://ontotrans.eu/wp-content/uploads/2020/05/ot_logo_rosa_gro%C3%9F.svg"
+    }
+    return app.openapi_schema
+
+
 def create_app() -> FastAPI:
     """Create the FastAPI app."""
+    auth_dependencies = get_auth_deps()
+
     app = FastAPI(
-        dependencies=get_auth_deps(),
+        dependencies=auth_dependencies,
         title="Open Translation Environment API",
         version=__version__,
+        lifespan=lifespan,
         description="""OntoTrans Interfaces OpenAPI schema.
 
 The generic interfaces are implemented in dynamic plugins which
@@ -104,75 +183,11 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
             },
         )
 
+    # Customize the OpenAPI specficiation generation
+    app.openapi = custom_openapi
+
     return app
 
 
-def get_auth_deps() -> "list[Depends]":
-    """Get authentication dependencies
-
-    Fetch dependencies for authentication through the
-    `OTEAPI_AUTH_DEPS` environment variable.
-
-    Returns:
-        List of FastAPI dependencies with authentication functions.
-
-    """
-    if CONFIG.authentication_dependencies:
-        modules = [
-            module.strip().split(":")
-            for module in CONFIG.authentication_dependencies.split(  # pylint: disable=no-member
-                "|"
-            )
-        ]
-        imports = [
-            getattr(import_module(module), classname) for (module, classname) in modules
-        ]
-        logger.info(
-            "Imported the following dependencies for authentication: %s", imports
-        )
-        dependencies = [Depends(dependency) for dependency in imports]
-    else:
-        dependencies = []
-        logger.info("No dependencies for authentication assigned.")
-    return dependencies
-
-
-def custom_openapi() -> "dict[str, Any]":
-    """Improve the default look & feel when rendering using ReDocs."""
-    if APP.openapi_schema:
-        return APP.openapi_schema
-
-    APP.openapi_schema = get_openapi(
-        title=APP.title,
-        version=APP.version,
-        openapi_version=APP.openapi_version,
-        description=APP.description,
-        routes=APP.routes,
-        tags=APP.openapi_tags,
-        servers=APP.servers,
-    )
-    APP.openapi_schema["info"]["x-logo"] = {
-        "url": "https://ontotrans.eu/wp-content/uploads/2020/05/ot_logo_rosa_gro%C3%9F.svg"
-    }
-    return APP.openapi_schema
-
-
-async def init_redis() -> None:
-    """Initialize Redis upon app startup."""
-    await redis_plugin.init_app(APP, config=CONFIG)
-    await redis_plugin.init()
-
-
-async def terminate_redis() -> None:
-    """Terminate Redis upon shutdown."""
-    await redis_plugin.terminate()
-
-
 CONFIG = AppSettings()
-APP = create_app()
-APP.openapi = custom_openapi
-
-# Events
-APP.add_event_handler("startup", init_redis)
-APP.add_event_handler("shutdown", terminate_redis)
-APP.add_event_handler("startup", load_strategies)
+# APP = create_app()

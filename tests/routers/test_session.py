@@ -9,7 +9,9 @@ if TYPE_CHECKING:
 def test_list_session(client: "TestClient", test_data: "dict[str, dict]") -> None:
     """Test listing sessions."""
     response = client.get("/session")
-    assert response.json() == {"keys": list(test_data)}
+    assert response.json() == {
+        "keys": [entry for entry in test_data if entry.startswith("session-")]
+    }
     assert response.status_code == 200
 
 
