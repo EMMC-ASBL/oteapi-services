@@ -12,6 +12,22 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
 
+## Pytest configuration functions and hooks ##
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Add the command line option to run the tests, expecting a live Redis instance."""
+    parser.addoption(
+        "--live-redis",
+        action="store_true",
+        default=False,
+        help=(
+            "Run the tests with a live Redis server instance. WARNING: This will wipe "
+            "out existing data."
+        ),
+    )
+
+
 def pytest_configure(config: pytest.Config) -> None:
     """Method that runs before pytest collects tests so no modules are imported"""
     import os
@@ -19,6 +35,15 @@ def pytest_configure(config: pytest.Config) -> None:
     os.environ["OTEAPI_prefix"] = ""
     os.environ["OTEAPI_INCLUDE_REDISADMIN"] = "True"
     os.environ["OTEAPI_EXPOSE_SECRETS"] = "True"
+
+
+## Pytest fixtures ##
+
+
+@pytest.fixture(scope="session")
+def live_redis(request: pytest.FixtureRequest) -> bool:
+    """Return whether to run the tests, expecting a live Redis instance."""
+    return request.config.getoption("--live-redis")
 
 
 @pytest.fixture(scope="session")
@@ -166,8 +191,8 @@ def client(
             await main.redis_plugin.init()
 
             if (
-                original_redis_type.value != "fakeredis"
-                and main.redis_plugin.config.redis_type.value == "fakeredis"
+                original_redis_type != "fakeredis"
+                and main.redis_plugin.config.redis_type == "fakeredis"
             ):
                 assert warns
                 user_warnings = [
@@ -184,15 +209,23 @@ def client(
         if live_redis:
             help_message = (
                 "Expected a live Redis to be used in testing, however, the server has "
-                "fallen back to use fakeredis, since it could not connect to a live "
-                "Redis. Did you set all configurations to the proper values?"
+                "fallen back to using 'fakeredis', since it could not connect to a "
+                "live Redis. Please make sure your Redis server is running at the "
+                "intended address and that you have set all relevant environment "
+                "variables/configurations."
             )
-            assert original_redis_type.value != "fakeredis", help_message
+            assert original_redis_type != "fakeredis", help_message
             assert (
-                original_redis_type.value == main.redis_plugin.config.redis_type.value
+                original_redis_type == main.redis_plugin.config.redis_type
             ), help_message
         else:
-            assert main.redis_plugin.config.redis_type.value == "fakeredis"
+            assert main.redis_plugin.config.redis_type == "fakeredis", (
+                "A live Redis has been found on the system and used for testing. If "
+                "this was the intention, please add the '--live-redis' option to your "
+                "'pytest' call. If this was not the intention, please set the "
+                "appropriate environment variables to direct the tests to use "
+                "'fakeredis'."
+            )
 
         # Get redis client
         redis_client = await main.redis_plugin()

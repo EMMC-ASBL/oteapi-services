@@ -9,10 +9,17 @@ if TYPE_CHECKING:
 def test_list_session(client: "TestClient", test_data: "dict[str, dict]") -> None:
     """Test listing sessions."""
     response = client.get("/session")
-    assert response.json() == {
-        "keys": [entry for entry in test_data if entry.startswith("session-")]
-    }
     assert response.status_code == 200
+
+    response_json = response.json()
+
+    assert isinstance(response_json, dict)
+    assert "keys" in response_json
+    assert len(response_json) == 1
+    assert isinstance(response_json["keys"], list)
+    assert {"keys": sorted(response_json["keys"])} == {
+        "keys": sorted([entry for entry in test_data if entry.startswith("session-")])
+    }
 
 
 def test_create_session(client: "TestClient") -> None:

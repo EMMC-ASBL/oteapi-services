@@ -217,17 +217,11 @@ class RedisPlugin:
 
     async def terminate(self):
         """Terminate plugin."""
-        wait_closed = False
-
-        if self.config is not None:
-            wait_closed = self.config.redis_type != RedisType.FAKEREDIS
-            self.config = None
+        self.config = None
 
         if self.redis is not None:
             # del self.redis
             await self.redis.aclose()
-            if wait_closed:
-                await self.redis.wait_closed()
             self.redis = None
 
     async def health(self) -> dict:
