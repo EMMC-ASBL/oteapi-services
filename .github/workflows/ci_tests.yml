@@ -87,6 +87,7 @@ jobs:
           .
 
   pytest:
+    name: "pytest (Python ${{ matrix.python-version}} - Live Redis: ${{ matrix.live-redis }})"
     runs-on: ubuntu-latest
 
     strategy:
@@ -99,7 +100,7 @@ jobs:
       redis:
         image: redis:7
         ports:
-          - 6379/tcp
+          - 6379:6379
 
     steps:
     - uses: actions/checkout@v4
@@ -129,7 +130,7 @@ jobs:
         pytest -vvv --cov-report=xml --cov=app ${LIVE_REDIS}
       env:
         OTEAPI_REDIS_TYPE: redis
-        OTEAPI_REDIS_HOST: redis
+        OTEAPI_REDIS_HOST: localhost
         OTEAPI_REDIS_PORT: 6379
 
     - name: Upload coverage to Codecov
