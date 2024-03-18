@@ -8,8 +8,10 @@ https://github.com/madkote/fastapi-plugins/blob/26f31177634ba84ca73c63f84535af20
 
 """
 
+import warnings
+from collections.abc import Awaitable
 from enum import Enum, unique
-from typing import TYPE_CHECKING, Annotated, Any, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Optional, Union
 
 import redis.asyncio as aioredis
 import redis.asyncio.sentinel as aioredis_sentinel
@@ -17,6 +19,7 @@ import starlette.requests
 import tenacity
 from fastapi import Depends, FastAPI
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from redis import ConnectionError as RedisConnectionError
 
 __all__ = [
     "RedisError",
@@ -107,10 +110,10 @@ class RedisPlugin:
     def __init__(self):
         self.redis: Optional[Union[aioredis.Redis, aioredis_sentinel.Sentinel]] = None
 
-    def __call__(self) -> Any:
+    def __call__(self) -> Awaitable[Union[aioredis_sentinel.Sentinel, aioredis.Redis]]:
         return self._on_call()
 
-    async def _on_call(self) -> Any:
+    async def _on_call(self) -> Union[aioredis_sentinel.Sentinel, aioredis.Redis]:
         """Get Redis connection."""
         if self.redis is None:
             raise RedisError("Redis is not initialized")
@@ -191,17 +194,35 @@ class RedisPlugin:
             return method(address, **opts)
 
         self.redis = await _inner()
-        await self.ping()
+
+        # Check availability - fallback to fakeredis
+        try:
+            await self.ping()
+        except RedisConnectionError as exc:
+            # If not using fakeredis, change and use fakeredis
+            # Otherwise, re-raise
+            if self.config.redis_type == RedisType.FAKEREDIS:
+                # Re-raise
+                raise exc
+
+            # Emit warning about falling back to fakeredis
+            warnings.warn("No live Redis server found - falling back to fakeredis !")
+
+            # Reset redis attribute and set redis type to fakeredis
+            self.redis = None
+            self.config.redis_type = RedisType.FAKEREDIS
+
+            # Re-run this method (now using fakeredis)
+            return await self.init()
 
     async def terminate(self):
         """Terminate plugin."""
         self.config = None
+
         if self.redis is not None:
             # del self.redis
+            await self.redis.aclose()
             self.redis = None
-            # self.redis.close()
-            # await self.redis.wait_closed()
-            # self.redis = None
 
     async def health(self) -> dict:
         """Get Redis health status."""

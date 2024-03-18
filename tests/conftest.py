@@ -7,62 +7,43 @@ import pytest
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from typing import Union
 
+    from fastapi import FastAPI
     from fastapi.testclient import TestClient
 
 
-class DummyCache:
-    """Mock cache for RedisCache."""
-
-    obj: dict[str, "Union[str, bytes]"] = {}
-
-    def __init__(self, o=None):
-        self.obj = o or {}
-
-    async def set(self, id, data) -> None:
-        """Mock `set()` method."""
-        import json
-
-        if data:
-            if isinstance(data, (str, bytes)):
-                self.obj[id] = data
-            else:
-                self.obj[id] = json.dumps(data)
-
-    async def get(self, id) -> dict:
-        """Mock `get()` method."""
-        import json
-        from copy import deepcopy
-
-        if isinstance(self.obj[id], (str, bytes)):
-            return deepcopy(self.obj[id])
-
-        return json.dumps(self.obj[id])
-
-    async def keys(self, pattern: str) -> "list[bytes]":
-        """Mock `keys()` method."""
-        # https://stackoverflow.com/questions/44026515/python-redis-keys-returns-list-of-bytes-objects-instead-of-strings
-        return [str.encode(item) for item in self.obj.keys()]
-
-    async def exists(self, key: str) -> bool:
-        """Mock `exists()` method."""
-        return key in self.obj.keys()
-
-    async def delete(self, *keys):
-        """Delete Keys"""
-        for key in keys:
-            if key in self.obj:  # Use self.obj instead of self.cache
-                del self.obj[key]
+## Pytest configuration functions and hooks ##
 
 
-def pytest_configure(config):
+def pytest_addoption(parser: pytest.Parser) -> None:
+    """Add the command line option to run the tests, expecting a live Redis instance."""
+    parser.addoption(
+        "--live-redis",
+        action="store_true",
+        default=False,
+        help=(
+            "Run the tests with a live Redis server instance. WARNING: This will wipe "
+            "out existing data."
+        ),
+    )
+
+
+def pytest_configure(config: pytest.Config) -> None:
     """Method that runs before pytest collects tests so no modules are imported"""
     import os
 
     os.environ["OTEAPI_prefix"] = ""
     os.environ["OTEAPI_INCLUDE_REDISADMIN"] = "True"
     os.environ["OTEAPI_EXPOSE_SECRETS"] = "True"
+
+
+## Pytest fixtures ##
+
+
+@pytest.fixture(scope="session")
+def live_redis(request: pytest.FixtureRequest) -> bool:
+    """Return whether to run the tests, expecting a live Redis instance."""
+    return request.config.getoption("--live-redis")
 
 
 @pytest.fixture(scope="session")
@@ -185,22 +166,86 @@ def load_test_strategies() -> None:
 
 
 @pytest.fixture()
-def client(test_data: "dict[str, dict]") -> "TestClient":
+def client(
+    test_data: "dict[str, str]", monkeypatch: pytest.MonkeyPatch, live_redis: bool
+) -> "TestClient":
     """Return a test client."""
+    from contextlib import asynccontextmanager
+    from warnings import catch_warnings
+
     from fastapi.testclient import TestClient
 
-    from app.redis_cache._redis import depends_redis
-    from asgi import app
+    from app import main
 
-    async def override_depends_redis() -> DummyCache:
-        """Helper method for overriding RedisCache.
+    @asynccontextmanager
+    async def lifespan_with_test_data(app: "FastAPI"):
+        """Initialize Redis upon app startup."""
+        # Initialize the Redis cache
+        await main.redis_plugin.init_app(app, config=main.CONFIG)
 
-        Add sample data.
-        """
-        return DummyCache(test_data)
+        # Test a warning of falling back to fakeredis is emitted (if Redis is not
+        # available)
+        original_redis_type = main.redis_plugin.config.redis_type
 
-    app.dependency_overrides[depends_redis] = override_depends_redis
+        with catch_warnings(record=True) as warns:
+            await main.redis_plugin.init()
 
-    load_test_strategies()
+            if (
+                original_redis_type != "fakeredis"
+                and main.redis_plugin.config.redis_type == "fakeredis"
+            ):
+                assert warns
+                user_warnings = [
+                    user_warn
+                    for user_warn in warns
+                    if issubclass(user_warn.category, UserWarning)
+                ]
+                assert len(user_warnings) == 1
+                assert (
+                    "No live Redis server found - falling back to fakeredis !"
+                    in str(user_warnings[0].message)
+                )
 
-    return TestClient(app)
+        if live_redis:
+            help_message = (
+                "Expected a live Redis to be used in testing, however, the server has "
+                "fallen back to using 'fakeredis', since it could not connect to a "
+                "live Redis. Please make sure your Redis server is running at the "
+                "intended address and that you have set all relevant environment "
+                "variables/configurations."
+            )
+            assert original_redis_type != "fakeredis", help_message
+            assert (
+                original_redis_type == main.redis_plugin.config.redis_type
+            ), help_message
+        else:
+            assert main.redis_plugin.config.redis_type == "fakeredis", (
+                "A live Redis has been found on the system and used for testing. If "
+                "this was the intention, please add the '--live-redis' option to your "
+                "'pytest' call. If this was not the intention, please set the "
+                "appropriate environment variables to direct the tests to use "
+                "'fakeredis'."
+            )
+
+        # Get redis client
+        redis_client = await main.redis_plugin()
+
+        # Clear db and load test data
+        await redis_client.flushdb(asynchronous=True)
+        await redis_client.mset(test_data)
+
+        # Load OTEAPI strategies
+        main.load_strategies()
+        load_test_strategies()
+
+        # Run server
+        yield
+
+        # Terminate the Redis cache
+        await main.redis_plugin.terminate()
+
+    monkeypatch.setattr(main, "lifespan", lifespan_with_test_data)
+
+    # Yield client from within a context to ensure the lifespan is used
+    with TestClient(main.create_app()) as client:
+        yield client

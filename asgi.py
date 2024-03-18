@@ -3,6 +3,8 @@
 A server can bind `app` in this file to their websocket.
 """
 
-from app.main import APP as app
+from app.main import create_app
 
 __all__ = ("app",)
+
+app = create_app()
