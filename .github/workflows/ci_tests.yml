@@ -18,7 +18,7 @@ jobs:
     - name: Set up Python 3.9
       uses: actions/setup-python@v5
       with:
-        python-version: 3.9
+        python-version: '3.9'
 
     - name: Install dependencies
       run: |
@@ -47,7 +47,7 @@ jobs:
     - name: Set up Python 3.9
       uses: actions/setup-python@v5
       with:
-        python-version: 3.9
+        python-version: '3.9'
 
     - name: Install dependencies
       run: |
@@ -87,12 +87,20 @@ jobs:
           .
 
   pytest:
+    name: "pytest (Python ${{ matrix.python-version}} - Live Redis: ${{ matrix.live-redis }})"
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10"]
+        live-redis: [true, false]
+
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
 
     steps:
     - uses: actions/checkout@v4
@@ -112,10 +120,24 @@ jobs:
         pip install -U -r .dev/requirements_dev.txt
 
     - name: Test with pytest
-      run: pytest -vvv --cov-report=xml --cov=app
+      run: |
+        if [ "${{ matrix.live-redis }}" == "true" ]; then
+            LIVE_REDIS=--live-redis
+            REDIS_HOST=localhost
+        else
+            LIVE_REDIS=
+
+            # An incorrect host, which will ensure we fallback to using 'fakeredis'
+            REDIS_HOST=redis
+        fi
+
+        OTEAPI_REDIS_HOST=${REDIS_HOST} pytest -vvv --cov-report=xml --cov=app ${LIVE_REDIS}
+      env:
+        OTEAPI_REDIS_TYPE: redis
+        OTEAPI_REDIS_PORT: 6379
 
     - name: Upload coverage to Codecov
-      if: matrix.python-version == 3.9 && github.repository == 'EMMC-ASBL/oteapi-services'
+      if: matrix.python-version == '3.9' && github.repository == 'EMMC-ASBL/oteapi-services'
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
