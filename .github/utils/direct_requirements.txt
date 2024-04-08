@@ -1,4 +1,4 @@
-fastapi>=0.110.0
+fastapi>=0.110.1
 hypercorn>=0.14.4
 oteapi-core>=0.7.0.dev1
 pydantic>=2.6.4
