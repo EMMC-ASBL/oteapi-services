@@ -11,7 +11,7 @@ https://github.com/madkote/fastapi-plugins/blob/26f31177634ba84ca73c63f84535af20
 import warnings
 from collections.abc import Awaitable
 from enum import Enum, unique
-from typing import TYPE_CHECKING, Annotated, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any, Optional, Union
 
 import redis.asyncio as aredis
 import redis.asyncio.sentinel as aredis_sentinel
@@ -22,7 +22,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from redis import ConnectionError as RedisConnectionError
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Callable
+    from typing import Callable
 
     from mypy_extensions import KwArg
 
