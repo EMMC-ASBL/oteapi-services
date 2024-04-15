@@ -13,13 +13,19 @@ from collections.abc import Awaitable
 from enum import Enum, unique
 from typing import TYPE_CHECKING, Annotated, Optional, Union
 
-import redis.asyncio as aioredis
-import redis.asyncio.sentinel as aioredis_sentinel
+import redis.asyncio as aredis
+import redis.asyncio.sentinel as aredis_sentinel
 import starlette.requests
 import tenacity
 from fastapi import Depends, FastAPI
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from redis import ConnectionError as RedisConnectionError
+
+if TYPE_CHECKING:  # pragma: no cover
+    from typing import Any, Callable
+
+    from mypy_extensions import KwArg
+
 
 __all__ = [
     "RedisError",
@@ -66,8 +72,6 @@ class RedisSettings(BaseSettings):
     redis_max_connections: Optional[int] = None
     redis_decode_responses: bool = True
 
-    redis_ttl: int = 3600
-
     # redis_sentinels: typing.List = None
     redis_sentinels: Optional[str] = None
     redis_sentinel_master: str = "mymaster"
@@ -83,7 +87,7 @@ class RedisSettings(BaseSettings):
             return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
         return f"redis://{self.redis_host}:{self.redis_port}"
 
-    def get_sentinels(self) -> list:
+    def get_sentinels(self) -> list[tuple[str, int]]:
         """Get redis sentinels."""
         if self.redis_sentinels:
             try:
@@ -105,34 +109,36 @@ class RedisPlugin:
 
     DEFAULT_CONFIG_CLASS = RedisSettings
 
-    config: RedisSettings
+    config: Optional[RedisSettings]
 
-    def __init__(self):
-        self.redis: Optional[Union[aioredis.Redis, aioredis_sentinel.Sentinel]] = None
+    def __init__(self) -> None:
+        self.redis: Optional[Union[aredis.Redis, aredis_sentinel.Sentinel]] = None
 
-    def __call__(self) -> Awaitable[Union[aioredis_sentinel.Sentinel, aioredis.Redis]]:
+    def __call__(self) -> Awaitable[Union[aredis_sentinel.Sentinel, aredis.Redis]]:
         return self._on_call()
 
-    async def _on_call(self) -> Union[aioredis_sentinel.Sentinel, aioredis.Redis]:
+    async def _on_call(self) -> Union[aredis_sentinel.Sentinel, aredis.Redis]:
         """Get Redis connection."""
         if self.redis is None:
             raise RedisError("Redis is not initialized")
 
+        if self.config is None:
+            raise RedisError("Redis configuration is not initialized")
+
         if self.config.redis_type == RedisType.SENTINEL:
             if TYPE_CHECKING:  # pragma: no cover
-                assert isinstance(self.redis, aioredis_sentinel.Sentinel)  # nosec
+                assert isinstance(self.redis, aredis_sentinel.Sentinel)  # nosec
 
-            conn = self.redis.master_for(self.config.redis_sentinel_master)
-        elif self.config.redis_type == RedisType.REDIS:
-            conn = self.redis
-        elif self.config.redis_type == RedisType.FAKEREDIS:
+            conn: Union[aredis_sentinel.Sentinel, aredis.Redis] = self.redis.master_for(
+                self.config.redis_sentinel_master
+            )
+        elif self.config.redis_type in (RedisType.REDIS, RedisType.FAKEREDIS):
             conn = self.redis
         else:
             raise NotImplementedError(
                 f"Redis type {self.config.redis_type.value} is not implemented"
             )
 
-        conn.TTL = self.config.redis_ttl
         return conn
 
     async def init_app(
@@ -146,10 +152,13 @@ class RedisPlugin:
             raise RedisError("Redis configuration is not valid")
         app.state.REDIS = self
 
-    async def init(self):
+    async def init(self) -> None:
         """Initialize plugin."""
         if self.redis is not None:
             raise RedisError("Redis is already initialized")
+
+        if self.config is None:
+            raise RedisError("Redis configuration is not initialized")
 
         opts = {
             "db": self.config.redis_db,
@@ -161,9 +170,16 @@ class RedisPlugin:
             "decode_responses": self.config.redis_decode_responses,
         }
 
+        if TYPE_CHECKING:  # pragma: no cover
+            address: Union[str, list[tuple[str, int]]]
+            method: Union[
+                Callable[[str, KwArg(Any)], aredis.Redis],
+                type[aredis_sentinel.Sentinel],
+            ]
+
         if self.config.redis_type == RedisType.REDIS:
             address = self.config.get_redis_address()
-            method = aioredis.from_url
+            method = aredis.from_url  # type: ignore[assignment]
             # opts.update(dict(timeout=self.config.redis_connection_timeout))
         elif self.config.redis_type == RedisType.FAKEREDIS:
             try:
@@ -177,7 +193,7 @@ class RedisPlugin:
             method = fakeredis.aioredis.FakeRedis.from_url
         elif self.config.redis_type == RedisType.SENTINEL:
             address = self.config.get_sentinels()
-            method = aioredis_sentinel.Sentinel
+            method = aredis_sentinel.Sentinel
         else:
             raise NotImplementedError(
                 f"Redis type {self.config.redis_type.value} is not implemented"
@@ -215,17 +231,20 @@ class RedisPlugin:
             # Re-run this method (now using fakeredis)
             return await self.init()
 
-    async def terminate(self):
+    async def terminate(self) -> None:
         """Terminate plugin."""
         self.config = None
 
         if self.redis is not None:
             # del self.redis
-            await self.redis.aclose()
+            await self.redis.aclose()  # type: ignore[union-attr]
             self.redis = None
 
-    async def health(self) -> dict:
+    async def health(self) -> dict[str, "Any"]:
         """Get Redis health status."""
+        if self.config is None:
+            raise RedisError("Redis configuration is not initialized")
+
         return {
             "redis_type": self.config.redis_type,
             "redis_address": (
@@ -236,13 +255,18 @@ class RedisPlugin:
             "redis_pong": (await self.ping()),
         }
 
-    async def ping(self):
+    async def ping(self) -> Union[Awaitable, Any]:
         """Ping Redis."""
-        if self.config.redis_type == RedisType.REDIS:
-            return await self.redis.ping()
-        if self.config.redis_type == RedisType.FAKEREDIS:
-            return await self.redis.ping()
+        if self.config is None:
+            raise RedisError("Redis configuration is not initialized")
+
+        if self.config.redis_type in (RedisType.REDIS, RedisType.FAKEREDIS):
+            return await self.redis.ping()  # type: ignore[union-attr]
+
         if self.config.redis_type == RedisType.SENTINEL:
+            if TYPE_CHECKING:  # pragma: no cover
+                assert isinstance(self.redis, aredis_sentinel.Sentinel)  # nosec
+
             return await self.redis.master_for(self.config.redis_sentinel_master).ping()
 
         raise NotImplementedError(
@@ -253,9 +277,9 @@ class RedisPlugin:
 redis_plugin = RedisPlugin()
 
 
-async def depends_redis(conn: starlette.requests.HTTPConnection) -> aioredis.Redis:
+async def depends_redis(conn: starlette.requests.HTTPConnection) -> aredis.Redis:
     """Get Redis connection."""
     return await conn.app.state.REDIS()
 
 
-TRedisPlugin = Annotated[aioredis.Redis, Depends(depends_redis)]
+TRedisPlugin = Annotated[aredis.Redis, Depends(depends_redis)]
