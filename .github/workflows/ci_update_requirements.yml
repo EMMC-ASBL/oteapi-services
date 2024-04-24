@@ -81,7 +81,7 @@ jobs:
     - name: Fetch PR body
       if: env.UPDATE_DEPS == 'true'
       id: pr_body
-      uses: chuhlomin/render-template@v1.9
+      uses: chuhlomin/render-template@v1.10
       with:
         template: .github/utils/requirements_update_pr_body.txt
 
