@@ -26,7 +26,7 @@ jobs:
       run: |
         if [ "${{ github.event_name }}" == "push" ]; then
           echo "Push event detected."
-          echo "Changing CHECKOUT_BRANCH to: ${{ github.ref_name }}""
+          echo "Changing CHECKOUT_BRANCH to: ${{ github.ref_name }}"
           echo "CHECKOUT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
         else
           echo "Non-push event detected."
