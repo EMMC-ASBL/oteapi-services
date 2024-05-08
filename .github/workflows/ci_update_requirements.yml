@@ -8,7 +8,6 @@ on:
   push:
     branches:
       - "ci/update-dependencies"
-      - "ci/update-requirements"
 
 env:
   CHECKOUT_BRANCH: ci/dependabot-updates
