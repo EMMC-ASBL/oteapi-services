@@ -11,6 +11,7 @@
 
 **Fixed bugs:**
 
+- OpenAPI is not retrievable [\#447](https://github.com/EMMC-ASBL/oteapi-services/issues/447)
 - Docker compose failing in CI test workflows [\#370](https://github.com/EMMC-ASBL/oteapi-services/issues/370)
 
 **Closed issues:**
@@ -23,7 +24,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#445](https://github.com/EMMC-ASBL/oteapi-services/pull/445) ([TEAM4-0](https://github.com/TEAM4-0))
+- Wrap custom\_openapi in a lambda function [\#448](https://github.com/EMMC-ASBL/oteapi-services/pull/448) ([CasperWA](https://github.com/CasperWA))
 - \[Auto-generated\] Update dependencies [\#429](https://github.com/EMMC-ASBL/oteapi-services/pull/429) ([TEAM4-0](https://github.com/TEAM4-0))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)

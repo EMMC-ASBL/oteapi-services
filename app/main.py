@@ -184,7 +184,7 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
         )
 
     # Customize the OpenAPI specficiation generation
-    app.openapi = custom_openapi
+    app.openapi = lambda: custom_openapi(app)
 
     return app
 
