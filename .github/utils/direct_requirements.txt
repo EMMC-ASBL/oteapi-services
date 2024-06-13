@@ -2,7 +2,7 @@ fastapi-slim>=0.111.0
 hypercorn>=0.14.4
 oteapi-core>=0.7.0.dev1
 pydantic>=2.7.3
-pydantic-settings>=2.3.1
+pydantic-settings>=2.3.2
 redis>=5.0.5
 tenacity>=8.3.0
 urllib3<2  # Ensure allegrograph works as intended
