@@ -4,5 +4,5 @@ oteapi-core>=0.7.0.dev1
 pydantic>=2.7.4
 pydantic-settings>=2.3.3
 redis>=5.0.6
-tenacity>=8.3.0
+tenacity>=8.4.1
 urllib3<2  # Ensure allegrograph works as intended
