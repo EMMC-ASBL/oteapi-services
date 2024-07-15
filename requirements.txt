@@ -16,8 +16,8 @@ click-repl==0.3.0
 cryptography==42.0.8
 diskcache==5.6.3
 et-xmlfile==1.1.0
-exceptiongroup==1.2.1
-fastapi-slim==0.111.0
+exceptiongroup==1.2.2
+fastapi-slim==0.111.1
 future==1.0.0
 h11==0.14.0
 h2==4.1.0
