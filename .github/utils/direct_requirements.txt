@@ -1,4 +1,4 @@
-fastapi-slim>=0.111.1
+fastapi-slim>=0.112.0
 hypercorn>=0.14.4
 oteapi-core>=0.7.0.dev2
 pydantic>=2.8.2
