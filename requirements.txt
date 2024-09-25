@@ -52,7 +52,7 @@ taskgroup==0.0.0a4
 tenacity==9.0.0
 tomli==2.0.1
 typing_extensions==4.12.2
-tzdata==2024.1
+tzdata==2024.2
 urllib3==1.26.20
 vine==5.1.0
 wcwidth==0.2.13
