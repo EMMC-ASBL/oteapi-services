@@ -25,9 +25,7 @@ jobs:
       run: |
         python -m pip install -U pip
         pip install -U setuptools wheel
-        pip install -U -r requirements.txt
-        pip install -U -r .dev/requirements_dev.txt
-        pip install safety
+        pip install -U -r requirements.txt -r .dev/requirements_dev.txt -r .github/utils/requirements_ci.txt
 
     - name: Run pylint
       run: pylint --rcfile=pyproject.toml --ignore-paths=tests/ --extension-pkg-whitelist='pydantic' --recursive=yes *.py app
@@ -74,14 +72,12 @@ jobs:
 
     services:
       redis:
-        image: redis:7
+        image: redis:latest
         ports:
           - 6379:6379
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
 
     - name: Set up Python ${{ matrix.python-version}}
       uses: actions/setup-python@v5
@@ -92,8 +88,7 @@ jobs:
       run: |
         python -m pip install -U pip
         pip install -U setuptools wheel
-        pip install -r requirements.txt
-        pip install -U -r .dev/requirements_dev.txt
+        pip install -U -r requirements.txt -r .dev/requirements_dev.txt
 
     - name: Test with pytest
       run: |
