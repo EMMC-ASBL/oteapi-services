@@ -11,6 +11,7 @@
 
 **Fixed bugs:**
 
+- Install `safety` in a separate environment in CI [\#525](https://github.com/EMMC-ASBL/oteapi-services/issues/525)
 - OpenAPI is not retrievable [\#447](https://github.com/EMMC-ASBL/oteapi-services/issues/447)
 - Docker compose failing in CI test workflows [\#370](https://github.com/EMMC-ASBL/oteapi-services/issues/370)
 
@@ -24,7 +25,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#521](https://github.com/EMMC-ASBL/oteapi-services/pull/521) ([TEAM4-0](https://github.com/TEAM4-0))
+- Fix CI issue concerning `safety` & `pydantic` [\#526](https://github.com/EMMC-ASBL/oteapi-services/pull/526) ([CasperWA](https://github.com/CasperWA))
 - \[Auto-generated\] Update dependencies [\#459](https://github.com/EMMC-ASBL/oteapi-services/pull/459) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#452](https://github.com/EMMC-ASBL/oteapi-services/pull/452) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#429](https://github.com/EMMC-ASBL/oteapi-services/pull/429) ([TEAM4-0](https://github.com/TEAM4-0))
