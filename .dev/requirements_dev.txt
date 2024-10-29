@@ -7,7 +7,6 @@ pre-commit~=4.0
 pylint~=3.3
 pytest~=8.3
 pytest-cov~=5.0
-safety~=3.2
 
 # httpx is necessary due to the use of fastapi/starlette's TestClient
 # See https://fastapi.tiangolo.com/tutorial/testing/?h=testclient#using-testclient
