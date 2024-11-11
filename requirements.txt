@@ -2,7 +2,7 @@ agraph-python==102.1.2
 amqp==5.2.0
 annotated-types==0.7.0
 anyio==4.6.2.post1
-async-timeout==5.0.0
+async-timeout==5.0.1
 bcrypt==4.2.0
 billiard==4.2.1
 celery==5.4.0
@@ -57,4 +57,4 @@ urllib3==1.26.20
 vine==5.1.0
 wcwidth==0.2.13
 wsproto==1.2.0
-zipp==3.20.2
+zipp==3.21.0
