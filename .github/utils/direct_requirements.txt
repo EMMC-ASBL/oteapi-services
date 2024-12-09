@@ -1,8 +1,8 @@
-fastapi-slim>=0.115.5
+fastapi-slim>=0.115.6
 hypercorn>=0.14.4
 oteapi-core>=0.7.0.dev6
-pydantic>=2.10.2
+pydantic>=2.10.3
 pydantic-settings>=2.6.1
-redis>=5.2.0
+redis>=5.2.1
 tenacity>=9.0.0
 urllib3<2  # Ensure allegrograph works as intended
