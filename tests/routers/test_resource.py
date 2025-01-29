@@ -1,4 +1,4 @@
-""" Test dataresource """
+"""Test dataresource"""
 
 from typing import TYPE_CHECKING
 

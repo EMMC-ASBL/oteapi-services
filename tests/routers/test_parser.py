@@ -1,4 +1,4 @@
-""" Test parser """
+"""Test parser"""
 
 from typing import TYPE_CHECKING
 
