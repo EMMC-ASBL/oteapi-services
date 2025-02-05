@@ -6,7 +6,7 @@ async-timeout==5.0.1
 bcrypt==4.2.1
 billiard==4.2.1
 celery==5.4.0
-certifi==2024.12.14
+certifi==2025.1.31
 cffi==1.17.1
 charset-normalizer==3.4.1
 click==8.1.8
@@ -17,10 +17,10 @@ cryptography==44.0.0
 diskcache==5.6.3
 et_xmlfile==2.0.0
 exceptiongroup==1.2.2
-fastapi-slim==0.115.7
+fastapi-slim==0.115.8
 future==1.0.0
 h11==0.14.0
-h2==4.1.0
+h2==4.2.0
 hpack==4.1.0
 Hypercorn==0.17.3
 hyperframe==6.1.0
@@ -30,7 +30,7 @@ iso8601==2.1.0
 kombu==5.4.2
 openpyxl==3.1.5
 oteapi-core==0.7.0.dev6
-paramiko==3.5.0
+paramiko==3.5.1
 pillow==11.1.0
 priority==2.0.0
 prompt_toolkit==3.0.50
