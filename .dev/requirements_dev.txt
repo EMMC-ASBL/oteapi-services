@@ -1,4 +1,4 @@
-dulwich~=0.22.7
+dulwich~=0.22.8
 debugpy>=1.8.0
 fakeredis~=2.27
 httpx~=0.28.1
