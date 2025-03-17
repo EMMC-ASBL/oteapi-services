@@ -1,7 +1,7 @@
 agraph-python==102.1.2
 amqp==5.3.1
 annotated-types==0.7.0
-anyio==4.8.0
+anyio==4.9.0
 async-timeout==5.0.1
 bcrypt==4.3.0
 billiard==4.2.1
@@ -27,15 +27,15 @@ hyperframe==6.1.0
 idna==3.10
 importlib_metadata==8.6.1
 iso8601==2.1.0
-kombu==5.4.2
+kombu==5.5.0
 openpyxl==3.1.5
 oteapi-core==0.7.0.dev6
 paramiko==3.5.1
 pillow==11.1.0
 priority==2.0.0
 prompt_toolkit==3.0.50
-psycopg==3.2.5
-psycopg-binary==3.2.5
+psycopg==3.2.6
+psycopg-binary==3.2.6
 pycparser==2.22
 pydantic==2.10.6
 pydantic-settings==2.8.1
