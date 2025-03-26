@@ -27,7 +27,7 @@ hyperframe==6.1.0
 idna==3.10
 importlib_metadata==8.6.1
 iso8601==2.1.0
-kombu==5.5.0
+kombu==5.5.1
 openpyxl==3.1.5
 oteapi-core==0.7.0.dev6
 paramiko==3.5.1
@@ -43,7 +43,7 @@ pydantic_core==2.27.2
 PyNaCl==1.5.0
 pysftp==0.2.9
 python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
+python-dotenv==1.1.0
 redis==5.2.1
 requests==2.32.3
 six==1.17.0
