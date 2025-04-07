@@ -1,4 +1,5 @@
 """Administrative endpoint."""
+
 import asyncio
 import platform
 from collections import defaultdict
