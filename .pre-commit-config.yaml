@@ -1,10 +1,20 @@
-# To install the git pre-commit hook run:
-#   pre-commit install
-# To update the pre-commit hooks run:
-#   pre-commit autoupdate
+# pre-commit.ci
+ci:
+  autofix_commit_msg: |
+      [pre-commit.ci] auto fixes from pre-commit hooks
+
+      For more information, see https://pre-commit.ci
+  autofix_prs: false
+  autoupdate_branch: 'main'
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: 'weekly'
+  skip: [pylint, pylint-tests]
+  submodules: false
+
+# hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
     - id: end-of-file-fixer
     - id: debug-statements
@@ -18,32 +28,32 @@ repos:
     - id: trailing-whitespace
       args: [--markdown-linebreak-ext=md]
 
-  - repo: https://github.com/timothycrosley/isort
-    rev: 5.13.2
+  - repo: https://github.com/PyCQA/isort
+    rev: 6.0.1
     hooks:
     - id: isort
       args: ["--profile", "black", "--filter-files", "--skip-gitignore"]
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
+    rev: v3.19.1
     hooks:
     - id: pyupgrade
       args: ["--py39-plus"]
 
-  - repo: https://github.com/ambv/black
-    rev: 24.2.0
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
     hooks:
     - id: black
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.7
+    rev: 1.8.3
     hooks:
     - id: bandit
       args: ["-r"]
       files: ^app/.*$
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+    rev: v1.15.0
     hooks:
     - id: mypy
       exclude: ^tests/.*$
@@ -66,7 +76,7 @@ repos:
     - id: pylint-tests
       name: pylint - tests
       entry: pylint
-      args: ["--rcfile=pyproject.toml", "--extension-pkg-whitelist='pydantic'", "--disable=C0415,W0621"]
+      args: ["--rcfile=pyproject.toml", "--extension-pkg-whitelist='pydantic'", "--disable=C0415,W0621,E1101"]
       language: python
       types: [python]
       require_serial: true

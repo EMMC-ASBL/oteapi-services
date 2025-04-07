@@ -1,4 +1,4 @@
-version: "3"
+version: "3.3"
 
 services:
   oteapi:
@@ -7,13 +7,18 @@ services:
       target: "${DOCKER_OTEAPI_TARGET:-development}"
     ports:
       - "${PORT:-8080}:8080"
+      - "5678:5678" # Debug port
     environment:
       OTEAPI_REDIS_TYPE: redis
       OTEAPI_REDIS_HOST: redis
       OTEAPI_REDIS_PORT: 6379
       OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
-      OTEAPI_PLUGIN_PACKAGES:
+      OTEAPI_INCLUDE_REDISADMIN: "${OTEAPI_INCLUDE_REDISADMIN:-True}"
+      OTEAPI_EXPOSE_SECRETS: "${OTEAPI_EXPOSE_SECRETS:-True}"
       PATH_TO_OTEAPI_CORE: "${PATH_TO_OTEAPI_CORE:-/dev/null}"
+      OTEAPI_PLUGIN_PACKAGES:
+      OTEAPI_AUTHENTICATION_DEPENDENCIES:
+      CI:
     depends_on:
       - redis
     networks:

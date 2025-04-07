@@ -7,13 +7,17 @@
 **Implemented enhancements:**
 
 - Migrate to pydantic v2 [\#338](https://github.com/EMMC-ASBL/oteapi-services/issues/338)
+- Separate parse and download [\#55](https://github.com/EMMC-ASBL/oteapi-services/issues/55)
 
 **Fixed bugs:**
 
+- Install `safety` in a separate environment in CI [\#525](https://github.com/EMMC-ASBL/oteapi-services/issues/525)
+- OpenAPI is not retrievable [\#447](https://github.com/EMMC-ASBL/oteapi-services/issues/447)
 - Docker compose failing in CI test workflows [\#370](https://github.com/EMMC-ASBL/oteapi-services/issues/370)
 
 **Closed issues:**
 
+- Fallback to FakeRedis if Redis is not available [\#412](https://github.com/EMMC-ASBL/oteapi-services/issues/412)
 - Revert update of codecov-action from v4 to v3 [\#325](https://github.com/EMMC-ASBL/oteapi-services/issues/325)
 - Add oteapi-dlite-plugin python package as a dependency [\#300](https://github.com/EMMC-ASBL/oteapi-services/issues/300)
 - Remove sftp service from production compose file [\#120](https://github.com/EMMC-ASBL/oteapi-services/issues/120)
@@ -21,7 +25,10 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#396](https://github.com/EMMC-ASBL/oteapi-services/pull/396) ([TEAM4-0](https://github.com/TEAM4-0))
+- \[Auto-generated\] Update dependencies [\#589](https://github.com/EMMC-ASBL/oteapi-services/pull/589) ([TEAM4-0](https://github.com/TEAM4-0))
+- \[Auto-generated\] Update dependencies [\#459](https://github.com/EMMC-ASBL/oteapi-services/pull/459) ([TEAM4-0](https://github.com/TEAM4-0))
+- \[Auto-generated\] Update dependencies [\#452](https://github.com/EMMC-ASBL/oteapi-services/pull/452) ([TEAM4-0](https://github.com/TEAM4-0))
+- \[Auto-generated\] Update dependencies [\#429](https://github.com/EMMC-ASBL/oteapi-services/pull/429) ([TEAM4-0](https://github.com/TEAM4-0))
 
 ## [v1.20230324.302](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20230324.302) (2023-03-24)
 

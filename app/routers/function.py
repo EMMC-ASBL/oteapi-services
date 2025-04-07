@@ -6,8 +6,9 @@ from typing import TYPE_CHECKING, Optional
 from fastapi import APIRouter, Request, status
 from oteapi.models import FunctionConfig
 from oteapi.plugins import create_strategy
+from oteapi.utils.config_updater import populate_config_from_session
 
-from app.models.error import HTTPNotFoundError, httpexception_404_item_id_does_not_exist
+from app.models.error import HTTPNotFoundError
 from app.models.function import (
     IDPREFIX,
     CreateFunctionResponse,
@@ -15,19 +16,20 @@ from app.models.function import (
     InitializeFunctionResponse,
 )
 from app.redis_cache import TRedisPlugin
+from app.redis_cache._cache import _fetch_cache_value, _validate_cache_key
 from app.routers.session import _update_session, _update_session_list_item
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any
+    from oteapi.interfaces import IFunctionStrategy
 
-ROUTER = APIRouter(prefix=f"/{IDPREFIX}")
-
-
-@ROUTER.post(
-    "/",
-    response_model=CreateFunctionResponse,
+ROUTER = APIRouter(
+    prefix=f"/{IDPREFIX}",
+    tags=["function"],
     responses={status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError}},
 )
+
+
+@ROUTER.post("/", response_model=CreateFunctionResponse)
 async def create_function(
     cache: TRedisPlugin,
     config: FunctionConfig,
@@ -37,15 +39,15 @@ async def create_function(
     """Create a new function configuration."""
     new_function = CreateFunctionResponse()
 
-    config.token = request.headers.get("Authorization") or config.token
+    if request.headers.get("Authorization") or config.token:
+        config.token = request.headers.get("Authorization") or config.token
 
-    function_config = config.model_dump_json()
+    function_config = config.model_dump_json(exclude_unset=True)
 
     await cache.set(new_function.function_id, function_config)
 
     if session_id:
-        if not await cache.exists(session_id):
-            raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
+        await _validate_cache_key(cache, session_id, "session_id")
         await _update_session_list_item(
             session_id=session_id,
             list_key="function_info",
@@ -56,45 +58,22 @@ async def create_function(
     return new_function
 
 
-@ROUTER.get(
-    "/{function_id}",
-    response_model=GetFunctionResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.get("/{function_id}", response_model=GetFunctionResponse)
 async def get_function(
     cache: TRedisPlugin,
     function_id: str,
     session_id: Optional[str] = None,
 ) -> GetFunctionResponse:
     """Get (execute) function."""
-    if not await cache.exists(function_id):
-        raise httpexception_404_item_id_does_not_exist(function_id, "function_id")
-    if session_id and not await cache.exists(session_id):
-        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-
-    cache_value = await cache.get(function_id)
-    if not isinstance(cache_value, (str, bytes)):
-        raise TypeError(
-            f"Expected cache value of {function_id} to be a string or bytes, "
-            f"found it to be of type {type(cache_value)!r}."
-        )
+    cache_value = await _fetch_cache_value(cache, function_id, "function_id")
     config = FunctionConfig(**json.loads(cache_value))
 
-    function_strategy = create_strategy("function", config)
-
     if session_id:
-        cache_value = await cache.get(session_id)
-        if not isinstance(cache_value, (str, bytes)):
-            raise TypeError(
-                f"Expected cache value of {session_id} to be a string or bytes, "
-                f"found it to be of type {type(cache_value)!r}."
-            )
-    session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(cache_value)
-    )
-    session_update = function_strategy.get(session=session_data)
+        session_data = await _fetch_cache_value(cache, session_id, "session_id")
+        populate_config_from_session(json.loads(session_data), config)
+
+    function_strategy: "IFunctionStrategy" = create_strategy("function", config)
+    session_update = function_strategy.get()
 
     if session_update and session_id:
         await _update_session(
@@ -104,45 +83,22 @@ async def get_function(
     return GetFunctionResponse(**session_update)
 
 
-@ROUTER.post(
-    "/{function_id}/initialize",
-    response_model=InitializeFunctionResponse,
-    responses={
-        status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-    },
-)
+@ROUTER.post("/{function_id}/initialize", response_model=InitializeFunctionResponse)
 async def initialize_function(
     cache: TRedisPlugin,
     function_id: str,
     session_id: Optional[str] = None,
 ) -> InitializeFunctionResponse:
     """Initialize and update function."""
-    if not await cache.exists(function_id):
-        raise httpexception_404_item_id_does_not_exist(function_id, "function_id")
-    if session_id and not await cache.exists(session_id):
-        raise httpexception_404_item_id_does_not_exist(session_id, "session_id")
-
-    cache_value = await cache.get(function_id)
-    if not isinstance(cache_value, (str, bytes)):
-        raise TypeError(
-            f"Expected cache value of {function_id} to be a string or bytes, "
-            f"found it to be of type {type(cache_value)!r}."
-        )
+    cache_value = await _fetch_cache_value(cache, function_id, "function_id")
     config = FunctionConfig(**json.loads(cache_value))
 
-    function_strategy = create_strategy("function", config)
-
     if session_id:
-        cache_value = await cache.get(session_id)
-        if not isinstance(cache_value, (str, bytes)):
-            raise TypeError(
-                f"Expected cache value of {session_id} to be a string or bytes, "
-                f"found it to be of type {type(cache_value)!r}."
-            )
-    session_data: "Optional[dict[str, Any]]" = (
-        None if not session_id else json.loads(cache_value)
-    )
-    session_update = function_strategy.initialize(session=session_data)
+        session_data = await _fetch_cache_value(cache, session_id, "session_id")
+        populate_config_from_session(json.loads(session_data), config)
+
+    function_strategy: "IFunctionStrategy" = create_strategy("function", config)
+    session_update = function_strategy.initialize()
 
     if session_update and session_id:
         await _update_session(

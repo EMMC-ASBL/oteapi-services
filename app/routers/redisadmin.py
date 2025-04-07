@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from app.models.error import httpexception_404_item_id_does_not_exist
 from app.redis_cache import TRedisPlugin
 
-ROUTER = APIRouter(prefix="/redis")
+ROUTER = APIRouter(prefix="/redis", tags=["admin"])
 
 
 @ROUTER.get("/{key}", include_in_schema=False)

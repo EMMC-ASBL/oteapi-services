@@ -1,12 +1,12 @@
-dulwich~=0.21.7
-fakeredis~=2.21
-httpx~=0.26.0
+dulwich~=0.22.8
+debugpy>=1.8.0
+fakeredis~=2.28
+httpx~=0.28.1
 invoke~=2.2
-pre-commit~=3.6
-pylint~=3.0
-pytest~=8.0
-pytest-cov~=4.1
-safety~=2.3
+pre-commit~=4.2
+pylint~=3.3
+pytest~=8.3
+pytest-cov~=6.0
 
 # httpx is necessary due to the use of fastapi/starlette's TestClient
 # See https://fastapi.tiangolo.com/tutorial/testing/?h=testclient#using-testclient

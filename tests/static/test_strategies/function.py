@@ -1,27 +1,16 @@
 """Demo function strategy class."""
 
-from typing import TYPE_CHECKING
-
-from oteapi.models import FunctionConfig, SessionUpdate
+from oteapi.models import AttrDict, FunctionConfig
 from pydantic.dataclasses import dataclass
-
-if TYPE_CHECKING:
-    from typing import Any, Optional
 
 
 @dataclass
 class DemoFunctionStrategy:
-    """Function Strategy.
-
-    **Registers strategies**:
-
-    - `("functionType", "function/DEMO")`
-
-    """
+    """Function Strategy."""
 
     function_config: FunctionConfig
 
-    def initialize(self, session: "Optional[dict[str, Any]]" = None) -> SessionUpdate:
+    def initialize(self) -> AttrDict:
         """Initialize strategy.
 
         This method will be called through the `/initialize` endpoint of the OTEAPI
@@ -35,12 +24,9 @@ class DemoFunctionStrategy:
             session-specific context from services.
 
         """
-        del session  # unused
-        del self.function_config  # unused
+        return AttrDict()
 
-        return SessionUpdate()
-
-    def get(self, session: "Optional[dict[str, Any]]" = None) -> SessionUpdate:
+    def get(self) -> AttrDict:
         """Execute the strategy.
 
         This method will be called through the strategy-specific endpoint of the
@@ -54,6 +40,4 @@ class DemoFunctionStrategy:
             session-specific context from services.
 
         """
-        del session  # unused
-        del self.function_config  # unused
-        return SessionUpdate()
+        return AttrDict()

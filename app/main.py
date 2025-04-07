@@ -1,6 +1,7 @@
 """OTE-API FastAPI application."""
 
 import logging
+from contextlib import asynccontextmanager
 from importlib import import_module
 from typing import TYPE_CHECKING
 
@@ -19,6 +20,7 @@ from app.routers import (
     dataresource,
     function,
     mapping,
+    parser,
     redisadmin,
     session,
     transformation,
@@ -59,52 +61,29 @@ class AppSettings(RedisSettings, OteApiCoreSettings):
     )
 
 
-def create_app() -> FastAPI:
-    """Create the FastAPI app."""
-    app = FastAPI(
-        dependencies=get_auth_deps(),
-        title="Open Translation Environment API",
-        version=__version__,
-        description="""OntoTrans Interfaces OpenAPI schema.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """FastAPI Server lifespan events.
 
-The generic interfaces are implemented in dynamic plugins which
-are concrete strategy implementations of the following types:
+    On startup:
+    - Initialize the cache
+    - Load OTEAPI strategies
 
-- **Download strategy** (access data via different protocols, such as *https* and *sftp*)
-- **Parse strategy** (data type specific interpreters, such as *image/jpeg*, *text/csv*, *application/sql*)
-- **Resource strategy** (Information resource, downloadables or services)
-- **Mapping strategy** (define relations between business data and conceptual information)
-- **Filter operation strategy** (defines specify views/operations)
-- **Transformation strategy** (asyncronous operations)
+    On shutdown:
+    - Terminate the cache
+    """
+    # Initialize the Redis cache
+    await redis_plugin.init_app(app, config=CONFIG)
+    await redis_plugin.init()
 
-This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-core).
-""",
-    )
-    available_routers = [
-        admin,
-        session,
-        dataresource,
-        datafilter,
-        function,
-        mapping,
-        transformation,
-        triplestore,
-    ]
-    if CONFIG.include_redisadmin:
-        available_routers.append(redisadmin)
-    for router_module in available_routers:
-        app.include_router(
-            router_module.ROUTER,
-            prefix=CONFIG.prefix,
-            responses={
-                status.HTTP_422_UNPROCESSABLE_ENTITY: {
-                    "description": "Validation Error",
-                    "model": HTTPValidationError,
-                },
-            },
-        )
+    # Load OTEAPI strategies
+    load_strategies()
 
-    return app
+    # Run server
+    yield
+
+    # Terminate the Redis cache
+    await redis_plugin.terminate()
 
 
 def get_auth_deps() -> "list[Depends]":
@@ -137,42 +116,80 @@ def get_auth_deps() -> "list[Depends]":
     return dependencies
 
 
-def custom_openapi() -> "dict[str, Any]":
+def custom_openapi(app: FastAPI) -> "dict[str, Any]":
     """Improve the default look & feel when rendering using ReDocs."""
-    if APP.openapi_schema:
-        return APP.openapi_schema
+    if app.openapi_schema:
+        return app.openapi_schema
 
-    APP.openapi_schema = get_openapi(
-        title=APP.title,
-        version=APP.version,
-        openapi_version=APP.openapi_version,
-        description=APP.description,
-        routes=APP.routes,
-        tags=APP.openapi_tags,
-        servers=APP.servers,
+    app.openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        openapi_version=app.openapi_version,
+        description=app.description,
+        routes=app.routes,
+        tags=app.openapi_tags,
+        servers=app.servers,
     )
-    APP.openapi_schema["info"]["x-logo"] = {
+    app.openapi_schema["info"]["x-logo"] = {
         "url": "https://ontotrans.eu/wp-content/uploads/2020/05/ot_logo_rosa_gro%C3%9F.svg"
     }
-    return APP.openapi_schema
+    return app.openapi_schema
 
 
-async def init_redis() -> None:
-    """Initialize Redis upon app startup."""
-    await redis_plugin.init_app(APP, config=CONFIG)
-    await redis_plugin.init()
+def create_app() -> FastAPI:
+    """Create the FastAPI app."""
+    auth_dependencies = get_auth_deps()
 
+    app = FastAPI(
+        dependencies=auth_dependencies,
+        title="Open Translation Environment API",
+        version=__version__,
+        lifespan=lifespan,
+        description="""OntoTrans Interfaces OpenAPI schema.
 
-async def terminate_redis() -> None:
-    """Terminate Redis upon shutdown."""
-    await redis_plugin.terminate()
+The generic interfaces are implemented in dynamic plugins which
+are concrete strategy implementations of the following types:
+
+- **Download strategy** (access data via different protocols, such as *https* and *sftp*)
+- **Parse strategy** (data type specific interpreters, such as *image/jpeg*, *text/csv*, *application/sql*)
+- **Resource strategy** (Information resource, downloadables or services)
+- **Mapping strategy** (define relations between business data and conceptual information)
+- **Filter operation strategy** (defines specify views/operations)
+- **Transformation strategy** (asyncronous operations)
+
+This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-core).
+""",
+    )
+    available_routers = [
+        admin,
+        session,
+        dataresource,
+        parser,
+        mapping,
+        datafilter,
+        function,
+        transformation,
+        triplestore,
+    ]
+    if CONFIG.include_redisadmin:
+        available_routers.append(redisadmin)
+    for router_module in available_routers:
+        app.include_router(
+            router_module.ROUTER,
+            prefix=CONFIG.prefix,
+            responses={
+                status.HTTP_422_UNPROCESSABLE_ENTITY: {
+                    "description": "Validation Error",
+                    "model": HTTPValidationError,
+                },
+            },
+        )
+
+    # Customize the OpenAPI specficiation generation
+    app.openapi = lambda: custom_openapi(app)
+
+    return app
 
 
 CONFIG = AppSettings()
-APP = create_app()
-APP.openapi = custom_openapi
-
-# Events
-APP.add_event_handler("startup", init_redis)
-APP.add_event_handler("shutdown", terminate_redis)
-APP.add_event_handler("startup", load_strategies)
+# APP = create_app()

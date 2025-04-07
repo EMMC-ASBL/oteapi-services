@@ -8,34 +8,6 @@ on:
       - 'push-action/**'  # Allow pushing to protected branches (using CasperWA/push-protected)
 
 jobs:
-
-  pre-commit:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.9
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -U setuptools wheel
-
-        while IFS="" read -r line || [ -n "${line}" ]; do
-          if [[ "${line}" =~ ^pre-commit.*$ ]]; then
-            pre_commit="${line}"
-          fi
-        done < .dev/requirements_dev.txt
-
-        pip install ${pre_commit}
-
-    - name: Test with pre-commit
-      run: SKIP=pylint,pylint-tests pre-commit run --all-files
-
   pylint-safety:
     runs-on: ubuntu-latest
 
@@ -47,15 +19,13 @@ jobs:
     - name: Set up Python 3.9
       uses: actions/setup-python@v5
       with:
-        python-version: 3.9
+        python-version: '3.9'
 
     - name: Install dependencies
       run: |
         python -m pip install -U pip
         pip install -U setuptools wheel
-        pip install -U -r requirements.txt
-        pip install -U -r .dev/requirements_dev.txt
-        pip install safety
+        pip install -U -r requirements.txt -r .dev/requirements_dev.txt -r .dev/requirements_ci.txt
 
     - name: Run pylint
       run: pylint --rcfile=pyproject.toml --ignore-paths=tests/ --extension-pkg-whitelist='pydantic' --recursive=yes *.py app
@@ -63,10 +33,12 @@ jobs:
     - name: Run pylint - tests
       run: pylint --rcfile=pyproject.toml --extension-pkg-whitelist='pydantic' --disable=C0415,W0621 tests
 
-    # Ignore ID 44715 for now.
-    # See this NumPy issue for more information: https://github.com/numpy/numpy/issues/19038
+    # ID: 70612
+    #   Package: Jinja2
+    #   Has been disputed by the maintainer and multiple third parties.
+    #   For more information see: https://github.com/advisories/GHSA-f6pv-j8mr-w6rr
     - name: Run safety
-      run: pip freeze | safety check --stdin --ignore 44715
+      run: pip freeze | safety check --stdin --ignore=70612
 
   docker:
     runs-on: ubuntu-latest
@@ -87,17 +59,23 @@ jobs:
           .
 
   pytest:
+    name: "pytest (Python ${{ matrix.python-version}} - Live Redis: ${{ matrix.live-redis }})"
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10"]
+        live-redis: [true, false]
+
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
 
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
 
     - name: Set up Python ${{ matrix.python-version}}
       uses: actions/setup-python@v5
@@ -108,15 +86,28 @@ jobs:
       run: |
         python -m pip install -U pip
         pip install -U setuptools wheel
-        pip install -r requirements.txt
-        pip install -U -r .dev/requirements_dev.txt
+        pip install -U -r requirements.txt -r .dev/requirements_dev.txt
 
     - name: Test with pytest
-      run: pytest -vvv --cov-report=xml --cov=app
+      run: |
+        if [ "${{ matrix.live-redis }}" == "true" ]; then
+            LIVE_REDIS=--live-redis
+            REDIS_HOST=localhost
+        else
+            LIVE_REDIS=
+
+            # An incorrect host, which will ensure we fallback to using 'fakeredis'
+            REDIS_HOST=redis
+        fi
+
+        OTEAPI_REDIS_HOST=${REDIS_HOST} pytest -vvv --cov-report=xml --cov=app ${LIVE_REDIS}
+      env:
+        OTEAPI_REDIS_TYPE: redis
+        OTEAPI_REDIS_PORT: 6379
 
     - name: Upload coverage to Codecov
-      if: matrix.python-version == 3.9 && github.repository == 'EMMC-ASBL/oteapi-services'
-      uses: codecov/codecov-action@v4
+      if: matrix.python-version == '3.9' && github.repository == 'EMMC-ASBL/oteapi-services'
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         name: oteapi-services
@@ -182,5 +173,5 @@ jobs:
         curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
       env:
         CONTAINER_PLUGIN_PATH: /special-plugin
-        OTEAPI_PLUGIN_PACKAGES: "-v -e /special-plugin[dev]|oteapi-dlite"
+        OTEAPI_PLUGIN_PACKAGES: "-v -e /special-plugin[dev]"
         LOCAL_TARGET_PLUGIN_PATH: ${{ env.LOCAL_OTEAPI_PATH }}

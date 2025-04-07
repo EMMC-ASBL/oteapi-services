@@ -3,6 +3,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from oteapi.models import AttrDict
 from oteapi.models.transformationconfig import (
     TransformationConfig,
     TransformationStatus,
@@ -10,7 +11,7 @@ from oteapi.models.transformationconfig import (
 from pydantic.dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from typing import Any, Optional
+    from typing import Any
 
 
 @dataclass
@@ -19,25 +20,16 @@ class DummyTransformationStrategy:
 
     transformation_config: TransformationConfig
 
-    def run(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
+    def run(self) -> "dict[str, Any]":
         """Run a job, return a jobid"""
-        del session
-        del self.transformation_config
         return {"result": "a01d"}
 
-    def initialize(
-        self, session: "Optional[dict[str, Any]]" = None
-    ) -> "dict[str, Any]":
+    def initialize(self) -> "AttrDict":
         """Initialize a job"""
-        del session
-        del self.transformation_config
-
-        return {"result": "collection id"}
+        return AttrDict(result="collection id")
 
     def status(self, task_id: str) -> TransformationStatus:
         """Get job status"""
-        del self.transformation_config  # unused
-
         return TransformationStatus(
             id=task_id,
             status="wip",
@@ -47,8 +39,6 @@ class DummyTransformationStrategy:
             finishTime=datetime.utcnow(),
         )
 
-    def get(self, session: "Optional[dict[str, Any]]" = None) -> "dict[str, Any]":
+    def get(self) -> "AttrDict":
         """get transformation"""
-        del session  # unused
-        del self.transformation_config  # unused
-        return {}
+        return AttrDict()

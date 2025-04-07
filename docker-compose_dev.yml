@@ -1,4 +1,4 @@
-version: "3"
+version: "3.3"
 
 services:
   oteapi:
@@ -7,6 +7,7 @@ services:
       target: "${DOCKER_OTEAPI_TARGET:-development}"
     ports:
       - "${PORT:-8080}:8080"
+      - "5678:5678" # Debug port
     environment:
       OTEAPI_REDIS_TYPE: redis
       OTEAPI_REDIS_HOST: redis
@@ -17,6 +18,7 @@ services:
       PATH_TO_OTEAPI_CORE:
       OTEAPI_PLUGIN_PACKAGES:
       OTEAPI_AUTHENTICATION_DEPENDENCIES:
+      CI:
     depends_on:
       - redis
     networks:
@@ -32,30 +34,30 @@ services:
     networks:
       - otenet
 
-  sftp:
-    image: atmoz/sftp
-    volumes:
-      - sftp-storage:${HOME:-/home/foo}/download
-    command: ${USER:-foo}:${PASSWORD:-pass}:1001
-    networks:
-      - otenet
+#  sftp:
+#    image: atmoz/sftp
+#    volumes:
+#      - sftp-storage:${HOME:-/home/foo}/download
+#    command: ${USER:-foo}:${PASSWORD:-pass}:1001
+#    networks:
+#      - otenet
 
-  agraph:
-      image: franzinc/agraph:v7.2.0
-      volumes:
-        - agraph-data:/agraph/data
-        - ./agraph.cfg:/agraph/etc/agraph.cfg
-      ports:
-        - "10000-10035:10000-10035"
-      restart: on-failure
-      shm_size: 4g
-      networks:
-        - otenet
+#  agraph:
+#      image: franzinc/agraph:v7.2.0
+#      volumes:
+#        - agraph-data:/agraph/data
+#        - ./agraph.cfg:/agraph/etc/agraph.cfg
+#      ports:
+#        - "10000-10035:10000-10035"
+#      restart: on-failure
+#      shm_size: 4g
+#      networks:
+#        - otenet
 
 volumes:
   redis-persist:
-  sftp-storage:
-  agraph-data:
+#  sftp-storage:
+#  agraph-data:
 
 networks:
   otenet:
