@@ -1,5 +1,7 @@
 """Demo function strategy class."""
 
+from __future__ import annotations
+
 from oteapi.models import AttrDict, FunctionConfig
 from pydantic.dataclasses import dataclass
 

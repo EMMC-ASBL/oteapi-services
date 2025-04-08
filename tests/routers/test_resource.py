@@ -1,5 +1,7 @@
 """Test dataresource"""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import pytest
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
 
-def test_create_dataresource(client: "TestClient") -> None:
+def test_create_dataresource(client: TestClient) -> None:
     """Test create dataresource."""
     response = client.post(
         "/dataresource/",
@@ -20,52 +22,46 @@ def test_create_dataresource(client: "TestClient") -> None:
             "resourceType": "resource/demo",
         },
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
-def test_get_dataresource_info(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_get_dataresource_info(client: TestClient, test_data: dict[str, str]) -> None:
     """Test get dataresource info."""
     dataresource_id = next(_ for _ in test_data if _.startswith("dataresource-"))
     response = client.get(
         f"/dataresource/{dataresource_id}/info",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
-def test_read_dataresource(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_read_dataresource(client: TestClient, test_data: dict[str, str]) -> None:
     """Test read dataresource."""
     dataresource_id = next(_ for _ in test_data if _.startswith("dataresource-"))
     response = client.get(
         f"/dataresource/{dataresource_id}",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
-def test_initialize_dataresource(
-    client: "TestClient", test_data: dict[str, str]
-) -> None:
+def test_initialize_dataresource(client: TestClient, test_data: dict[str, str]) -> None:
     """Test initialize dataresource."""
     dataresource_id = next(_ for _ in test_data if _.startswith("dataresource-"))
     response = client.post(
         f"/dataresource/{dataresource_id}/initialize",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
 @pytest.mark.parametrize("method", ["initialize", "get"])
 def test_session_config_merge(
-    client: "TestClient",
+    client: TestClient,
     test_data: dict[str, str],
-    method: 'Literal["initialize", "get"]',
-    monkeypatch: "pytest.MonkeyPatch",
+    method: Literal["initialize", "get"],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test the current session is merged into the strategy configuration."""
     import json
@@ -83,7 +79,7 @@ def test_session_config_merge(
     expected_merged_config["configuration"] = json.loads(test_data[session_id])
 
     def create_strategy_middleware(
-        strategy_type: 'Literal["resource"]', config: ResourceConfig
+        strategy_type: Literal["resource"], config: ResourceConfig
     ):
         """Create a strategy middleware - do some testing."""
         assert strategy_type == "resource"
@@ -112,14 +108,12 @@ def test_session_config_merge(
             f"/dataresource/{dataresource_id}/initialize",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
     else:  # method == "get"
         response = client.get(
             f"/dataresource/{dataresource_id}",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
 
     assert (

@@ -1,7 +1,8 @@
 """Data Resource."""
 
+from __future__ import annotations
+
 import json
-from typing import Optional
 
 from fastapi import APIRouter, Request, status
 from oteapi.models import ResourceConfig
@@ -38,7 +39,7 @@ async def create_dataresource(
     cache: TRedisPlugin,
     request: Request,
     config: ResourceConfig,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> CreateResourceResponse:
     """### Register an external data resource.
 
@@ -94,7 +95,7 @@ async def info_dataresource(
 async def read_dataresource(
     cache: TRedisPlugin,
     resource_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> GetResourceResponse:
     """Read data from dataresource using the appropriate download strategy.
 
@@ -128,7 +129,7 @@ async def read_dataresource(
 async def initialize_dataresource(
     cache: TRedisPlugin,
     resource_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> InitializeResourceResponse:
     """Initialize data resource."""
     cache_value = await _fetch_cache_value(cache, resource_id, "resource_id")

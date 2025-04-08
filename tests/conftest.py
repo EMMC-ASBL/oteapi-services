@@ -1,6 +1,7 @@
 """Fixtures and configuration for PyTest."""
 
-# pylint: disable=invalid-name,redefined-builtin,unused-argument,comparison-with-callable
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import pytest
@@ -32,7 +33,7 @@ def pytest_configure(config: pytest.Config) -> None:
     """Method that runs before pytest collects tests so no modules are imported"""
     import os
 
-    os.environ["OTEAPI_prefix"] = ""
+    os.environ["OTEAPI_PREFIX"] = ""
     os.environ["OTEAPI_INCLUDE_REDISADMIN"] = "True"
     os.environ["OTEAPI_EXPOSE_SECRETS"] = "True"
 
@@ -47,15 +48,15 @@ def live_redis(request: pytest.FixtureRequest) -> bool:
 
 
 @pytest.fixture(scope="session")
-def top_dir() -> "Path":
+def top_dir() -> Path:
     """Resolved path to repository directory."""
     from pathlib import Path
 
     return Path(__file__).resolve().parent.parent.resolve()
 
 
-@pytest.fixture()
-def test_data() -> "dict[str, str]":
+@pytest.fixture
+def test_data() -> dict[str, str]:
     """Test data stored in DummyCache."""
     import json
 
@@ -165,10 +166,10 @@ def load_test_strategies() -> None:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def client(
-    test_data: "dict[str, str]", monkeypatch: pytest.MonkeyPatch, live_redis: bool
-) -> "TestClient":
+    test_data: dict[str, str], monkeypatch: pytest.MonkeyPatch, live_redis: bool
+) -> TestClient:
     """Return a test client."""
     from contextlib import asynccontextmanager
     from warnings import catch_warnings
@@ -178,7 +179,7 @@ def client(
     from app import main
 
     @asynccontextmanager
-    async def lifespan_with_test_data(app: "FastAPI"):
+    async def lifespan_with_test_data(app: FastAPI):
         """Initialize Redis upon app startup."""
         # Initialize the Redis cache
         await main.redis_plugin.init_app(app, config=main.CONFIG)

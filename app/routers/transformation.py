@@ -1,7 +1,9 @@
 """Transformation."""
 
+from __future__ import annotations
+
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Request, status
 from oteapi.models import TransformationConfig, TransformationStatus
@@ -35,7 +37,7 @@ async def create_transformation(
     cache: TRedisPlugin,
     config: TransformationConfig,
     request: Request,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> CreateTransformationResponse:
     """Create a new transformation configuration."""
     new_transformation = CreateTransformationResponse()
@@ -71,7 +73,7 @@ async def get_transformation_status(
     )
     config = TransformationConfig(**json.loads(cache_value))
 
-    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
+    strategy: ITransformationStrategy = create_strategy("transformation", config)
     return strategy.status(task_id=task_id)
 
 
@@ -79,7 +81,7 @@ async def get_transformation_status(
 async def get_transformation(
     cache: TRedisPlugin,
     transformation_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> GetTransformationResponse:
     """Get transformation."""
     cache_value = await _fetch_cache_value(
@@ -91,7 +93,7 @@ async def get_transformation(
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
+    strategy: ITransformationStrategy = create_strategy("transformation", config)
     session_update = strategy.get()
 
     if session_update and session_id:
@@ -108,7 +110,7 @@ async def get_transformation(
 async def execute_transformation(
     cache: TRedisPlugin,
     transformation_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> ExecuteTransformationResponse:
     """Execute (run) a transformation."""
     # Fetch transformation info from cache
@@ -121,7 +123,7 @@ async def execute_transformation(
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
+    strategy: ITransformationStrategy = create_strategy("transformation", config)
     session_update = strategy.get()
 
     if session_update and session_id:
@@ -138,7 +140,7 @@ async def execute_transformation(
 async def initialize_transformation(
     cache: TRedisPlugin,
     transformation_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> InitializeTransformationResponse:
     """Initialize a transformation."""
     # Fetch transformation info from cache
@@ -151,7 +153,7 @@ async def initialize_transformation(
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    strategy: "ITransformationStrategy" = create_strategy("transformation", config)
+    strategy: ITransformationStrategy = create_strategy("transformation", config)
     session_update = strategy.initialize()
 
     if session_update and session_id:

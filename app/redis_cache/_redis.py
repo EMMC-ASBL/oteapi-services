@@ -8,10 +8,12 @@ https://github.com/madkote/fastapi-plugins/blob/26f31177634ba84ca73c63f84535af20
 
 """
 
+from __future__ import annotations
+
 import warnings
 from collections.abc import Awaitable
 from enum import Enum, unique
-from typing import TYPE_CHECKING, Annotated, Any, Optional, Union
+from typing import TYPE_CHECKING, Annotated, Any
 
 import redis.asyncio as aredis
 import redis.asyncio.sentinel as aredis_sentinel
@@ -22,19 +24,19 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from redis import ConnectionError as RedisConnectionError
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Callable
+    from collections.abc import Callable
 
     from mypy_extensions import KwArg
 
 
 __all__ = [
     "RedisError",
-    "RedisType",
-    "RedisSettings",
     "RedisPlugin",
-    "redis_plugin",
-    "depends_redis",
+    "RedisSettings",
+    "RedisType",
     "TRedisPlugin",
+    "depends_redis",
+    "redis_plugin",
 ]
 
 
@@ -59,21 +61,21 @@ class RedisSettings(BaseSettings):
 
     redis_type: RedisType = RedisType.REDIS
 
-    redis_url: Optional[str] = None
+    redis_url: str | None = None
     redis_host: str = "localhost"
     redis_port: int = 6379
-    redis_user: Optional[str] = None
-    redis_password: Optional[str] = None
-    redis_db: Optional[int] = None
+    redis_user: str | None = None
+    redis_password: str | None = None
+    redis_db: int | None = None
     # redis_connection_timeout: int = 2
 
     # redis_pool_minsize: int = 1
     # redis_pool_maxsize: int = None
-    redis_max_connections: Optional[int] = None
+    redis_max_connections: int | None = None
     redis_decode_responses: bool = True
 
     # redis_sentinels: typing.List = None
-    redis_sentinels: Optional[str] = None
+    redis_sentinels: str | None = None
     redis_sentinel_master: str = "mymaster"
 
     redis_prestart_tries: int = 60 * 5  # 5 min
@@ -109,15 +111,15 @@ class RedisPlugin:
 
     DEFAULT_CONFIG_CLASS = RedisSettings
 
-    config: Optional[RedisSettings]
+    config: RedisSettings | None
 
     def __init__(self) -> None:
-        self.redis: Optional[Union[aredis.Redis, aredis_sentinel.Sentinel]] = None
+        self.redis: aredis.Redis | aredis_sentinel.Sentinel | None = None
 
-    def __call__(self) -> Awaitable[Union[aredis_sentinel.Sentinel, aredis.Redis]]:
+    def __call__(self) -> Awaitable[aredis_sentinel.Sentinel | aredis.Redis]:
         return self._on_call()
 
-    async def _on_call(self) -> Union[aredis_sentinel.Sentinel, aredis.Redis]:
+    async def _on_call(self) -> aredis_sentinel.Sentinel | aredis.Redis:
         """Get Redis connection."""
         if self.redis is None:
             raise RedisError("Redis is not initialized")
@@ -129,7 +131,7 @@ class RedisPlugin:
             if TYPE_CHECKING:  # pragma: no cover
                 assert isinstance(self.redis, aredis_sentinel.Sentinel)  # nosec
 
-            conn: Union[aredis_sentinel.Sentinel, aredis.Redis] = self.redis.master_for(
+            conn: aredis_sentinel.Sentinel | aredis.Redis = self.redis.master_for(
                 self.config.redis_sentinel_master
             )
         elif self.config.redis_type in (RedisType.REDIS, RedisType.FAKEREDIS):
@@ -141,9 +143,7 @@ class RedisPlugin:
 
         return conn
 
-    async def init_app(
-        self, app: FastAPI, config: Optional[RedisSettings] = None
-    ) -> None:
+    async def init_app(self, app: FastAPI, config: RedisSettings | None = None) -> None:
         """Initialize plugin via FastAPI application object."""
         self.config = config or self.DEFAULT_CONFIG_CLASS()
         if self.config is None:
@@ -171,11 +171,11 @@ class RedisPlugin:
         }
 
         if TYPE_CHECKING:  # pragma: no cover
-            address: Union[str, list[tuple[str, int]]]
-            method: Union[
-                Callable[[str, KwArg(Any)], aredis.Redis],
-                type[aredis_sentinel.Sentinel],
-            ]
+            address: str | list[tuple[str, int]]
+            method: (
+                Callable[[str, KwArg(Any)], aredis.Redis]
+                | type[aredis_sentinel.Sentinel]
+            )
 
         if self.config.redis_type == RedisType.REDIS:
             address = self.config.get_redis_address()
@@ -222,7 +222,9 @@ class RedisPlugin:
                 raise exc
 
             # Emit warning about falling back to fakeredis
-            warnings.warn("No live Redis server found - falling back to fakeredis !")
+            warnings.warn(
+                "No live Redis server found - falling back to fakeredis !", stacklevel=2
+            )
 
             # Reset redis attribute and set redis type to fakeredis
             self.redis = None
@@ -240,7 +242,7 @@ class RedisPlugin:
             await self.redis.aclose()  # type: ignore[union-attr]
             self.redis = None
 
-    async def health(self) -> dict[str, "Any"]:
+    async def health(self) -> dict[str, Any]:
         """Get Redis health status."""
         if self.config is None:
             raise RedisError("Redis configuration is not initialized")
@@ -255,7 +257,7 @@ class RedisPlugin:
             "redis_pong": (await self.ping()),
         }
 
-    async def ping(self) -> Union[Awaitable, Any]:
+    async def ping(self) -> Awaitable | Any:
         """Ping Redis."""
         if self.config is None:
             raise RedisError("Redis configuration is not initialized")

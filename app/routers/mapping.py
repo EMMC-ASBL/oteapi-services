@@ -1,7 +1,9 @@
 """Mapping."""
 
+from __future__ import annotations
+
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, status
 from oteapi.models import MappingConfig
@@ -33,7 +35,7 @@ ROUTER = APIRouter(
 async def create_mapping(
     cache: TRedisPlugin,
     config: MappingConfig,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> CreateMappingResponse:
     """Define a new mapping configuration (ontological representation)
     Mapping (ontology alignment), is the process of defining
@@ -59,7 +61,7 @@ async def create_mapping(
 async def get_mapping(
     cache: TRedisPlugin,
     mapping_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> GetMappingResponse:
     """Run and return data"""
     cache_value = await _fetch_cache_value(cache, mapping_id, "mapping_id")
@@ -69,7 +71,7 @@ async def get_mapping(
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    mapping_strategy: "IMappingStrategy" = create_strategy("mapping", config)
+    mapping_strategy: IMappingStrategy = create_strategy("mapping", config)
     session_update = mapping_strategy.get()
 
     if session_update and session_id:
@@ -84,7 +86,7 @@ async def get_mapping(
 async def initialize_mapping(
     cache: TRedisPlugin,
     mapping_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> InitializeMappingResponse:
     """
     Initialize and update session.
@@ -99,7 +101,7 @@ async def initialize_mapping(
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    mapping_strategy: "IMappingStrategy" = create_strategy("mapping", config)
+    mapping_strategy: IMappingStrategy = create_strategy("mapping", config)
     session_update = mapping_strategy.initialize()
 
     if session_update and session_id:

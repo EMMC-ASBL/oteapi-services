@@ -1,7 +1,9 @@
 """Function."""
 
+from __future__ import annotations
+
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Request, status
 from oteapi.models import FunctionConfig
@@ -34,7 +36,7 @@ async def create_function(
     cache: TRedisPlugin,
     config: FunctionConfig,
     request: Request,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> CreateFunctionResponse:
     """Create a new function configuration."""
     new_function = CreateFunctionResponse()
@@ -62,7 +64,7 @@ async def create_function(
 async def get_function(
     cache: TRedisPlugin,
     function_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> GetFunctionResponse:
     """Get (execute) function."""
     cache_value = await _fetch_cache_value(cache, function_id, "function_id")
@@ -72,7 +74,7 @@ async def get_function(
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    function_strategy: "IFunctionStrategy" = create_strategy("function", config)
+    function_strategy: IFunctionStrategy = create_strategy("function", config)
     session_update = function_strategy.get()
 
     if session_update and session_id:
@@ -87,7 +89,7 @@ async def get_function(
 async def initialize_function(
     cache: TRedisPlugin,
     function_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> InitializeFunctionResponse:
     """Initialize and update function."""
     cache_value = await _fetch_cache_value(cache, function_id, "function_id")
@@ -97,7 +99,7 @@ async def initialize_function(
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    function_strategy: "IFunctionStrategy" = create_strategy("function", config)
+    function_strategy: IFunctionStrategy = create_strategy("function", config)
     session_update = function_strategy.initialize()
 
     if session_update and session_id:

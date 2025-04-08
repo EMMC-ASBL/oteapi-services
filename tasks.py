@@ -4,6 +4,8 @@ More information on `invoke` can be found at http://www.pyinvoke.org/.
 """
 
 # pylint: disable=import-outside-toplevel
+from __future__ import annotations
+
 import datetime as dt
 import os
 import re
@@ -14,7 +16,6 @@ from typing import TYPE_CHECKING
 from invoke import task
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Optional
 
     from dulwich.objects import Commit
 
@@ -23,7 +24,7 @@ TOP_DIR = Path(__file__).parent.resolve()
 
 
 def update_file(
-    filename: Path, sub_line: "tuple[str, str]", strip: "Optional[str]" = None
+    filename: Path, sub_line: tuple[str, str], strip: str | None = None
 ) -> None:
     """Utility function for tasks to read, update, and write files.
 
@@ -74,7 +75,7 @@ def compile_version(
             "`invoke setver`?"
         )
 
-    head_master: "Commit" = repo.get_object(default_branch_sha)
+    head_master: Commit = repo.get_object(default_branch_sha)
     head_master_time = dt.datetime.fromtimestamp(
         head_master.commit_time,
         dt.timezone(dt.timedelta(seconds=head_master.commit_timezone)),

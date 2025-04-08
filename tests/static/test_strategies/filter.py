@@ -1,5 +1,7 @@
 """Demo filter strategy."""
 
+from __future__ import annotations
+
 from typing import Annotated
 
 from oteapi.models import AttrDict
@@ -28,10 +30,10 @@ class DemoFilter:
 
     filter_config: DemoFilterConfig
 
-    def initialize(self) -> "AttrDict":
+    def initialize(self) -> AttrDict:
         """Initialize strategy and return a dictionary"""
         return AttrDict(result="collectionid")
 
-    def get(self) -> "AttrDict":
+    def get(self) -> AttrDict:
         """Execute strategy and return a dictionary"""
         return AttrDict(key=self.filter_config.configuration.demo_data)

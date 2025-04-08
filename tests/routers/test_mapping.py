@@ -1,5 +1,7 @@
 """Test mapping."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import pytest
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
 
-def test_create_mapping(client: "TestClient") -> None:
+def test_create_mapping(client: TestClient) -> None:
     """Test creating a mapping."""
     response = client.post(
         "/mapping/",
@@ -21,40 +23,37 @@ def test_create_mapping(client: "TestClient") -> None:
             "configuration": {},
         },
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert "mapping_id" in response.json()
     assert response.status_code == 200
 
 
-def test_get_mapping(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_get_mapping(client: TestClient, test_data: dict[str, str]) -> None:
     """Test getting a mapping."""
     mapping_id = next(_ for _ in test_data if _.startswith("mapping-"))
     response = client.get(
         f"/mapping/{mapping_id}",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
-def test_initialize_mapping(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_initialize_mapping(client: TestClient, test_data: dict[str, str]) -> None:
     """Test initializing a mapping."""
     mapping_id = next(_ for _ in test_data if _.startswith("mapping-"))
     response = client.post(
         f"/mapping/{mapping_id}/initialize",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
 @pytest.mark.parametrize("method", ["initialize", "get"])
 def test_session_config_merge(
-    client: "TestClient",
+    client: TestClient,
     test_data: dict[str, str],
-    method: 'Literal["initialize", "get"]',
-    monkeypatch: "pytest.MonkeyPatch",
+    method: Literal["initialize", "get"],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test the current session is merged into the strategy configuration."""
     import json
@@ -71,7 +70,7 @@ def test_session_config_merge(
     expected_merged_config["configuration"].update(json.loads(test_data[session_id]))
 
     def create_strategy_middleware(
-        strategy_type: 'Literal["mapping"]', config: MappingConfig
+        strategy_type: Literal["mapping"], config: MappingConfig
     ):
         """Create a strategy middleware - do some testing."""
         assert strategy_type == "mapping"
@@ -94,14 +93,12 @@ def test_session_config_merge(
             f"/mapping/{mapping_id}/initialize",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
     else:  # method == "get"
         response = client.get(
             f"/mapping/{mapping_id}",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
 
     assert (

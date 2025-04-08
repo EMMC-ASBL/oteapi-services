@@ -1,63 +1,42 @@
 """OTE-API FastAPI application."""
 
+from __future__ import annotations
+
 import logging
 from contextlib import asynccontextmanager
 from importlib import import_module
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, status
 from fastapi.openapi.utils import get_openapi
 from oteapi.plugins import load_strategies
-from oteapi.settings import OteApiCoreSettings
-from pydantic import Field
 
 from app import __version__
 from app.models.error import HTTPValidationError
-from app.redis_cache import RedisSettings, redis_plugin
-from app.routers import (
-    datafilter,
-    dataresource,
-    function,
-    mapping,
-    parser,
-    redisadmin,
-    session,
-    transformation,
-    triplestore,
-)
+from app.redis_cache import redis_plugin
+from app.settings import get_settings
 
 if TYPE_CHECKING:  # pragma: no cover
+    from collections.abc import Generator
     from typing import Any
 
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+    from fastapi import APIRouter
 
 
-class AppSettings(RedisSettings, OteApiCoreSettings):
-    """Redis settings."""
+LOGGER = logging.getLogger(__name__)
 
-    include_redisadmin: bool = Field(
-        False,
-        description="""If set to `True`,
-        the router for the low-level cache interface will be included into the api.
-        WARNING: This might NOT be recommended for specific production cases,
-        since sensible data (such as secrets) in the cache might be revealed by
-        inspecting other user's session objects. If set to false, the cache can
-        only be read from an admin accessing the redis backend.""",
-    )
 
-    authentication_dependencies: str = Field(
-        "", description="List of FastAPI dependencies for authentication features."
-    )
+def get_routers() -> Generator[APIRouter]:
+    """Get all routers in the application."""
+    routers_dir = (Path(__file__).parent / "routers").resolve()
 
-    api_name: str = Field(
-        "oteapi_services", description="Application-specific name for Redis cache."
-    )
-    prefix: str = Field(
-        f"/api/v{__version__.split('.', maxsplit=1)[0]}",
-        description="Application route prefix.",
-    )
+    for entry in routers_dir.iterdir():
+        if (
+            entry.is_file() and entry.suffix == ".py" and not entry.stem.startswith("_")
+        ) or (entry.is_dir() and (entry / "__init__.py").exists()):
+            module = import_module(f"app.routers.{entry.stem}")
+            yield module.ROUTER
 
 
 @asynccontextmanager
@@ -71,8 +50,10 @@ async def lifespan(app: FastAPI):
     On shutdown:
     - Terminate the cache
     """
+    settings = get_settings()
+
     # Initialize the Redis cache
-    await redis_plugin.init_app(app, config=CONFIG)
+    await redis_plugin.init_app(app, config=settings)
     await redis_plugin.init()
 
     # Load OTEAPI strategies
@@ -85,7 +66,7 @@ async def lifespan(app: FastAPI):
     await redis_plugin.terminate()
 
 
-def get_auth_deps() -> "list[Depends]":
+def get_auth_deps() -> list[Depends]:
     """Get authentication dependencies
 
     Fetch dependencies for authentication through the
@@ -95,27 +76,27 @@ def get_auth_deps() -> "list[Depends]":
         List of FastAPI dependencies with authentication functions.
 
     """
-    if CONFIG.authentication_dependencies:
+    settings = get_settings()
+
+    if settings.authentication_dependencies:
         modules = [
             module.strip().split(":")
-            for module in CONFIG.authentication_dependencies.split(  # pylint: disable=no-member
-                "|"
-            )
+            for module in settings.authentication_dependencies.split("|")
         ]
         imports = [
             getattr(import_module(module), classname) for (module, classname) in modules
         ]
-        logger.info(
+        LOGGER.info(
             "Imported the following dependencies for authentication: %s", imports
         )
         dependencies = [Depends(dependency) for dependency in imports]
     else:
         dependencies = []
-        logger.info("No dependencies for authentication assigned.")
+        LOGGER.info("No dependencies for authentication assigned.")
     return dependencies
 
 
-def custom_openapi(app: FastAPI) -> "dict[str, Any]":
+def custom_openapi(app: FastAPI) -> dict[str, Any]:
     """Improve the default look & feel when rendering using ReDocs."""
     if app.openapi_schema:
         return app.openapi_schema
@@ -138,12 +119,15 @@ def custom_openapi(app: FastAPI) -> "dict[str, Any]":
 def create_app() -> FastAPI:
     """Create the FastAPI app."""
     auth_dependencies = get_auth_deps()
+    settings = get_settings()
 
     app = FastAPI(
         dependencies=auth_dependencies,
         title="Open Translation Environment API",
         version=__version__,
         lifespan=lifespan,
+        debug=settings.debug,
+        root_path=settings.prefix,
         description="""OntoTrans Interfaces OpenAPI schema.
 
 The generic interfaces are implemented in dynamic plugins which
@@ -159,22 +143,11 @@ are concrete strategy implementations of the following types:
 This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-core).
 """,
     )
-    available_routers = [
-        session,
-        dataresource,
-        parser,
-        mapping,
-        datafilter,
-        function,
-        transformation,
-        triplestore,
-    ]
-    if CONFIG.include_redisadmin:
-        available_routers.append(redisadmin)
-    for router_module in available_routers:
+
+    # Include all routers
+    for router in get_routers():
         app.include_router(
-            router_module.ROUTER,
-            prefix=CONFIG.prefix,
+            router,
             responses={
                 status.HTTP_422_UNPROCESSABLE_ENTITY: {
                     "description": "Validation Error",
@@ -187,7 +160,3 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
     app.openapi = lambda: custom_openapi(app)
 
     return app
-
-
-CONFIG = AppSettings()
-# APP = create_app()

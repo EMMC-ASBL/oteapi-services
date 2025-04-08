@@ -1,7 +1,9 @@
 """Demo strategy class for text/json."""
 
+from __future__ import annotations
+
 import json
-from typing import Literal, Optional
+from typing import Literal
 
 from oteapi.datacache import DataCache
 from oteapi.models import AttrDict, DataCacheConfig, HostlessAnyUrl, ParserConfig
@@ -13,14 +15,14 @@ from pydantic.dataclasses import dataclass
 class DEMOConfig(AttrDict):
     """JSON parse-specific Configuration Data Model."""
 
-    downloadUrl: Optional[HostlessAnyUrl] = Field(
+    downloadUrl: HostlessAnyUrl | None = Field(
         None, description="The HTTP(S) URL, which will be downloaded."
     )
-    mediaType: Optional[Literal["application/json"]] = Field(
+    mediaType: Literal["application/json"] | None = Field(
         "application/json",
         description=("The media type"),
     )
-    datacache_config: Optional[DataCacheConfig] = Field(
+    datacache_config: DataCacheConfig | None = Field(
         None,
         description=(
             "Configurations for the data cache for storing the downloaded file "
@@ -47,11 +49,11 @@ class DemoJSONDataParseStrategy:
 
     parse_config: DEMOParserConfig
 
-    def initialize(self) -> "AttrDict":
+    def initialize(self) -> AttrDict:
         """Initialize"""
         return AttrDict()
 
-    def get(self) -> "AttrDict":
+    def get(self) -> AttrDict:
         """Parse json."""
         downloader = create_strategy(
             "download", self.parse_config.configuration.model_dump()
