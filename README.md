@@ -245,7 +245,7 @@ services:
     networks:
       - otenet
     volumes:
-      - "${LOCAL_OTEAPI_CORE_PATH}:/local-oteapi-core"
+      - "/local/path/to/oteapi-core:/local-oteapi-core"
       - "${PWD}:/oteapi-plugin"
     stop_grace_period: 1s
 

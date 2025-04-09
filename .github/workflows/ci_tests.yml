@@ -114,7 +114,7 @@ jobs:
       OTEAPI_PORT: 8123
       OTEAPI_PREFIX: /api/ci/v1
       DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
-      LOCAL_OTEAPI_PATH: /tmp/oteapi-core
+      OTEAPI_CORE_PATH: /tmp/oteapi-core
 
     steps:
     - name: Checkout ${{ github.repository }}
@@ -136,7 +136,7 @@ jobs:
     - name: Clone current requirement version of `oteapi-core` locally
       run: |
         REQ_VERSION=$(cat requirements.txt | grep "oteapi-core")
-        git clone --branch v${REQ_VERSION#oteapi-core==} https://github.com/EMMC-ASBL/oteapi-core ${LOCAL_OTEAPI_PATH}
+        git clone --branch v${REQ_VERSION#oteapi-core==} https://github.com/EMMC-ASBL/oteapi-core ${OTEAPI_CORE_PATH}
 
     - name: Start the Docker services with a local `oteapi-core`
       run: |
