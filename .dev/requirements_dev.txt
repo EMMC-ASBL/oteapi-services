@@ -1,5 +1,4 @@
 debugpy>=1.8.0
-dulwich~=0.22.8
 fakeredis~=2.28
 httpx~=0.28.1
 invoke~=2.2
