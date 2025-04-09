@@ -7,7 +7,7 @@ on:
 jobs:
   update-dependabot-branch:
     name: Update permanent dependabot branch
-    if: github.repository_owner == 'EMMC-ASBL' && ( ( startsWith(github.event.pull_request.head.ref, 'dependabot/') && github.actor == 'dependabot[bot]' ) || ( github.event.pull_request.head.ref == 'pre-commit-ci-update-config' && github.actor == 'pre-commit-ci[bot]' ) )
+    if: github.repository_owner == 'EMMC-ASBL' && ( ( startsWith(github.event.pull_request.head.ref, 'dependabot/') && github.actor == 'dependabot[bot]' ) || ( github.event.pull_request.head.ref == 'ci/update-requirements' && github.actor == 'TEAM4-0' ) || ( github.event.pull_request.head.ref == 'pre-commit-ci-update-config' && github.actor == 'pre-commit-ci[bot]' ) )
     runs-on: ubuntu-latest
 
     steps:
