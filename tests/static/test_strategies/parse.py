@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Literal
+from typing import Annotated, Literal
 
 from oteapi.datacache import DataCache
 from oteapi.models import AttrDict, DataCacheConfig, HostlessAnyUrl, ParserConfig
@@ -15,32 +15,39 @@ from pydantic.dataclasses import dataclass
 class DEMOConfig(AttrDict):
     """JSON parse-specific Configuration Data Model."""
 
-    downloadUrl: HostlessAnyUrl | None = Field(
-        None, description="The HTTP(S) URL, which will be downloaded."
-    )
-    mediaType: Literal["application/json"] | None = Field(
-        "application/json",
-        description=("The media type"),
-    )
-    datacache_config: DataCacheConfig | None = Field(
-        None,
-        description=(
-            "Configurations for the data cache for storing the downloaded file "
-            "content."
+    downloadUrl: Annotated[
+        HostlessAnyUrl | None,
+        Field(description="The HTTP(S) URL, which will be downloaded."),
+    ] = None
+    mediaType: Annotated[
+        Literal["application/json"] | None,
+        Field(
+            description=("The media type"),
         ),
-    )
+    ] = "application/json"
+    datacache_config: Annotated[
+        DataCacheConfig | None,
+        Field(
+            description=(
+                "Configurations for the data cache for storing the downloaded file "
+                "content."
+            ),
+        ),
+    ] = None
 
 
 class DEMOParserConfig(ParserConfig):
     """JSON parse strategy filter config."""
 
-    parserType: Literal["parser/demo"] = Field(
-        "parser/demo",
-        description=ParserConfig.model_fields["parserType"].description,
-    )
-    configuration: DEMOConfig = Field(
-        ..., description="JSON parse strategy-specific configuration."
-    )
+    parserType: Annotated[
+        Literal["parser/demo"],
+        Field(
+            description=ParserConfig.model_fields["parserType"].description,
+        ),
+    ] = "parser/demo"
+    configuration: Annotated[
+        DEMOConfig, Field(description="JSON parse strategy-specific configuration.")
+    ]
 
 
 @dataclass

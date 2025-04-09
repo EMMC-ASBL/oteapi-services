@@ -3,7 +3,6 @@
 More information on `invoke` can be found at http://www.pyinvoke.org/.
 """
 
-# pylint: disable=import-outside-toplevel
 from __future__ import annotations
 
 import datetime as dt
@@ -109,7 +108,7 @@ def dir_is_git(default_branch: str = "origin/master") -> bool:
     except NotGitRepository:
         return False
 
-    with open(os.devnull, "wb") as handle:
+    with Path(os.devnull).open("wb") as handle:
         porcelain.fetch(repo, outstream=handle, errstream=handle)
 
     return any(

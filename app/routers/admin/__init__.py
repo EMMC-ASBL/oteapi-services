@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from fastapi import APIRouter
 
-from app.settings import settings
+from app.settings import get_settings
 
 if TYPE_CHECKING:  # pragma: no cover
     from collections.abc import Generator
@@ -31,7 +31,7 @@ def get_routers() -> Generator[APIRouter]:
 ROUTER = APIRouter(
     prefix="/admin",
     tags=["admin"],
-    include_in_schema=settings.debug,
+    include_in_schema=get_settings().debug,
 )
 
 for admin_router in get_routers():

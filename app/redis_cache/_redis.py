@@ -183,7 +183,7 @@ class RedisPlugin:
             # opts.update(dict(timeout=self.config.redis_connection_timeout))
         elif self.config.redis_type == RedisType.FAKEREDIS:
             try:
-                import fakeredis.aioredis  # pylint: disable=import-outside-toplevel
+                import fakeredis.aioredis
             except ImportError as exc:
                 raise RedisError(
                     f"{self.config.redis_type.value} requires fakeredis to be installed"
@@ -207,7 +207,7 @@ class RedisPlugin:
             wait=tenacity.wait_fixed(self.config.redis_prestart_wait),
         )
         async def _inner():
-            return method(address, **opts)
+            return method(address, **opts)  # type: ignore[arg-type]
 
         self.redis = await _inner()
 

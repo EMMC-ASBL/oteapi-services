@@ -8,7 +8,7 @@ import sys
 from copy import copy
 from typing import TYPE_CHECKING
 
-from app.settings import settings
+from app.settings import get_settings
 
 if TYPE_CHECKING:  # pragma: no cover
     from typing import Any, ClassVar, Literal, Protocol
@@ -163,7 +163,7 @@ def setup_logging() -> None:
                 "formatter": "default_uvicorn",
                 "class": "logging.StreamHandler",
                 "stream": "ext://sys.stdout",
-                "level": "DEBUG" if settings.debug else "INFO",
+                "level": "DEBUG" if get_settings().debug else "INFO",
             },
         },
         "loggers": {

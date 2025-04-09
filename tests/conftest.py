@@ -29,7 +29,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
-def pytest_configure(config: pytest.Config) -> None:
+def pytest_configure(config: pytest.Config) -> None:  # noqa: ARG001
     """Method that runs before pytest collects tests so no modules are imported"""
     import os
 

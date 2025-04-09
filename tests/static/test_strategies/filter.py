@@ -13,15 +13,18 @@ from pydantic.dataclasses import dataclass
 class DemoDataConfiguration(AttrDict):
     """Demo filter data model."""
 
-    demo_data: Annotated[list[int], Field(description="List of demo data.")] = []
+    demo_data: Annotated[
+        list[int], Field(default_factory=list, description="List of demo data.")
+    ]
 
 
 class DemoFilterConfig(FilterConfig):
     """Demo filter configuration."""
 
-    configuration: DemoDataConfiguration = Field(
-        ..., description=FilterConfig.model_fields["configuration"].description
-    )
+    configuration: Annotated[
+        DemoDataConfiguration,
+        Field(description=FilterConfig.model_fields["configuration"].description),
+    ]
 
 
 @dataclass
