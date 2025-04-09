@@ -138,7 +138,7 @@ jobs:
         REQ_VERSION=$(cat requirements.txt | grep "oteapi-core")
         git clone --branch v${REQ_VERSION#oteapi-core==} https://github.com/EMMC-ASBL/oteapi-core ${LOCAL_OTEAPI_PATH}
 
-    - name: Start the Docker services with "plugins"
+    - name: Start the Docker services with a local `oteapi-core`
       run: |
         docker compose -f compose.dev.yml down
         docker compose -f .github/utils/compose.ci_plugins.yml up &
@@ -148,6 +148,5 @@ jobs:
         sleep 90
         curl -X "GET" -i "http://localhost:${{ env.OTEAPI_PORT }}${{ env.OTEAPI_PREFIX }}/session"
       env:
-        CONTAINER_PLUGIN_PATH: /special-plugin
-        OTEAPI_PLUGIN_PACKAGES: "-v -e /special-plugin[dev]"
-        LOCAL_TARGET_PLUGIN_PATH: ${{ env.LOCAL_OTEAPI_PATH }}
+        CONTAINER_PLUGIN_PATH: /local-oteapi-core
+        OTEAPI_PLUGIN_PACKAGES: "--force-reinstall -v -e /local-oteapi-core[dev]"
