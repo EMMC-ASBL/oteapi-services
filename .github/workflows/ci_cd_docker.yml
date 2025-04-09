@@ -170,10 +170,10 @@ jobs:
           docker run -d \
             --name ${CONTAINER_NAME} \
             -e "OTEAPI_REDIS_TYPE=redis" \
-            -e "OTEAPI_REDIS_HOST=host.docker.internal" \
+            -e "OTEAPI_REDIS_HOST=localhost" \
             -e "OTEAPI_REDIS_PORT=6379" \
             -e "OTEAPI_PREFIX=/api/v1" \
-            -p 8080:8080 \
+            --network host \
             ${{ fromJSON(steps.docker_metadata_dev.outputs.json).tags[0] }}
 
           # Health check
@@ -211,10 +211,10 @@ jobs:
           docker run -d \
             --name ${CONTAINER_NAME} \
             -e "OTEAPI_REDIS_TYPE=redis" \
-            -e "OTEAPI_REDIS_HOST=host.docker.internal" \
+            -e "OTEAPI_REDIS_HOST=localhost" \
             -e "OTEAPI_REDIS_PORT=6379" \
             -e "OTEAPI_PREFIX=/api/v1" \
-            -p 8080:8080 \
+            --network host \
             ${{ fromJSON(steps.docker_metadata_prod.outputs.json).tags[0] }}
 
           # Health check
