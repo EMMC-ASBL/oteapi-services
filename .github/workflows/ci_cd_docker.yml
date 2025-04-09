@@ -198,6 +198,10 @@ jobs:
             exit 1
           fi
 
+          # Cleanup
+          docker stop ${CONTAINER_NAME}
+          docker rm ${CONTAINER_NAME}
+
       - name: Test run Docker production image
         if: github.event_name == 'pull_request'
         run: |
@@ -234,3 +238,7 @@ jobs:
           if [ -n "$exited" ]; then
             exit 1
           fi
+
+          # Cleanup
+          docker stop ${CONTAINER_NAME}
+          docker rm ${CONTAINER_NAME}
