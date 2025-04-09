@@ -14,7 +14,7 @@ COPY app app/
 COPY requirements.txt LICENSE asgi.py entrypoint.sh ./
 
 # Install system dependencies to support installing plugins for any target
-RUN apt-get -qqy update && apt-get -qqy upgrade && \
+RUN apt-get -qqy update && apt-get -qqy upgrade \
   && apt-get -qqy install --fix-broken --fix-missing --no-install-recommends procps build-essential
 
 # install common requirements
@@ -41,7 +41,7 @@ RUN pip install --force-reinstall -e /oteapi-core
 COPY .dev/requirements_dev.txt .dev/requirements_ci.txt .pre-commit-config_docker.yaml pyproject.toml ./
 
 # Install additional development tools in a separate virtual environment
-RUN apt-get -qqy update && apt-get -qqy upgrade && \
+RUN apt-get -qqy update && apt-get -qqy upgrade \
   && apt-get -qqy install --fix-broken --fix-missing --no-install-recommends git git-lfs \
   && apt-get purge -fqqy --auto-remove \
   && apt-get -qqy clean \
@@ -73,8 +73,8 @@ CMD [ "--reload", "--debug", "--log-level=debug" ]
 FROM base AS production
 
 # Clean up
-RUN apt-get purge -fqqy --auto-remove && apt-get -qqy clean && rm -rf /var/lib/apt/lists/* && \
-  rm -rf /tmp/*
+RUN apt-get purge -fqqy --auto-remove && apt-get -qqy clean && rm -rf /var/lib/apt/lists/* \
+  && rm -rf /tmp/*
 
 # Run app in production
 EXPOSE 8080
