@@ -35,7 +35,7 @@ on:
         description: 'The password (or Personal Access Token) for the Container Registry.'
         required: true
       PAT:
-        description: 'The Personal Access Token to read contents from the SemanticMatter GitHub organization.'
+        description: 'The Personal Access Token to read contents from the GitHub organization.'
         required: true
 
 jobs:
@@ -134,7 +134,7 @@ jobs:
           file: ./Dockerfile
           target: development
           build-contexts: |
-            oteapi-core=https://github.com/SemanticMatter/oteapi-core.git
+            oteapi-core=https://github.com/EMMC-ASBL/oteapi-core.git
           # Push only if called from `cd_release.yml` workflow (push to 'master' branch)
           push: ${{ github.event_name == 'push' && inputs.source_ref == 'master' }}
           load: ${{ github.event_name == 'pull_request' }}
