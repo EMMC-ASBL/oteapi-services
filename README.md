@@ -208,14 +208,14 @@ OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3|my_special_plugin>=2.1.1,<3,!=2.1.0|-
 
 Here, the constant `-q` (silent) option for `pip install` has been reversed by using the `-v` (verbose) option, and the package at `/oteapi-plugin-dev` within the container is being installed as an editable installation, including the `dev` extra.
 
-Now in the local `compoe.yml` file, one would need to add:
+Now in the local `compose.yml` file, one would need to add:
 
 ```yaml
 - "${PWD}:/oteapi-plugin-dev"
 ```
 
 Under `volumes` under `oteapi`.
-Assuming the `compoe.yml` file in question is placed in the root of the plugin repository.
+Assuming the `compose.yml` file in question is placed in the root of the plugin repository.
 If not, the first part (`${PWD}`) should be changed accordingly.
 
 #### Local `oteapi-core`

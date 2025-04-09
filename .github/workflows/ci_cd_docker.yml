@@ -47,6 +47,12 @@ jobs:
         contents: read
         packages: write
 
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4
@@ -158,23 +164,25 @@ jobs:
       - name: Test run Docker development image
         if: github.event_name == 'pull_request'
         run: |
+          CONTAINER_NAME=${{ github.run_id }}-${{ github.action }}-devel
+
           # Run Docker development image
           docker run -d \
-            --name ${{ steps.test_run_config.outputs.development_container }} \
-            --network ${{ steps.test_run_config.outputs.docker_network }} \
+            --name ${CONTAINER_NAME} \
             -e "OTEAPI_REDIS_TYPE=redis" \
-            -e "OTEAPI_REDIS_HOST=${{ steps.test_run_config.outputs.redis_container }}" \
+            -e "OTEAPI_REDIS_HOST=redis" \
             -e "OTEAPI_REDIS_PORT=6379" \
             -e "OTEAPI_PREFIX=/api/v1" \
+            -p 8080:8080 \
             ${{ fromJSON(steps.docker_metadata_dev.outputs.json).tags[0] }}
 
           # Health check
           tmp_file=/tmp/.dockerPs
           SECONDS=0
           TIMEOUT_LIMIT=240
-          until curl -sf http://${{ steps.test_run_config.outputs.development_container }}:8080/openapi.json > /dev/null || [ "$SECONDS" -gt "$TIMEOUT_LIMIT" ] ; do
+          until curl -sf http://localhost:8080/openapi.json > /dev/null || [ "$SECONDS" -gt "$TIMEOUT_LIMIT" ] ; do
             docker ps -a > $tmp_file
-            grep -E "^.*${{ steps.test_run_config.outputs.development_container }} .* Exited .*$" $tmp_file && exited=yes && break
+            grep -E "^.*${CONTAINER_NAME} .* Exited .*$" $tmp_file && exited=yes && break
             sleep 1
           done
 
@@ -185,7 +193,7 @@ jobs:
           fi
 
           # Write logs
-          docker logs ${{ steps.test_run_config.outputs.development_container }}
+          docker logs ${CONTAINER_NAME}
           if [ -n "$exited" ]; then
             exit 1
           fi
@@ -193,23 +201,25 @@ jobs:
       - name: Test run Docker production image
         if: github.event_name == 'pull_request'
         run: |
+          CONTAINER_NAME=${{ github.run_id }}-${{ github.action }}-prod
+
           # Run Docker production image
           docker run -d \
-            --name ${{ steps.test_run_config.outputs.production_container }} \
-            --network ${{ steps.test_run_config.outputs.docker_network }} \
+            --name ${CONTAINER_NAME} \
             -e "OTEAPI_REDIS_TYPE=redis" \
-            -e "OTEAPI_REDIS_HOST=${{ steps.test_run_config.outputs.redis_container }}" \
+            -e "OTEAPI_REDIS_HOST=redis" \
             -e "OTEAPI_REDIS_PORT=6379" \
             -e "OTEAPI_PREFIX=/api/v1" \
+            -p 8080:8080 \
             ${{ fromJSON(steps.docker_metadata_prod.outputs.json).tags[0] }}
 
           # Health check
           tmp_file=/tmp/.dockerPs
           SECONDS=0
           TIMEOUT_LIMIT=240
-          until curl -sf http://${{ steps.test_run_config.outputs.production_container }}:8080/openapi.json > /dev/null || [ "$SECONDS" -gt "$TIMEOUT_LIMIT" ] ; do
+          until curl -sf http://localhost:8080/openapi.json > /dev/null || [ "$SECONDS" -gt "$TIMEOUT_LIMIT" ] ; do
             docker ps -a > $tmp_file
-            grep -E "^.*${{ steps.test_run_config.outputs.production_container }} .* Exited .*$" $tmp_file && exited=yes && break
+            grep -E "^.*${CONTAINER_NAME} .* Exited .*$" $tmp_file && exited=yes && break
             sleep 1
           done
           rm -f $tmp_file
@@ -220,7 +230,7 @@ jobs:
           fi
 
           # Write logs
-          docker logs ${{ steps.test_run_config.outputs.production_container }}
+          docker logs ${CONTAINER_NAME}
           if [ -n "$exited" ]; then
             exit 1
           fi
