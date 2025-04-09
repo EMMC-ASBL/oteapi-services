@@ -1,31 +1,30 @@
-version: "3.3"
-
 services:
   oteapi:
     build:
       context: "../../"
       target: "${DOCKER_OTEAPI_TARGET:-development}"
+      additional_contexts:
+        # These can be changed to point to local directories or similar
+        oteapi-core: "${OTEAPI_CORE_PATH:-https://github.com/EMMC-ASBL/oteapi-core.git}"
     ports:
-      - "${PORT:-8080}:8080"
+      - "${OTEAPI_PORT:-8080}:8080"
       - "5678:5678" # Debug port
     environment:
       OTEAPI_REDIS_TYPE: redis
       OTEAPI_REDIS_HOST: redis
       OTEAPI_REDIS_PORT: 6379
-      OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
+      OTEAPI_PREFIX: "${OTEAPI_PREFIX:-/api/v1}"
       OTEAPI_INCLUDE_REDISADMIN: "${OTEAPI_INCLUDE_REDISADMIN:-True}"
       OTEAPI_EXPOSE_SECRETS: "${OTEAPI_EXPOSE_SECRETS:-True}"
-      PATH_TO_OTEAPI_CORE: "${PATH_TO_OTEAPI_CORE:-/dev/null}"
       OTEAPI_PLUGIN_PACKAGES:
       OTEAPI_AUTHENTICATION_DEPENDENCIES:
       CI:
+    volumes:
+      - "${LOCAL_TARGET_PLUGIN_PATH:-/dev/null}:${CONTAINER_PLUGIN_PATH:-/dev/null}"
     depends_on:
       - redis
     networks:
       - otenet
-    volumes:
-      - "${LOCAL_TARGET_PLUGIN_PATH:-/dev/null}:${CONTAINER_PLUGIN_PATH:-/dev/null}"
-      - "${PATH_TO_OTEAPI_CORE:-/dev/null}:/oteapi_core"
 
   redis:
     image: redis:latest

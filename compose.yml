@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   oteapi:
     image: ghcr.io/emmc-asbl/oteapi:${DOCKER_OTEAPI_VERSION:-latest}
