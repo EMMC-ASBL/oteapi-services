@@ -138,20 +138,7 @@ jobs:
         REQ_VERSION=$(cat requirements.txt | grep "oteapi-core")
         git clone --branch v${REQ_VERSION#oteapi-core==} https://github.com/EMMC-ASBL/oteapi-core ${LOCAL_OTEAPI_PATH}
 
-    - name: Start the Docker services with local `oteapi-core`
-      if: matrix.docker-target == 'development'
-      run: |
-        docker compose -f compose.dev.yml down
-        docker compose -f compose.dev.yml up &
-        .github/utils/wait_for_it.sh localhost:${{ env.OTEAPI_PORT }} -t 120
-        # Sleep for longer, since it takes a while to install `oteapi-core`
-        # And the port will be available as soon as the CMD is reached in the Dockerfile.
-        sleep 60
-        curl -X "GET" -i "http://localhost:${{ env.OTEAPI_PORT }}${{ env.OTEAPI_PREFIX }}/session"
-      env:
-        OTEAPI_CORE_PATH: ${{ env.LOCAL_OTEAPI_PATH }}
-
-    - name: Start the Docker services with plugins
+    - name: Start the Docker services with "plugins"
       run: |
         docker compose -f compose.dev.yml down
         docker compose -f .github/utils/compose.ci_plugins.yml up &
