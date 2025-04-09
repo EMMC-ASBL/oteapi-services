@@ -40,7 +40,7 @@ jobs:
 
     - name: Fail if pre-commit failed
       run: |
-        if [ ${{ steps.pre_commit.outcome }} == 'failure' ]; then
+        if [ "${{ steps.pre_commit.outcome }}" = 'failure' ]; then
           echo "Pre-commit failed (see above)"
           exit 1
         fi
