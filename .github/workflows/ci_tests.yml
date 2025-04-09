@@ -120,6 +120,11 @@ jobs:
     - name: Checkout ${{ github.repository }}
       uses: actions/checkout@v4
 
+    - name: Clone current requirement version of `oteapi-core` locally
+      run: |
+        REQ_VERSION=$(cat requirements.txt | grep "oteapi-core")
+        git clone --branch v${REQ_VERSION#oteapi-core==} https://github.com/EMMC-ASBL/oteapi-core ${OTEAPI_CORE_PATH}
+
     - name: Build OTEAPI Services Dockerfiles
       run: |
         docker compose version
@@ -132,11 +137,6 @@ jobs:
         .github/utils/wait_for_it.sh localhost:${{ env.OTEAPI_PORT }} -t 120
         sleep 15
         curl -X "GET" -i "http://localhost:${{ env.OTEAPI_PORT }}${{ env.OTEAPI_PREFIX }}/session"
-
-    - name: Clone current requirement version of `oteapi-core` locally
-      run: |
-        REQ_VERSION=$(cat requirements.txt | grep "oteapi-core")
-        git clone --branch v${REQ_VERSION#oteapi-core==} https://github.com/EMMC-ASBL/oteapi-core ${OTEAPI_CORE_PATH}
 
     - name: Start the Docker services with a local `oteapi-core`
       run: |
