@@ -170,7 +170,7 @@ jobs:
           docker run -d \
             --name ${CONTAINER_NAME} \
             -e "OTEAPI_REDIS_TYPE=redis" \
-            -e "OTEAPI_REDIS_HOST=redis" \
+            -e "OTEAPI_REDIS_HOST=host.docker.internal" \
             -e "OTEAPI_REDIS_PORT=6379" \
             -e "OTEAPI_PREFIX=/api/v1" \
             -p 8080:8080 \
@@ -211,7 +211,7 @@ jobs:
           docker run -d \
             --name ${CONTAINER_NAME} \
             -e "OTEAPI_REDIS_TYPE=redis" \
-            -e "OTEAPI_REDIS_HOST=redis" \
+            -e "OTEAPI_REDIS_HOST=host.docker.internal" \
             -e "OTEAPI_REDIS_PORT=6379" \
             -e "OTEAPI_PREFIX=/api/v1" \
             -p 8080:8080 \
