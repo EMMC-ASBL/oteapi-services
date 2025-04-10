@@ -1,5 +1,7 @@
 """Cache operations."""
 
+from __future__ import annotations
+
 from typing import Any
 
 from app.models.error import httpexception_404_item_id_does_not_exist

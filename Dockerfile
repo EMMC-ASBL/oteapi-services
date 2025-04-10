@@ -1,43 +1,80 @@
-FROM python:3.9-slim as base
+FROM python:3.10-slim AS base
 
 # Prevent writing .pyc files on the import of source modules
 # and set unbuffered mode to ensure logging outputs
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_ROOT_USER_ACTION=ignore
 
 # Set working directory
 WORKDIR /app
 
-# Copy core parts and install requirements
+# Copy core parts
 COPY app app/
-COPY requirements.txt LICENSE README.md asgi.py entrypoint.sh ./
-RUN apt-get update \
-  && apt-get -y install --fix-broken --fix-missing --no-install-recommends git build-essential \
-  && apt-get purge -y --auto-remove \
-  && rm -rf /var/lib/apt/lists/* \
-  && pip install --no-cache-dir --trusted-host pypi.org --trusted-host files.pythonhosted.org --upgrade pip setuptools wheel \
-  && pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements.txt
+COPY requirements.txt LICENSE asgi.py entrypoint.sh ./
+
+# Install system dependencies to support installing plugins for any target
+RUN apt-get -qqy update && apt-get -qqy upgrade \
+  && apt-get -qqy install --fix-broken --fix-missing --no-install-recommends procps build-essential
+
+# install common requirements
+RUN pip install -q --no-cache-dir --upgrade pip setuptools wheel \
+  && pip install -q -r requirements.txt
+
+ENTRYPOINT [ "/app/entrypoint.sh" ]
 
 ################# DEVELOPMENT ####################################
-FROM base as development
+#
+# Set the extra build context "oteapi-core" to point to the local oteapi-core directory.
+# This can be set either through `docker build --build-context oteapi-core=/path/to/dir` or
+# through the Docker Compose file's `additional_contexts` argument in the `build` section:
+# https://docs.docker.com/compose/compose-file/build/#additional_contexts
+#
+FROM base AS development
+
+## Comment out the following lines to avoid copying a local oteapi-core source code
+## When running with Docker Compose, set OTEAPI_CORE_PATH to the path of the oteapi-core source code
+COPY --from=oteapi-core . /oteapi-core
+RUN pip install --force-reinstall -e /oteapi-core
 
 # Copy development parts
-COPY tests tests/
-COPY .git .git/
-COPY .dev/requirements_dev.txt .pre-commit-config.yaml pyproject.toml ./
+COPY .dev/requirements_dev.txt .dev/requirements_ci.txt .pre-commit-config_docker.yaml pyproject.toml ./
+
+# Install additional development tools in a separate virtual environment
+RUN apt-get -qqy update && apt-get -qqy upgrade \
+  && apt-get -qqy install --fix-broken --fix-missing --no-install-recommends git git-lfs \
+  && apt-get purge -fqqy --auto-remove \
+  && apt-get -qqy clean \
+  && rm -rf /var/lib/apt/lists/*
+
+# Install additional development requirements
+RUN python -m venv /tmp/dev_venv \
+  && /tmp/dev_venv/bin/pip install -q --upgrade pip setuptools wheel \
+  && /tmp/dev_venv/bin/pip install -q -r requirements_ci.txt
 
 # Run static security check, linters, and pytest with code coverage
-RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org -r requirements_dev.txt
+RUN --mount=type=cache,target=/root/.cache/pre-commit \
+  git init && git add . && /tmp/dev_venv/bin/pre-commit run -c .pre-commit-config_docker.yaml --all-files
+RUN /tmp/dev_venv/bin/safety check -r /app/requirements.txt --full-report
+
+# Install extra (non-dev tools) development requirements in main environment
+RUN pip install -q -U -r requirements_dev.txt
+
+# Clean up
+RUN rm -rf /tmp/* ./.git
+
 ENV DEV_ENV=1
-# Run app with reload option
+
+# Run app with reload option during development
 EXPOSE 8080 5678
-CMD if [ "${PATH_TO_OTEAPI_CORE}" != "/dev/null" ] && [ -n "${PATH_TO_OTEAPI_CORE}" ]; then \
-  pip install -U --force-reinstall -e /oteapi_core; fi \
-  && ./entrypoint.sh --reload --debug --log-level debug
+CMD [ "--reload", "--debug", "--log-level=debug" ]
 
 ################# PRODUCTION #####################################
-FROM base as production
+FROM base AS production
 
-# Run app
+# Clean up
+RUN apt-get purge -fqqy --auto-remove && apt-get -qqy clean && rm -rf /var/lib/apt/lists/* \
+  && rm -rf /tmp/*
+
+# Run app in production
 EXPOSE 8080
-ENTRYPOINT [ "./entrypoint.sh" ]

@@ -1,5 +1,7 @@
 """Test function."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import pytest
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
 
-def test_create_function(client: "TestClient") -> None:
+def test_create_function(client: TestClient) -> None:
     """Test creating a function."""
     response = client.post(
         "/function/",
@@ -19,13 +21,12 @@ def test_create_function(client: "TestClient") -> None:
             "configuration": {},
         },
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert "function_id" in response.json()
     assert response.status_code == 200
 
 
-def test_create_function_auth_model(client: "TestClient") -> None:
+def test_create_function_auth_model(client: TestClient) -> None:
     """Test creating a function with a secret passed through the model."""
     dummy_secret = "Bearer 123"
     response = client.post(
@@ -36,16 +37,15 @@ def test_create_function_auth_model(client: "TestClient") -> None:
             "token": dummy_secret,
         },
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
-    response = client.get(f"/redis/{response.json()['function_id']}")
+    response = client.get(f"/admin/redis/{response.json()['function_id']}")
     assert response.status_code == 200
     assert response.json().get("token") == dummy_secret
 
 
-def test_create_function_auth_headers(client: "TestClient") -> None:
+def test_create_function_auth_headers(client: TestClient) -> None:
     """Test creating a function with a secret passed through the request headers."""
     dummy_secret = "Bearer 123"
     response = client.post(
@@ -55,43 +55,40 @@ def test_create_function_auth_headers(client: "TestClient") -> None:
             "configuration": {},
         },
         headers={"Authorization": dummy_secret, "Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
-    response = client.get(f"/redis/{response.json()['function_id']}")
+    response = client.get(f"/admin/redis/{response.json()['function_id']}")
     assert response.status_code == 200
     assert response.json().get("token") == dummy_secret
 
 
-def test_get_function(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_get_function(client: TestClient, test_data: dict[str, str]) -> None:
     """Test getting a function."""
     function_id = next(_ for _ in test_data if _.startswith("function-"))
     response = client.get(
         f"/function/{function_id}",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
-def test_initialize_function(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_initialize_function(client: TestClient, test_data: dict[str, str]) -> None:
     """Test initializing a function."""
     function_id = next(_ for _ in test_data if _.startswith("function-"))
     response = client.post(
         f"/function/{function_id}/initialize",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
 @pytest.mark.parametrize("method", ["initialize", "get"])
 def test_session_config_merge(
-    client: "TestClient",
+    client: TestClient,
     test_data: dict[str, str],
-    method: 'Literal["initialize", "get"]',
-    monkeypatch: "pytest.MonkeyPatch",
+    method: Literal["initialize", "get"],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test the current session is merged into the strategy configuration."""
     import json
@@ -108,7 +105,7 @@ def test_session_config_merge(
     expected_merged_config["configuration"].update(json.loads(test_data[session_id]))
 
     def create_strategy_middleware(
-        strategy_type: 'Literal["function"]', config: FunctionConfig
+        strategy_type: Literal["function"], config: FunctionConfig
     ):
         """Create a strategy middleware - do some testing."""
         assert strategy_type == "function"
@@ -131,14 +128,12 @@ def test_session_config_merge(
             f"/function/{function_id}/initialize",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
     else:  # method == "get"
         response = client.get(
             f"/function/{function_id}",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
 
     assert (

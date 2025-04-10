@@ -8,55 +8,38 @@ on:
       - 'push-action/**'  # Allow pushing to protected branches (using CasperWA/push-protected)
 
 jobs:
-  pylint-safety:
+  pre-commit_safety:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 2
+    - name: Checkout ${{ github.repository }}
+      uses: actions/checkout@v4
 
-    - name: Set up Python 3.9
+    - name: Set up Python 3.10
       uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
+        python-version: '3.10'
 
     - name: Install dependencies
       run: |
         python -m pip install -U pip
         pip install -U setuptools wheel
-        pip install -U -r requirements.txt -r .dev/requirements_dev.txt -r .dev/requirements_ci.txt
+        pip install -U -r .dev/requirements_ci.txt
 
-    - name: Run pylint
-      run: pylint --rcfile=pyproject.toml --ignore-paths=tests/ --extension-pkg-whitelist='pydantic' --recursive=yes *.py app
+    - name: Run pre-commit
+      continue-on-error: true
+      id: pre_commit
+      run: pre-commit run --all-files
 
-    - name: Run pylint - tests
-      run: pylint --rcfile=pyproject.toml --extension-pkg-whitelist='pydantic' --disable=C0415,W0621 tests
-
-    # ID: 70612
-    #   Package: Jinja2
-    #   Has been disputed by the maintainer and multiple third parties.
-    #   For more information see: https://github.com/advisories/GHSA-f6pv-j8mr-w6rr
     - name: Run safety
-      run: pip freeze | safety check --stdin --ignore=70612
+      run: safety check -r requirements.txt -r .dev/requirements_ci.txt -r .dev/requirements_dev.txt -r .dev/requirements_release.txt
 
-  docker:
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        docker-target: ["development", "production"]
-
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Build Dockerfile
+    - name: Fail if pre-commit failed
       run: |
-        docker build \
-          -f Dockerfile \
-          --target ${{ matrix.docker-target }} \
-          .
+        if [ "${{ steps.pre_commit.outcome }}" = 'failure' ]; then
+          echo "Pre-commit failed (see above)"
+          exit 1
+        fi
 
   pytest:
     name: "pytest (Python ${{ matrix.python-version}} - Live Redis: ${{ matrix.live-redis }})"
@@ -65,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
         live-redis: [true, false]
 
     services:
@@ -75,7 +58,8 @@ jobs:
           - 6379:6379
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout ${{ github.repository }}
+      uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version}}
       uses: actions/setup-python@v5
@@ -100,19 +84,19 @@ jobs:
             REDIS_HOST=redis
         fi
 
-        OTEAPI_REDIS_HOST=${REDIS_HOST} pytest -vvv --cov-report=xml --cov=app ${LIVE_REDIS}
+        OTEAPI_REDIS_HOST=${REDIS_HOST} pytest -vv --cov-report=xml --cov=app ${LIVE_REDIS}
       env:
         OTEAPI_REDIS_TYPE: redis
         OTEAPI_REDIS_PORT: 6379
 
     - name: Upload coverage to Codecov
-      if: matrix.python-version == '3.9' && github.repository == 'EMMC-ASBL/oteapi-services'
+      if: github.repository == 'EMMC-ASBL/oteapi-services'
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        name: oteapi-services
-        files: ./coverage.xml
-        flags: pytest
+        env_vars: PYTHON
+      env:
+        PYTHON: ${{ matrix.python-version }}
 
   docker-compose:
     runs-on: ubuntu-latest
@@ -123,55 +107,42 @@ jobs:
         docker-target: ["development", "production"]
 
     env:
-      PORT: 8123
-      OTEAPI_prefix: /api/ci/v1
+      OTEAPI_PORT: 8123
+      OTEAPI_PREFIX: /api/ci/v1
       DOCKER_OTEAPI_TARGET: ${{ matrix.docker-target }}
-      LOCAL_OTEAPI_PATH: /tmp/oteapi-core
+      OTEAPI_CORE_PATH: /tmp/oteapi-core
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Build OTEAPI Services Dockerfiles
-      run: |
-        docker compose version
-        docker compose -f docker-compose_dev.yml build
-        docker compose -f .github/utils/docker-compose_ci_plugins.yml build
-
-    - name: Start the Docker services
-      run: |
-        docker compose -f docker-compose_dev.yml up &
-        .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
-        sleep 15
-        curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
+    - name: Checkout ${{ github.repository }}
+      uses: actions/checkout@v4
 
     - name: Clone current requirement version of `oteapi-core` locally
       run: |
         REQ_VERSION=$(cat requirements.txt | grep "oteapi-core")
-        git clone --branch v${REQ_VERSION#oteapi-core==} https://github.com/EMMC-ASBL/oteapi-core ${LOCAL_OTEAPI_PATH}
+        git clone --branch v${REQ_VERSION#oteapi-core==} https://github.com/EMMC-ASBL/oteapi-core ${OTEAPI_CORE_PATH}
 
-    - name: Start the Docker services with local `oteapi-core`
-      if: matrix.docker-target == 'development'
+    - name: Build OTEAPI Services Dockerfiles
       run: |
-        docker compose -f docker-compose_dev.yml down
-        docker compose -f docker-compose_dev.yml up &
-        .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
-        # Sleep for longer, since it takes a while to install `oteapi-core`
-        # And the port will be available as soon as the CMD is reached in the Dockerfile.
-        sleep 60
-        curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
-      env:
-        PATH_TO_OTEAPI_CORE: ${{ env.LOCAL_OTEAPI_PATH }}
+        docker compose version
+        docker compose -f compose.dev.yml build
+        docker compose -f .github/utils/compose.ci_plugins.yml build
 
-    - name: Start the Docker services with plugins
+    - name: Start the Docker services
       run: |
-        docker compose -f docker-compose_dev.yml down
-        docker compose -f .github/utils/docker-compose_ci_plugins.yml up &
-        .github/utils/wait_for_it.sh localhost:${{ env.PORT }} -t 120
+        docker compose -f compose.dev.yml up &
+        .github/utils/wait_for_it.sh localhost:${{ env.OTEAPI_PORT }} -t 120
+        sleep 15
+        curl -X "GET" -i "http://localhost:${{ env.OTEAPI_PORT }}${{ env.OTEAPI_PREFIX }}/session"
+
+    - name: Start the Docker services with a local `oteapi-core`
+      run: |
+        docker compose -f compose.dev.yml down
+        docker compose -f .github/utils/compose.ci_plugins.yml up &
+        .github/utils/wait_for_it.sh localhost:${{ env.OTEAPI_PORT }} -t 120
         # Sleep for longer, since it takes a while to install `oteapi-core[dev]`
         # And the port will be available as soon as the CMD is reached in the Dockerfile.
         sleep 90
-        curl -X "GET" -i "http://localhost:${{ env.PORT }}${{ env.OTEAPI_prefix }}/session"
+        curl -X "GET" -i "http://localhost:${{ env.OTEAPI_PORT }}${{ env.OTEAPI_PREFIX }}/session"
       env:
-        CONTAINER_PLUGIN_PATH: /special-plugin
-        OTEAPI_PLUGIN_PACKAGES: "-v -e /special-plugin[dev]"
-        LOCAL_TARGET_PLUGIN_PATH: ${{ env.LOCAL_OTEAPI_PATH }}
+        CONTAINER_PLUGIN_PATH: /local-oteapi-core
+        OTEAPI_PLUGIN_PACKAGES: "--force-reinstall -v -e /local-oteapi-core[dev]"

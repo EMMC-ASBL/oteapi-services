@@ -34,11 +34,11 @@ if [ -n "${OTEAPI_PLUGIN_PACKAGES}" ]; then
         exit 1
     fi
 else
-    echo "No extra plugin packages provided. Specify 'OTEAPI_PLUGIN_PACKAGES' to specify plugin packages."
+    echo "No extra plugin packages provided. Specify 'OTEAPI_PLUGIN_PACKAGES' to provide plugin packages."
 fi
 
 if [ "${DEV_ENV}" == "1" ] && [ "${CI}" == "" ]; then
-    python -m debugpy --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 asgi:app "$@"
+    python -m debugpy --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 asgi:APP "$@"
 else
-    hypercorn --bind 0.0.0.0:8080 asgi:app "$@"
+    hypercorn --bind 0.0.0.0:8080 asgi:APP "$@"
 fi

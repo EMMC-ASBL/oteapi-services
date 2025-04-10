@@ -6,18 +6,25 @@
 
 **Implemented enhancements:**
 
+- Upgrade to using `ruff` for linting [\#451](https://github.com/EMMC-ASBL/oteapi-services/issues/451)
 - Migrate to pydantic v2 [\#338](https://github.com/EMMC-ASBL/oteapi-services/issues/338)
+- Generic triplestore interface & replace SFTP [\#283](https://github.com/EMMC-ASBL/oteapi-services/issues/283)
+- Config option for setting `base_url`/`root_url` [\#177](https://github.com/EMMC-ASBL/oteapi-services/issues/177)
+- An introspective metadata endpoint [\#113](https://github.com/EMMC-ASBL/oteapi-services/issues/113)
 - Separate parse and download [\#55](https://github.com/EMMC-ASBL/oteapi-services/issues/55)
+- General documentation and document configuration options [\#10](https://github.com/EMMC-ASBL/oteapi-services/issues/10)
 
 **Fixed bugs:**
 
 - Install `safety` in a separate environment in CI [\#525](https://github.com/EMMC-ASBL/oteapi-services/issues/525)
 - OpenAPI is not retrievable [\#447](https://github.com/EMMC-ASBL/oteapi-services/issues/447)
+- pre-commit config should be updated to state `master` instead of `main` [\#434](https://github.com/EMMC-ASBL/oteapi-services/issues/434)
 - Docker compose failing in CI test workflows [\#370](https://github.com/EMMC-ASBL/oteapi-services/issues/370)
 
 **Closed issues:**
 
 - Fallback to FakeRedis if Redis is not available [\#412](https://github.com/EMMC-ASBL/oteapi-services/issues/412)
+- Remove triplestore and sftp  [\#397](https://github.com/EMMC-ASBL/oteapi-services/issues/397)
 - Revert update of codecov-action from v4 to v3 [\#325](https://github.com/EMMC-ASBL/oteapi-services/issues/325)
 - Add oteapi-dlite-plugin python package as a dependency [\#300](https://github.com/EMMC-ASBL/oteapi-services/issues/300)
 - Remove sftp service from production compose file [\#120](https://github.com/EMMC-ASBL/oteapi-services/issues/120)
@@ -25,7 +32,7 @@
 
 **Merged pull requests:**
 
-- \[Auto-generated\] Update dependencies [\#595](https://github.com/EMMC-ASBL/oteapi-services/pull/595) ([TEAM4-0](https://github.com/TEAM4-0))
+- Compound updates to use OTEAPI Core v1 [\#597](https://github.com/EMMC-ASBL/oteapi-services/pull/597) ([CasperWA](https://github.com/CasperWA))
 - \[Auto-generated\] Update dependencies [\#459](https://github.com/EMMC-ASBL/oteapi-services/pull/459) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#452](https://github.com/EMMC-ASBL/oteapi-services/pull/452) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#429](https://github.com/EMMC-ASBL/oteapi-services/pull/429) ([TEAM4-0](https://github.com/TEAM4-0))

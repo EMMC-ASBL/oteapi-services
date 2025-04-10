@@ -1,5 +1,7 @@
 """Test data filter."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import pytest
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
 
-def test_create_filter(client: "TestClient") -> None:
+def test_create_filter(client: TestClient) -> None:
     """Test creating a filter."""
     import json
 
@@ -24,7 +26,6 @@ def test_create_filter(client: "TestClient") -> None:
             "configuration": {},
         },
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     # Ensure that session returns with a session id
     assert "filter_id" in response.json()
@@ -33,7 +34,7 @@ def test_create_filter(client: "TestClient") -> None:
     ), f"Response:\n{json.dumps(response.json(), indent=2)}"
 
 
-def test_get_filter(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_get_filter(client: TestClient, test_data: dict[str, str]) -> None:
     """Test getting a filter."""
     import json
 
@@ -41,14 +42,13 @@ def test_get_filter(client: "TestClient", test_data: dict[str, str]) -> None:
     response = client.get(
         f"/filter/{filter_id}",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert (
         response.status_code == 200
     ), f"Response:\n{json.dumps(response.json(), indent=2)}"
 
 
-def test_initialize_filter(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_initialize_filter(client: TestClient, test_data: dict[str, str]) -> None:
     """Test initializing a filter."""
     import json
 
@@ -56,7 +56,6 @@ def test_initialize_filter(client: "TestClient", test_data: dict[str, str]) -> N
     response = client.post(
         f"/filter/{filter_id}/initialize",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert (
         response.status_code == 200
@@ -65,10 +64,10 @@ def test_initialize_filter(client: "TestClient", test_data: dict[str, str]) -> N
 
 @pytest.mark.parametrize("method", ["initialize", "get"])
 def test_session_config_merge(
-    client: "TestClient",
+    client: TestClient,
     test_data: dict[str, str],
-    method: 'Literal["initialize", "get"]',
-    monkeypatch: "pytest.MonkeyPatch",
+    method: Literal["initialize", "get"],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test the current session is merged into the strategy configuration."""
     import json
@@ -85,7 +84,7 @@ def test_session_config_merge(
     expected_merged_config["configuration"].update(json.loads(test_data[session_id]))
 
     def create_strategy_middleware(
-        strategy_type: 'Literal["filter"]', config: FilterConfig
+        strategy_type: Literal["filter"], config: FilterConfig
     ):
         """Create a strategy middleware - do some testing."""
         assert strategy_type == "filter"
@@ -108,14 +107,12 @@ def test_session_config_merge(
             f"/filter/{filter_id}/initialize",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
     else:  # method == "get"
         response = client.get(
             f"/filter/{filter_id}",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
 
     assert (

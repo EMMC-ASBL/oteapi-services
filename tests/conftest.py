@@ -1,11 +1,13 @@
 """Fixtures and configuration for PyTest."""
 
-# pylint: disable=invalid-name,redefined-builtin,unused-argument,comparison-with-callable
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import pytest
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     from fastapi import FastAPI
@@ -28,11 +30,11 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
-def pytest_configure(config: pytest.Config) -> None:
+def pytest_configure(config: pytest.Config) -> None:  # noqa: ARG001
     """Method that runs before pytest collects tests so no modules are imported"""
     import os
 
-    os.environ["OTEAPI_prefix"] = ""
+    os.environ["OTEAPI_PREFIX"] = ""
     os.environ["OTEAPI_INCLUDE_REDISADMIN"] = "True"
     os.environ["OTEAPI_EXPOSE_SECRETS"] = "True"
 
@@ -47,15 +49,15 @@ def live_redis(request: pytest.FixtureRequest) -> bool:
 
 
 @pytest.fixture(scope="session")
-def top_dir() -> "Path":
+def top_dir() -> Path:
     """Resolved path to repository directory."""
     from pathlib import Path
 
     return Path(__file__).resolve().parent.parent.resolve()
 
 
-@pytest.fixture()
-def test_data() -> "dict[str, str]":
+@pytest.fixture
+def test_data() -> dict[str, str]:
     """Test data stored in DummyCache."""
     import json
 
@@ -107,18 +109,10 @@ def test_data() -> "dict[str, str]":
     }
 
 
-def load_test_strategies() -> None:
-    """Load test strategies."""
-    from importlib.metadata import EntryPoint
-
-    from oteapi.plugins.entry_points import (
-        EntryPointStrategy,
-        EntryPointStrategyCollection,
-        StrategyType,
-    )
-    from oteapi.plugins.factories import StrategyFactory
-
-    test_strategies = [
+@pytest.fixture(scope="session")
+def strategies_to_register() -> list[dict[str, str]]:
+    """Test strategies to register as entry points."""
+    return [
         {
             "name": "tests.https",
             "value": "tests.static.test_strategies.download:HTTPSStrategy",
@@ -155,39 +149,72 @@ def load_test_strategies() -> None:
             "group": "oteapi.transformation",
         },
     ]
-    generated_entry_points = [EntryPoint(**_) for _ in test_strategies]
-
-    StrategyFactory.strategy_create_func = {
-        strategy_type: EntryPointStrategyCollection(
-            *(EntryPointStrategy(_) for _ in generated_entry_points)
-        )
-        for strategy_type in StrategyType
-    }
 
 
-@pytest.fixture()
+@pytest.fixture
+def load_test_strategies(
+    strategies_to_register: list[dict[str, str]],
+) -> Callable[[], None]:
+    """Wrapper function for returning function to load test strategies."""
+    from importlib.metadata import EntryPoint
+
+    from oteapi.plugins.entry_points import (
+        EntryPointStrategy,
+        EntryPointStrategyCollection,
+        StrategyType,
+    )
+    from oteapi.plugins.factories import StrategyFactory
+
+    def _load_test_strategies() -> None:
+        """Load test strategies."""
+        generated_entry_points = [EntryPoint(**_) for _ in strategies_to_register]
+
+        StrategyFactory.strategy_create_func = {
+            strategy_type: EntryPointStrategyCollection(
+                *(
+                    EntryPointStrategy(_)
+                    for _ in generated_entry_points
+                    if _.group.split(".", maxsplit=1)[1] == strategy_type.value
+                )
+            )
+            for strategy_type in StrategyType
+        }
+
+    return _load_test_strategies
+
+
+@pytest.fixture
 def client(
-    test_data: "dict[str, str]", monkeypatch: pytest.MonkeyPatch, live_redis: bool
-) -> "TestClient":
+    test_data: dict[str, str],
+    monkeypatch: pytest.MonkeyPatch,
+    live_redis: bool,
+    load_test_strategies: Callable[[], None],
+) -> TestClient:
     """Return a test client."""
     from contextlib import asynccontextmanager
-    from warnings import catch_warnings
+    from warnings import catch_warnings, simplefilter
 
     from fastapi.testclient import TestClient
 
-    from app import main
+    from app.logging import setup_logging
+    from app.main import create_app
+    from app.settings import get_settings
 
     @asynccontextmanager
-    async def lifespan_with_test_data(app: "FastAPI"):
+    async def lifespan_with_test_data(app: FastAPI):
         """Initialize Redis upon app startup."""
+        from app import main
+
         # Initialize the Redis cache
-        await main.redis_plugin.init_app(app, config=main.CONFIG)
+        await main.redis_plugin.init_app(app, config=get_settings())
 
         # Test a warning of falling back to fakeredis is emitted (if Redis is not
         # available)
         original_redis_type = main.redis_plugin.config.redis_type
 
         with catch_warnings(record=True) as warns:
+            simplefilter("always")
+
             await main.redis_plugin.init()
 
             if (
@@ -235,7 +262,6 @@ def client(
         await redis_client.mset(test_data)
 
         # Load OTEAPI strategies
-        main.load_strategies()
         load_test_strategies()
 
         # Run server
@@ -244,8 +270,11 @@ def client(
         # Terminate the Redis cache
         await main.redis_plugin.terminate()
 
-    monkeypatch.setattr(main, "lifespan", lifespan_with_test_data)
+    monkeypatch.setattr("app.main.lifespan", lifespan_with_test_data)
+
+    # Setup logging
+    setup_logging()
 
     # Yield client from within a context to ensure the lifespan is used
-    with TestClient(main.create_app()) as client:
+    with TestClient(create_app()) as client:
         yield client

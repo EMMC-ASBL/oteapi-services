@@ -1,0 +1,244 @@
+name: CI/CD - Docker
+
+on:
+  # Trigger the workflow for all PRs
+  pull_request:
+
+  # Make the workflow callable (from cd_release.yml workflow)
+  workflow_call:
+    inputs:
+      source_ref:
+        description: 'The source branch to build from.'
+        required: true
+        default: 'master'
+        type: 'string'
+      image_name:
+        description: 'The name of the Docker image to build.'
+        required: false
+        default: 'oteapi'
+        type: 'string'
+      image_owner:
+        description: 'The owner of the Docker image to build.'
+        required: false
+        default: 'emmc-asbl'
+        type: 'string'
+      registry_url:
+        description: 'The URL for the Container Registry.'
+        required: false
+        default: 'ghcr.io'
+        type: 'string'
+    secrets:
+      REGISTRY_USER:
+        description: 'The username for the Container Registry.'
+        required: true
+      REGISTRY_PASSWORD:
+        description: 'The password (or Personal Access Token) for the Container Registry.'
+        required: true
+      PAT:
+        description: 'The Personal Access Token to read contents from the GitHub organization.'
+        required: true
+
+jobs:
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+
+    permissions:
+        contents: read
+        packages: write
+
+    services:
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || github.ref }}
+          fetch-depth: 0
+
+      - name: Retrieve metadata information
+        id: metadata
+        run: |
+          # Get current OTEAPI-Services version from app/__init__.py
+          regex="^__version__ = (\"|')(.*)(\"|')$"
+
+          while IFS="" read -r line || [ -n "${line}" ]; do
+            if [[ "${line}" =~ $regex ]]; then
+              VERSION="${BASH_REMATCH[2]}"
+            fi
+          done < app/__init__.py
+
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "time_now=$(date --utc +%FT%TZ)" >> $GITHUB_OUTPUT
+
+      - name: Docker metadata (development)
+        id: docker_metadata_dev
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ inputs.registry_url || 'ghcr.io' }}/${{ inputs.image_owner || 'emmc-asbl' }}/${{ inputs.image_name || 'oteapi' }}
+          flavor: |
+            latest=false
+            prefix=
+            suffix=
+          tags: |
+            type=raw,value=${{ steps.metadata.outputs.version }}-dev
+            type=raw,value=latest-dev
+          labels: |
+            org.opencontainers.image.created=${{ steps.metadata.outputs.time_now }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.title=OTEAPI Services
+            org.opencontainers.image.vendor=SINTEF; EMMC-ASBL
+            org.opencontainers.image.authors=SINTEF (Team4.0@SINTEF.no)
+            org.opencontainers.image.licenses=MIT
+            gh_actions_runnumber=${{ github.run_id }}
+            oteapi=development
+
+      - name: Docker metadata (production)
+        id: docker_metadata_prod
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ inputs.registry_url || 'ghcr.io' }}/${{ inputs.image_owner || 'emmc-asbl' }}/${{ inputs.image_name || 'oteapi' }}
+          tags: |
+            type=raw,value=${{ steps.metadata.outputs.version }}
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.created=${{ steps.metadata.outputs.time_now }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.title=OTEAPI Services
+            org.opencontainers.image.vendor=SINTEF; EMMC-ASBL
+            org.opencontainers.image.authors=SINTEF (Team4.0@SINTEF.no)
+            org.opencontainers.image.licenses=MIT
+            gh_actions_runnumber=${{ github.run_id }}
+            oteapi=production
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.registry_url || 'ghcr.io' }}
+          username: ${{ secrets.REGISTRY_USER || github.actor }}
+          password: ${{ secrets.REGISTRY_PASSWORD || secrets.GITHUB_TOKEN }}
+
+      - name: Build and push (development)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: development
+          build-contexts: |
+            oteapi-core=https://github.com/EMMC-ASBL/oteapi-core.git
+          # Push only if called from `cd_release.yml` workflow (push to 'master' branch)
+          push: ${{ github.event_name == 'push' && inputs.source_ref == 'master' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          tags: ${{ steps.docker_metadata_dev.outputs.tags }}
+          labels: ${{ steps.docker_metadata_dev.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.PAT || secrets.RELEASE_PAT }}
+
+      - name: Build and push (production)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: production
+          # Push only if called from `cd_release.yml` workflow (push to 'master' branch)
+          push: ${{ github.event_name == 'push' && inputs.source_ref == 'master' }}
+          load: ${{ github.event_name == 'pull_request' }}
+          tags: ${{ steps.docker_metadata_prod.outputs.tags }}
+          labels: ${{ steps.docker_metadata_prod.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Test run Docker development image
+        if: github.event_name == 'pull_request'
+        run: |
+          CONTAINER_NAME=${{ github.run_id }}-${{ github.action }}-devel
+
+          # Run Docker development image
+          docker run -d \
+            --name ${CONTAINER_NAME} \
+            -e "OTEAPI_REDIS_TYPE=redis" \
+            -e "OTEAPI_REDIS_HOST=localhost" \
+            -e "OTEAPI_REDIS_PORT=6379" \
+            -e "OTEAPI_PREFIX=/api/v1" \
+            --network host \
+            ${{ fromJSON(steps.docker_metadata_dev.outputs.json).tags[0] }}
+
+          # Health check
+          tmp_file=/tmp/.dockerPs
+          SECONDS=0
+          TIMEOUT_LIMIT=240
+          until curl -sf http://localhost:8080/openapi.json > /dev/null || [ "$SECONDS" -gt "$TIMEOUT_LIMIT" ] ; do
+            docker ps -a > $tmp_file
+            grep -E "^.*${CONTAINER_NAME} .* Exited .*$" $tmp_file && exited=yes && break
+            sleep 1
+          done
+
+          rm -f $tmp_file
+          if [ "$SECONDS" -gt "$TIMEOUT_LIMIT" ]; then
+            echo "OTEAPI-Services (development) failed to start within ${TIMEOUT_LIMIT} seconds"
+            exited=yes
+          fi
+
+          # Write logs
+          docker logs ${CONTAINER_NAME}
+          if [ -n "$exited" ]; then
+            exit 1
+          fi
+
+          # Cleanup
+          docker stop ${CONTAINER_NAME}
+          docker rm ${CONTAINER_NAME}
+
+      - name: Test run Docker production image
+        if: github.event_name == 'pull_request'
+        run: |
+          CONTAINER_NAME=${{ github.run_id }}-${{ github.action }}-prod
+
+          # Run Docker production image
+          docker run -d \
+            --name ${CONTAINER_NAME} \
+            -e "OTEAPI_REDIS_TYPE=redis" \
+            -e "OTEAPI_REDIS_HOST=localhost" \
+            -e "OTEAPI_REDIS_PORT=6379" \
+            -e "OTEAPI_PREFIX=/api/v1" \
+            --network host \
+            ${{ fromJSON(steps.docker_metadata_prod.outputs.json).tags[0] }}
+
+          # Health check
+          tmp_file=/tmp/.dockerPs
+          SECONDS=0
+          TIMEOUT_LIMIT=240
+          until curl -sf http://localhost:8080/openapi.json > /dev/null || [ "$SECONDS" -gt "$TIMEOUT_LIMIT" ] ; do
+            docker ps -a > $tmp_file
+            grep -E "^.*${CONTAINER_NAME} .* Exited .*$" $tmp_file && exited=yes && break
+            sleep 1
+          done
+          rm -f $tmp_file
+
+          if [ "$SECONDS" -gt "$TIMEOUT_LIMIT" ]; then
+            echo "OTEAPI-Services (production) failed to start within ${TIMEOUT_LIMIT} seconds"
+            exited=yes
+          fi
+
+          # Write logs
+          docker logs ${CONTAINER_NAME}
+          if [ -n "$exited" ]; then
+            exit 1
+          fi
+
+          # Cleanup
+          docker stop ${CONTAINER_NAME}
+          docker rm ${CONTAINER_NAME}

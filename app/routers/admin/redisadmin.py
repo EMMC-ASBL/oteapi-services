@@ -1,5 +1,7 @@
 """Helper service for viewing redis objects."""
 
+from __future__ import annotations
+
 import json
 from typing import Any
 
@@ -8,10 +10,10 @@ from fastapi import APIRouter
 from app.models.error import httpexception_404_item_id_does_not_exist
 from app.redis_cache import TRedisPlugin
 
-ROUTER = APIRouter(prefix="/redis", tags=["admin"])
+ROUTER = APIRouter(prefix="/redis")
 
 
-@ROUTER.get("/{key}", include_in_schema=False)
+@ROUTER.get("/{key}")
 async def get_key(
     cache: TRedisPlugin,
     key: str,

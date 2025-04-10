@@ -1,5 +1,7 @@
 """Demo resource strategy class."""
 
+from __future__ import annotations
+
 from oteapi.models.resourceconfig import ResourceConfig
 from pydantic.dataclasses import dataclass
 

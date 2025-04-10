@@ -1,0 +1,40 @@
+services:
+  oteapi:
+    build:
+      context: "../../"
+      target: "${DOCKER_OTEAPI_TARGET:-development}"
+      additional_contexts:
+        # These can be changed to point to local directories or similar
+        oteapi-core: "${OTEAPI_CORE_PATH:-https://github.com/EMMC-ASBL/oteapi-core.git}"
+    ports:
+      - "${OTEAPI_PORT:-8080}:8080"
+      - "5678:5678" # Debug port
+    environment:
+      OTEAPI_REDIS_TYPE: redis
+      OTEAPI_REDIS_HOST: redis
+      OTEAPI_REDIS_PORT: 6379
+      OTEAPI_PREFIX: "${OTEAPI_PREFIX:-/api/v1}"
+      OTEAPI_INCLUDE_REDISADMIN: "${OTEAPI_INCLUDE_REDISADMIN:-True}"
+      OTEAPI_EXPOSE_SECRETS: "${OTEAPI_EXPOSE_SECRETS:-True}"
+      OTEAPI_PLUGIN_PACKAGES:
+      OTEAPI_AUTHENTICATION_DEPENDENCIES:
+      CI:
+    volumes:
+      - "${OTEAPI_CORE_PATH:-/dev/null}:${CONTAINER_PLUGIN_PATH:-/dev/null}"
+    depends_on:
+      - redis
+    networks:
+      - otenet
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-persist:/data
+    networks:
+      - otenet
+
+volumes:
+  redis-persist:
+
+networks:
+  otenet:

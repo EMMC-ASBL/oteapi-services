@@ -1,8 +1,8 @@
-name: CI - Activate auto-merging for Dependabot PRs
+name: CI - Activate auto-merging for BOT PRs
 
 on:
   pull_request_target:
-    branches: [ci/dependabot-updates]
+    branches: [master]
 
 jobs:
   update-dependabot-branch:

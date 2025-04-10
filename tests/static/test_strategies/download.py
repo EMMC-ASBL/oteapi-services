@@ -1,6 +1,9 @@
 """Demo download strategy class for file."""
 
-from typing import Annotated, Optional
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Annotated
 
 from oteapi.datacache.datacache import DataCache
 from oteapi.models import AttrDict, DataCacheConfig, ResourceConfig
@@ -16,7 +19,7 @@ class FileConfig(BaseModel):
     ] = False
 
     encoding: Annotated[
-        Optional[str],
+        str | None,
         Field(
             description="Encoding used when opening the file.  "
             "Default is platform dependent.",
@@ -30,29 +33,26 @@ class FileStrategy:
 
     resource_config: ResourceConfig
 
-    def initialize(self) -> "AttrDict":
+    def initialize(self) -> AttrDict:
         """Initialize"""
         return AttrDict()
 
-    def get(self) -> "AttrDict":
+    def get(self) -> AttrDict:
         """Read local file."""
         assert self.resource_config.downloadUrl
-        assert (
-            self.resource_config.downloadUrl.scheme  # pylint: disable=no-member
-            == "file"
-        )
-        filename = self.resource_config.downloadUrl.host  # pylint: disable=no-member
+        assert self.resource_config.downloadUrl.scheme == "file"
+        filename = self.resource_config.downloadUrl.host
 
         cache = DataCache(self.resource_config.configuration)
         if cache.config.accessKey and cache.config.accessKey in cache:
             key = cache.config.accessKey
         else:
             config = FileConfig(
-                **self.resource_config.configuration,  # pylint: disable=not-a-mapping
-                extra="ignore"
+                **self.resource_config.configuration,
+                extra="ignore",
             )
             mode = "rt" if config.text else "rb"
-            with open(filename, mode, encoding=config.encoding) as handle:
+            with Path(filename).open(mode, encoding=config.encoding) as handle:
                 key = cache.add(handle.read())
 
         return AttrDict(key=key)
@@ -61,30 +61,33 @@ class FileStrategy:
 class HTTPSConfig(AttrDict):
     """HTTP(S)-specific Configuration Data Model."""
 
-    datacache_config: Optional[DataCacheConfig] = Field(
-        None,
-        description=(
-            "Configurations for the data cache for storing the downloaded file "
-            "content."
+    datacache_config: Annotated[
+        DataCacheConfig | None,
+        Field(
+            description=(
+                "Configurations for the data cache for storing the downloaded file "
+                "content."
+            ),
         ),
-    )
+    ] = None
 
 
 class HTTPSDemoConfig(ResourceConfig):
     """HTTP(S) download strategy filter config."""
 
-    downloadUrl: AnyHttpUrl = Field(
-        ..., description="The HTTP(S) URL, which will be downloaded."
-    )
-    configuration: HTTPSConfig = Field(
-        HTTPSConfig(), description="HTTP(S) download strategy-specific configuration."
-    )
+    downloadUrl: Annotated[
+        AnyHttpUrl, Field(description="The HTTP(S) URL, which will be downloaded.")
+    ]
+    configuration: Annotated[
+        HTTPSConfig,
+        Field(description="HTTP(S) download strategy-specific configuration."),
+    ] = HTTPSConfig()
 
 
 class HTTPDownloadContent(AttrDict):
     """Class for returning values from Download HTTPS strategy."""
 
-    key: str = Field(..., description="Key to access the data in the cache.")
+    key: Annotated[str, Field(description="Key to access the data in the cache.")]
 
 
 @dataclass

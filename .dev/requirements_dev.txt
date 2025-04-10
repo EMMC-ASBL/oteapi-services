@@ -1,10 +1,8 @@
-dulwich~=0.22.8
 debugpy>=1.8.0
 fakeredis~=2.28
 httpx~=0.28.1
 invoke~=2.2
 pre-commit~=4.2
-pylint~=3.3
 pytest~=8.3
 pytest-cov~=6.1
 
@@ -15,4 +13,4 @@ pytest-cov~=6.1
 # version listed in `requirements.txt`. This is accepted for the moment, but should
 # be followed up.
 
-# Note, the minimum supported Python version is expected to be Python 3.9.
+# Note, the minimum supported Python version is expected to be Python 3.10.

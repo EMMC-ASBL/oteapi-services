@@ -1,7 +1,9 @@
 """Data Filter."""
 
+from __future__ import annotations
+
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, status
 from oteapi.models import FilterConfig
@@ -33,7 +35,7 @@ ROUTER = APIRouter(
 async def create_filter(
     cache: TRedisPlugin,
     config: FilterConfig,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> CreateFilterResponse:
     """Define a new filter configuration (data operation)"""
     new_filter = CreateFilterResponse()
@@ -56,7 +58,7 @@ async def create_filter(
 async def get_filter(
     cache: TRedisPlugin,
     filter_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> GetFilterResponse:
     """Run and return data from a filter (data operation)"""
     cache_value = await _fetch_cache_value(cache, filter_id, "filter_id")
@@ -66,7 +68,7 @@ async def get_filter(
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    strategy: "IFilterStrategy" = create_strategy("filter", config)
+    strategy: IFilterStrategy = create_strategy("filter", config)
     session_update = strategy.get()
 
     if session_update and session_id:
@@ -81,7 +83,7 @@ async def get_filter(
 async def initialize_filter(
     cache: TRedisPlugin,
     filter_id: str,
-    session_id: Optional[str] = None,
+    session_id: str | None = None,
 ) -> InitializeFilterResponse:
     """Initialize and return data to update session."""
     cache_value = await _fetch_cache_value(cache, filter_id, "filter_id")
@@ -91,7 +93,7 @@ async def initialize_filter(
         session_data = await _fetch_cache_value(cache, session_id, "session_id")
         populate_config_from_session(json.loads(session_data), config)
 
-    strategy: "IFilterStrategy" = create_strategy("filter", config)
+    strategy: IFilterStrategy = create_strategy("filter", config)
     session_update = strategy.initialize()
 
     if session_update and session_id:

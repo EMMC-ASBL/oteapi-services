@@ -5,12 +5,8 @@ on:
     # At 7:30 every Monday (6:30 UTC)
     - cron: "30 6 * * 1"
   workflow_dispatch:
-  push:
-    branches:
-      - "ci/update-dependencies"
 
 env:
-  CHECKOUT_BRANCH: ci/dependabot-updates
   GIT_USER_NAME: "TEAM 4.0[bot]"
   GIT_USER_EMAIL: "Team4.0@SINTEF.no"
 
@@ -21,27 +17,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Determine checkout branch
-      run: |
-        if [ "${{ github.event_name }}" == "push" ]; then
-          echo "Push event detected."
-          echo "Changing CHECKOUT_BRANCH to: ${{ github.ref_name }}"
-          echo "CHECKOUT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
-        else
-          echo "Non-push event detected."
-          echo "Keeping default value for CHECKOUT_BRANCH: ${{ env.CHECKOUT_BRANCH }}"
-        fi
-
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        ref: ${{ env.CHECKOUT_BRANCH }}
+        ref: 'master'
         fetch-depth: 0
 
-    - name: Set up Python 3.9
+    - name: Set up Python 3.10
       uses: actions/setup-python@v5
       with:
-        python-version: "3.9"
+        python-version: "3.10"
 
     - name: Set up git config
       run: |
@@ -55,13 +40,14 @@ jobs:
         pip install --no-cache-dir --upgrade-strategy=eager -U -r .github/utils/direct_requirements.txt
 
     - name: Run `pip freeze` and update current `requirements.txt`
+      id: update_requirements
       run: |
         pip freeze > requirements_new.txt
         if [ "$(diff requirements.txt requirements_new.txt)" ]; then
           # There are updates !
           mv -f requirements_new.txt requirements.txt
           echo -e "requirements.txt has been updated. Diff:\n$(git diff requirements.txt)"
-          echo "UPDATE_DEPS=true" >> $GITHUB_ENV
+          echo "update_deps=true" >> $GITHUB_OUTPUT
 
           # Possibly also update the 'direct_requirements.txt' file for minimum versions.
           while IFS= read -r line_direct; do
@@ -89,18 +75,30 @@ jobs:
         else
           # No changes
           echo "No changes found for requirements.txt."
-          echo "UPDATE_DEPS=false" >> $GITHUB_ENV
+          echo "update_deps=false" >> $GITHUB_OUTPUT
         fi
 
     - name: Fetch PR body
-      if: env.UPDATE_DEPS == 'true'
+      if: steps.update_requirements.outputs.update_deps == 'true'
       id: pr_body
-      uses: chuhlomin/render-template@v1.10
-      with:
-        template: .github/utils/requirements_update_pr_body.txt
+      run: |
+        TEMPLATE_FILE=".github/utils/requirements_update_pr_body.txt"
+
+        if [ -f "${TEMPLATE_FILE}" ]; then
+          echo "Template file found: ${TEMPLATE_FILE}"
+          CONTENT="$(cat "${TEMPLATE_FILE}")"
+        else
+          echo "Template file not found: ${TEMPLATE_FILE}"
+          # Bail out
+          exit 1
+        fi
+
+        echo "content<<EOF" >> $GITHUB_OUTPUT
+        echo "${CONTENT}" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Create PR
-      if: env.UPDATE_DEPS == 'true'
+      if: steps.update_requirements.outputs.update_deps == 'true'
       id: cpr
       uses: peter-evans/create-pull-request@v7
       with:
@@ -111,9 +109,9 @@ jobs:
         branch: ci/update-requirements
         delete-branch: true
         title: "[Auto-generated] Update `requirements.txt`"
-        body: ${{ steps.pr_body.outputs.result }}
-        labels: CI/CD
+        body: ${{ steps.pr_body.outputs.content }}
+        labels: CI/CD,skip-changelog
 
     - name: Information
-      if: env.UPDATE_DEPS == 'true'
+      if: steps.update_requirements.outputs.update_deps == 'true'
       run: 'echo "${{ steps.cpr.outputs.pull-request-operation }} PR #${{ steps.cpr.outputs.pull-request-number }}: ${{ steps.cpr.outputs.pull-request-url }}"'

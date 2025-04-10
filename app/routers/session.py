@@ -1,5 +1,7 @@
 """Microservice Session."""
 
+from __future__ import annotations
+
 import json
 from typing import TYPE_CHECKING
 
@@ -19,7 +21,7 @@ from app.redis_cache import TRedisPlugin
 from app.redis_cache._cache import _fetch_cache_value, _validate_cache_key
 
 if TYPE_CHECKING:  # pragma: no cover
-    from typing import Any, Union
+    from typing import Any
 
 
 ROUTER = APIRouter(
@@ -65,9 +67,8 @@ async def list_sessions(
                 "Found a key that is not stored as bytes (stored as type "
                 f"{type(key)!r})."
             )
-        if isinstance(key, bytes):
-            key = key.decode(encoding="utf-8")
-        keylist.append(key)
+
+        keylist.append(key.decode("utf-8") if isinstance(key, bytes) else key)
 
     return ListSessionsResponse(keys=keylist)
 
@@ -105,7 +106,7 @@ async def _get_session(
 
 async def _update_session(
     session_id: str,
-    updated_session: "Union[AttrDict, dict[str, Any]]",
+    updated_session: AttrDict | dict[str, Any],
     redis: TRedisPlugin,
 ) -> Session:
     """Update an existing session (to be called internally)."""

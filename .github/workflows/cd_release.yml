@@ -1,0 +1,102 @@
+name: CD - Release
+
+on:
+  push:
+    branches: [master]
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+env:
+  GIT_USER_NAME: "TEAM 4.0[bot]"
+  GIT_USER_EMAIL: "Team4.0@SINTEF.no"
+  DEFAULT_REPO_BRANCH: master
+
+jobs:
+  update_version:
+    name: Update the version
+    if: github.repository_owner == 'EMMC-ASBL'
+    runs-on: ubuntu-latest
+    outputs:
+      continue_workflow: ${{ steps.update_version_step.outputs.continue_workflow }}
+
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up git config
+      run: |
+        git config --global user.name "${{ env.GIT_USER_NAME }}"
+        git config --global user.email "${{ env.GIT_USER_EMAIL }}"
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install -U pip
+        pip install -U setuptools wheel
+        pip install -U -r .dev/requirements_release.txt
+
+    - name: Update version
+      id: update_version_step
+      run: |
+        invoke setver
+
+        if [ -n "$(git status --porcelain app/__init__.py)" ]; then
+          echo "Version updated !"
+          CONTINUE_WORKFLOW=true
+        else
+          # The version has not changed - i.e. the workflow shouldn't continue.
+          echo "Version NOT updated !"
+          CONTINUE_WORKFLOW=false
+        fi
+
+        echo "continue_workflow=${CONTINUE_WORKFLOW}" >> $GITHUB_OUTPUT
+
+    - name: Update changelog
+      if: steps.update_version_step.outputs.continue_workflow == 'true'
+      uses: docker://githubchangeloggenerator/github-changelog-generator:1.16.2
+      with:
+        args: --user "${{ github.repository_owner }}" --project "oteapi-services" --token "${{ secrets.RELEASE_PAT }}" --release-branch "${{ env.DEFAULT_REPO_BRANCH }}" --exclude-labels "skip-changelog,duplicate,question,invalid,wontfix"
+
+    - name: Commit changes
+      if: steps.update_version_step.outputs.continue_workflow == 'true'
+      run: |
+        git add app/__init__.py CHANGELOG.md
+        git commit --amend -C HEAD
+
+    - name: Update '${{ env.DEFAULT_REPO_BRANCH }}'
+      if: steps.update_version_step.outputs.continue_workflow == 'true'
+      uses: CasperWA/push-protected@v2
+      with:
+        token: ${{ secrets.RELEASE_PAT }}
+        branch: ${{ env.DEFAULT_REPO_BRANCH }}
+        sleep: 15
+        force: true
+        unprotect_reviews: false
+
+  publish_container_image:
+    name: Publish Container image on GH Packages
+    needs: update_version
+    if: github.repository_owner == 'EMMC-ASBL' && needs.update_version.outputs.continue_workflow == 'true'
+    uses: ./.github/workflows/ci_cd_docker.yml
+    with:
+      source_ref: 'master'  # Must match DEFAULT_REPO_BRANCH - env context not available here
+      image_name: oteapi
+      image_owner: emmc-asbl
+      registry_url: ghcr.io
+    secrets:
+      REGISTRY_USER: TEAM4-0
+      REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      PAT: ${{ secrets.RELEASE_PAT }}
+
+    permissions:
+      packages: write
+      contents: read

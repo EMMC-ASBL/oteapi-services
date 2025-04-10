@@ -1,5 +1,7 @@
 """Test parser"""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import pytest
@@ -10,7 +12,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
 
-def test_create_parser(client: "TestClient") -> None:
+def test_create_parser(client: TestClient) -> None:
     """Test creating a parser"""
     response = client.post(
         "/parser/",
@@ -23,53 +25,49 @@ def test_create_parser(client: "TestClient") -> None:
             },
         },
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert "parser_id" in response.json()
     assert response.status_code == 200
 
 
-def test_info_parser(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_info_parser(client: TestClient, test_data: dict[str, str]) -> None:
     """Test getting information about a parser"""
     parser_id = next(_ for _ in test_data if _.startswith("parser-"))
     response = client.get(
         f"/parser/{parser_id}/info",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
     assert "parserType" in response.json()
     assert "configuration" in response.json()
 
 
-def test_get_parser(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_get_parser(client: TestClient, test_data: dict[str, str]) -> None:
     """Test getting and parsing data using a specified parser"""
     parser_id = next(_ for _ in test_data if _.startswith("parser-"))
     response = client.get(
         f"/parser/{parser_id}",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
-def test_initialize_parser(client: "TestClient", test_data: dict[str, str]) -> None:
+def test_initialize_parser(client: TestClient, test_data: dict[str, str]) -> None:
     """Test initializing a parser."""
     parser_id = next(_ for _ in test_data if _.startswith("parser-"))
     response = client.post(
         f"/parser/{parser_id}/initialize",
         headers={"Content-Type": "application/json"},
-        timeout=(3.0, 27.0),
     )
     assert response.status_code == 200
 
 
 @pytest.mark.parametrize("method", ["initialize", "get"])
 def test_session_config_merge(
-    client: "TestClient",
+    client: TestClient,
     test_data: dict[str, str],
-    method: 'Literal["initialize", "get"]',
-    monkeypatch: "pytest.MonkeyPatch",
+    method: Literal["initialize", "get"],
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Test the current session is merged into the strategy configuration."""
     import json
@@ -86,7 +84,7 @@ def test_session_config_merge(
     expected_merged_config["configuration"].update(json.loads(test_data[session_id]))
 
     def create_strategy_middleware(
-        strategy_type: 'Literal["parse"]', config: ParserConfig
+        strategy_type: Literal["parse"], config: ParserConfig
     ):
         """Create a strategy middleware - do some testing."""
         assert strategy_type == "parse"
@@ -109,14 +107,12 @@ def test_session_config_merge(
             f"/parser/{parser_id}/initialize",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
     else:  # method == "get"
         response = client.get(
             f"/parser/{parser_id}",
             params={"session_id": session_id},
             headers={"Content-Type": "application/json"},
-            timeout=(3.0, 27.0),
         )
 
     assert (

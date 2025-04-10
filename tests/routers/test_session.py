@@ -1,12 +1,14 @@
 """Test session."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
 
-def test_list_session(client: "TestClient", test_data: "dict[str, dict]") -> None:
+def test_list_session(client: TestClient, test_data: dict[str, dict]) -> None:
     """Test listing sessions."""
     response = client.get("/session")
     assert response.status_code == 200
@@ -22,7 +24,7 @@ def test_list_session(client: "TestClient", test_data: "dict[str, dict]") -> Non
     }
 
 
-def test_create_session(client: "TestClient") -> None:
+def test_create_session(client: TestClient) -> None:
     """Test creating a session."""
     response = client.post(
         "/session/",

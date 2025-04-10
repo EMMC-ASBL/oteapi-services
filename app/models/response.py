@@ -1,5 +1,7 @@
 """Pydantic response models."""
 
+from __future__ import annotations
+
 import re
 
 from oteapi.models import AttrDict
@@ -17,18 +19,17 @@ class CreateResponse(Session):
     """
 
     @model_validator(mode="after")
-    def ensure_id_attribute(self) -> "CreateResponse":
+    def ensure_id_attribute(self) -> CreateResponse:
         """Ensure a `*_id` attribute exists."""
+        # Validating on a subclassed instance of `CreateResponse`
         if (
             issubclass(self.__class__, CreateResponse)
             and self.__class__ != CreateResponse
+            and not any(re.match(r"^.+_id$", field) for field, _ in self)
         ):
-            # Validating on a subclassed instance of `CreateResponse`
-            if not any(re.match(r"^.+_id$", field) for field, _ in self):
-                raise AttributeError(
-                    "A '*_id' attribute MUST be defined for a subclass of "
-                    "`CreateResponse`."
-                )
+            raise AttributeError(
+                "A '*_id' attribute MUST be defined for a subclass of `CreateResponse`."
+            )
 
         return self
 

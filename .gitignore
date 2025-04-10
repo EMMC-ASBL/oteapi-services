@@ -568,3 +568,5 @@ MigrationBackup/
 
 # From docker build
 constraints.txt
+
+.*_cache/

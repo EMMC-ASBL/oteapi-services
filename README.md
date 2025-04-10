@@ -65,21 +65,21 @@ docker run \
     emmc-asbl/oteapi-development:latest
 ```
 
-One can also use a local `oteapi-core` repository by specifying the `PATH_TO_OTEAPI_CORE` environment variable:
+One can also use a local `oteapi-core` repository by specifying the `OTEAPI_CORE_PATH` environment variable:
 
 ```shell
-export PATH_TO_OTEAPI_CORE=/local/path/to/oteapi-core
+export OTEAPI_CORE_PATH=/local/path/to/oteapi-core
 docker run \
     --rm \
     --network otenet \
     --detach \
     --volume ${PWD}:/app \
-    --volume ${PATH_TO_OTEAPI_CORE}:/oteapi_core \
+    --volume ${OTEAPI_CORE_PATH}:/oteapi_core \
     --publish 8080:8080 \
     --env OTEAPI_REDIS_TYPE=redis \
     --env OTEAPI_REDIS_HOST=redis \
     --env OTEAPI_REDIS_PORT=6379 \
-    --env PATH_TO_OTEAPI_CORE \
+    --env OTEAPI_CORE_PATH \
     ontotrans/oteapi-development:latest
 ```
 
@@ -119,52 +119,6 @@ PASSWORD="Insert your user password here" docker run \
 
 For production, SSH public key authentication is preferred.
 
-### Run a triplestore (AllegroGraph)
-
-To test the `/triples` endpoint, a triplestore can be run.
-In this example, the AllegroGraph triplestore is used.
-
-First, a configuration file should be created and stored locally in the current folder as `agraph.cfg`.
-Note, the values for `SuperUser` should preferably be updated, especially in production.
-
-```cfg
-# AllegroGraph configuration file
-RunAs agraph
-SessionPorts 10000-10034
-Port 10035
-SettingsDirectory /agraph/data/settings
-LogDir /agraph/data
-PidFile /agraph/data/agraph.pid
-InstanceTimeout 604800
-SuperUser dbuser:test123
-<RootCatalog>
- Main /agraph/data/rootcatalog
-</RootCatalog>
-
-<SystemCatalog>
- Main /agraph/data/systemcatalog
- InstanceTimeout 10
-</SystemCatalog>
-```
-
-Then one can start the Docker container:
-
-> **Note**: If running on a non-Unix system (e.g., Windows), note that `${PWD}` should be changed accordingly.
-> It is meant to expand to the current working directory.
-> Alternatively, the full path could be explicitly written.
-
-```shell
-docker volume create agraphdrive
-docker run \
-    --detach \
-    --network=otenet \
-    --volume agraphdrive:/agraph/data \
-    --volume ${PWD}/agraph.cfg:/agraph/etc/agraph.cfg \
-    --publish "10000-10035:10000-10035" \
-    --shm-size 4g \
-    franzinc/agraph:v7.2.0
-```
-
 ## Run with Docker Compose
 
 ### Run with Docker Compose (development)
@@ -172,20 +126,22 @@ docker run \
 Ensure your current working directory is the root of the repository, then run:
 
 ```shell
-docker-compose -f docker-compose_dev.yml pull  # Pull the latest images
-docker-compose -f docker-compose_dev.yml build  # Build the central OTE service (from Dockerfile)
-docker-compose -f docker-compose_dev.yml up -d  # Run the OTE Services (detached)
+docker compose -f compose.dev.yml pull  # Pull the latest images
+docker compose -f compose.dev.yml build  # Build the central OTE service (from Dockerfile)
+docker compose -f compose.dev.yml up -d  # Run the OTE Services (detached)
 ```
 
 Note that default values will be used if certain environment variables are not present.
-To inspect which environment variables can be specified, please inspect the [Docker Compose file](docker-compose_dev.yml).
+To inspect which environment variables can be specified, please inspect the [Docker Compose file](compose.dev.yml).
 
 This Docker Compose file will use your local files for the application, meaning updates in your local files (under `app/`) should be reflected in the running application upon storing the changes to disk, after hypercorn reloads.
-You can go one step further and use your local files also for the `oteapi-core` repository by specifying the `PATH_TO_OTEAPI_CORE` environment variable:
+You can go one step further and use your local files also for the `oteapi-core` repository by specifying the `OTEAPI_CORE_PATH` environment variable:
 
 ```shell
-export PATH_TO_OTEAPI_CORE=/local/path/to/oteapi-core
-docker-compose -f docker-compose_dev.yml up --build -d  # Run the OTE Services detached, build if necessary
+export OTEAPI_CORE_PATH=/local/path/to/oteapi-core
+
+# Run the OTE Services detached, build if necessary
+docker compose -f compose.dev.yml up --build -d
 ```
 
 To see the logs from the OTEAPI service in real time from the server, run:
@@ -201,12 +157,12 @@ Leave out the `-f` option to write out the log to your terminal without followin
 Ensure your current working directory is the root of the repository, then run:
 
 ```shell
-docker-compose pull  # Pull the latest images
-docker-compose up -d  # Run the OTE Services (detached)
+docker compose pull  # Pull the latest images
+docker compose up -d  # Run the OTE Services (detached)
 ```
 
 Note that default values will be used if certain environment variables are not present.
-To inspect which environment variables can be specified, please inspect the [Docker Compose file](docker-compose.yml).
+To inspect which environment variables can be specified, please inspect the [Docker Compose file](compose.yml).
 
 ## OTEAPI Plugin Repositories
 
@@ -228,7 +184,7 @@ Should there be special version constraints for the packages, these can be added
 OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3|my_special_plugin>=2.1.1,<3,!=2.1.0"
 ```
 
-To ensure this variable is used when running the service you could either `export` it, set it in the same command line as running the service, or define it in a separate file, telling `docker` or `docker-compose` to use this file as a source of environment variables through the `--env-file` option.
+To ensure this variable is used when running the service you could either `export` it, set it in the same command line as running the service, or define it in a separate file, telling `docker` or `docker compose` to use this file as a source of environment variables through the `--env-file` option.
 
 > **Warning**: Beware that the `OTEAPI_PLUGIN_PACKAGES` variable will be run from the `entrypoint.sh` file within the container using the `eval` Bash function.
 > This means one can potentially execute arbitrary code by appending it to the `OTEAPI_PLUGIN_PACKAGES` environment variable.
@@ -252,30 +208,20 @@ OTEAPI_PLUGIN_PACKAGES="oteapi-plugin~=1.3|my_special_plugin>=2.1.1,<3,!=2.1.0|-
 
 Here, the constant `-q` (silent) option for `pip install` has been reversed by using the `-v` (verbose) option, and the package at `/oteapi-plugin-dev` within the container is being installed as an editable installation, including the `dev` extra.
 
-Now in the local `docker-compose.yml` file, one would need to add:
+Now in the local `compose.yml` file, one would need to add:
 
 ```yaml
 - "${PWD}:/oteapi-plugin-dev"
 ```
 
 Under `volumes` under `oteapi`.
-Assuming the `docker-compose.yml` file in question is placed in the root of the plugin repository.
+Assuming the `compose.yml` file in question is placed in the root of the plugin repository.
 If not, the first part (`${PWD}`) should be changed accordingly.
 
 #### Local `oteapi-core`
 
 It is also possible to install a local version of `oteapi-core` using the public image.
-To do this, the `ENTRYPOINT` command in the image needs to be overwritten, which can be done with the `entrypoint` value in the docker compose file:
-
-```yaml
-entrypoint: |
-  /bin/bash -c "if [ \"${PATH_TO_OTEAPI_CORE}\" != \"/dev/null\" ] && [ -n \"${PATH_TO_OTEAPI_CORE}\" ]; then \
-  pip install -U --force-reinstall -e /oteapi-core; fi \
-  && ./entrypoint.sh --reload --debug --log-level debug"
-```
-
-Here the hypercorn command is called with the options `--reload`, `--debug`, and `--log-level debug` as well.
-This makes sure we see all relevant logging output during development as well as having the server restart/reload every time a file is updated that relates to the locally installed packages (for the plugins, they need to have the `-e` option invoked - see above.)
+To do this, install it as a plugin with the `--force-reinstall` option, e.g., `--force-reinstall -v -e /oteapi-core`.
 
 A full example of how a docker compose file may look for a plugin is shown below, but can also be seen in the [OTEAPI Plugin template](https://github.com/EMMC-ASBL/oteapi-plugin-template) repository.
 
@@ -283,36 +229,25 @@ In the following example, there is a possibility that a second plugin may be nee
 This possibility has been expressed in the docker compose file through the `PATH_TO_OTEAPI_ANOTHER_PLUGIN` environment variable.
 
 ```yaml
-version: "3"
-
 services:
   oteapi:
     image: ghcr.io/emmc-asbl/oteapi:${DOCKER_OTEAPI_VERSION:-latest}
     ports:
-      - "${PORT:-8080}:8080"
+      - "${OTEAPI_PORT:-8080}:8080"
     environment:
       OTEAPI_REDIS_TYPE: redis
       OTEAPI_REDIS_HOST: redis
       OTEAPI_REDIS_PORT: 6379
-      OTEAPI_prefix: "${OTEAPI_prefix:-/api/v1}"
-      PATH_TO_OTEAPI_CORE:
-      # default
-      OTEAPI_PLUGIN_PACKAGES: "-v -e /oteapi-plugin[dev]"
-
-      # use this if PATH_TO_OTEAPI_ANOTHER_PLUGIN is defined
-      # OTEAPI_PLUGIN_PACKAGES: "-v -e /oteapi-plugin[dev]:-v -e /oteapi-another-plugin"
+      OTEAPI_PREFIX: "${OTEAPI_PREFIX:-/api/v1}"
+      OTEAPI_PLUGIN_PACKAGES: "--force-reinstall -v -e /local-oteapi-core|-v -e /oteapi-plugin[dev]"
     depends_on:
       - redis
     networks:
       - otenet
     volumes:
-      - "${PATH_TO_OTEAPI_CORE:-/dev/null}:/oteapi-core"
-      - "${PATH_TO_OTEAPI_ANOTHER_PLUGIN:-/dev/null}:/oteapi-another-plugin"
+      - "/local/path/to/oteapi-core:/local-oteapi-core"
       - "${PWD}:/oteapi-plugin"
-    entrypoint: |
-      /bin/bash -c "if [ \"${PATH_TO_OTEAPI_CORE}\" != \"/dev/null\" ] && [ -n \"${PATH_TO_OTEAPI_CORE}\" ]; then \
-      pip install -U --force-reinstall -e /oteapi-core; fi \
-      && ./entrypoint.sh --reload --debug --log-level debug"
+    stop_grace_period: 1s
 
   redis:
     image: redis:latest
@@ -321,17 +256,8 @@ services:
     networks:
       - otenet
 
-  sftp:
-    image: atmoz/sftp
-    volumes:
-      - sftp-storage:${HOME:-/home/foo}/download
-    command: ${USER:-foo}:${PASSWORD:-pass}:1001
-    networks:
-      - otenet
-
 volumes:
   redis-persist:
-  sftp-storage:
 
 networks:
   otenet:
@@ -340,16 +266,18 @@ networks:
 ## Debugging OTEAPI Service in Visual Studio
 
 ### Prerequisites
-  * Ensure you have `docker` and `docker-compose` installed on your system.
-  * Install Visual Studio Code along with the Python extension and the Remote - Containers extension.
-  * Have the docker-compose_dev.yml file configured for your OTEAPI Service.
-  * Ensure `debugpy` is installed in your virtual environment
 
-### Configuring Visual Studio Code:
+* Ensure you have `docker` and `docker compose` installed on your system.
+* Install Visual Studio Code along with the Python extension and the Remote - Containers extension.
+* Have the `compose.dev.yml` file configured for your OTEAPI Service.
+* Ensure `debugpy` is installed in your virtual environment
 
-  * Open your project in Visual Studio Code.
-  * Go to the Run and Debug view (Ctrl+Shift+D or ⌘+Shift+D on macOS).
-  * Create a launch.json file in the .vscode folder at the root of your project (if not already present). This file should contain something like this:
+### Configuring Visual Studio Code
+
+* Open your project in Visual Studio Code.
+* Go to the Run and Debug view (Ctrl+Shift+D or ⌘+Shift+D on macOS).
+* Create a `launch.json` file in the `.vscode` folder at the root of your project (if not already present).
+  This file should contain something like this:
 
   ```json
     {
@@ -375,35 +303,43 @@ networks:
   ```
 
 ### Update the entrypoint.sh
+
 In order to enable remote debugging, update the file `entrypoint.sh` such that the oteapi is started using the following command:
 
+```shell
+python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m hypercorn \
+  --bind 0.0.0.0:8080 --reload asgi:app "$@"
 ```
-python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m hypercorn --bind 0.0.0.0:8080 --reload asgi:app "$@"
-```
 
-This will run the OTEAPI service in remote debug mode. The debugpy debugger will wait until a remote debuggin client is attached to port 5678. This happens when activating the "Run and Debug | Python: Remote Attach" from Visual Studio Code. For other IDEs please follow the relevant documentation.
+This will run the OTEAPI service in remote debug mode.
+The debugpy debugger will wait until a remote debugging client is attached to port 5678.
+This happens when activating the "Run and Debug | Python: Remote Attach" from Visual Studio Code.
+For other IDEs please follow the relevant documentation.
 
+### Starting with Docker Compose
 
-
-### Starting the docker-compose
-  * Open a terminal and navigate to the directory containing your docker-compose_dev.yml file.
-  * Start the service using the command:
+* Open a terminal and navigate to the directory containing your `compose.dev.yml` file.
+* Start the service using the command:
 
   ```sh
-  docker-compose -f docker-compose_dev.yml up -d
+  docker compose -f compose.dev.yml up -d
   ```
 
-The `-d` option starts the OTEAPI sevice in detached mode. In order to  access and follow the logs output you can run `docker-compose logs -f`.
+The `-d` option starts the OTEAPI service in detached mode.
+In order to access and follow the logs output you can run `docker compose logs -f`.
 
-### Attaching to the Remote Process:
+### Attaching to the Remote Process
 
-  * With the `launch.json` configured, go to the Run and Debug view in Visual Studio Code.
-  * Select the "Python: Remote Attach" configuration from the dropdown menu.* Click the green play button or press F5 to start the debugging session.
-  * Visual Studio Code will attach to the remote debugging session running inside the Docker container.
+* With the `launch.json` configured, go to the Run and Debug view in Visual Studio Code.
+* Select the "Python: Remote Attach" configuration from the dropdown menu.
+* Click the green play button or press F5 to start the debugging session.
+* Visual Studio Code will attach to the remote debugging session running inside the Docker container.
 
-### Debugging the Application:
+### Debugging the Application
 
-Set breakpoints in your code as needed. Interact with your FastAPI application as you normally would. Visual Studio Code will pause execution when a breakpoint is hit, allowing you to inspect variables, step through code, and debug your application.
+Set breakpoints in your code as needed.
+Interact with your FastAPI application as you normally would.
+Visual Studio Code will pause execution when a breakpoint is hit, allowing you to inspect variables, step through code, and debug your application.
 
 ## Acknowledgment
 
