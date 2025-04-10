@@ -31,10 +31,6 @@ jobs:
       id: pre_commit
       run: pre-commit run --all-files
 
-    # ID: 70612
-    #   Package: Jinja2
-    #   Has been disputed by the maintainer and multiple third parties.
-    #   For more information see: https://github.com/advisories/GHSA-f6pv-j8mr-w6rr
     - name: Run safety
       run: safety check -r requirements.txt -r .dev/requirements_ci.txt -r .dev/requirements_dev.txt -r .dev/requirements_release.txt
 
