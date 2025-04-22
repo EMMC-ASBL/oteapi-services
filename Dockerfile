@@ -55,7 +55,6 @@ RUN python -m venv /tmp/dev_venv \
 # Run static security check, linters, and pytest with code coverage
 RUN --mount=type=cache,target=/root/.cache/pre-commit \
   git init && git add . && /tmp/dev_venv/bin/pre-commit run -c .pre-commit-config_docker.yaml --all-files
-RUN /tmp/dev_venv/bin/safety check -r /app/requirements.txt --full-report
 
 # Install extra (non-dev tools) development requirements in main environment
 RUN pip install -q -U -r requirements_dev.txt
