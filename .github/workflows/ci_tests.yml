@@ -34,7 +34,7 @@ jobs:
     - name: Run pip-audit
       uses: pypa/gh-action-pip-audit@v1.1.0
       with:
-        inputs: requirements.txt .dev/requirements_ci.txt .dev/requirements_dev.txt .dev/requirements_release.txt
+        inputs: requirements.txt .dev/requirements_ci.txt .dev/requirements_dev.txt .dev/requrements_docker_dev.txt .dev/requirements_release.txt
 
     - name: Fail if pre-commit failed
       run: |

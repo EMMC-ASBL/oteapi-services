@@ -38,7 +38,7 @@ COPY --from=oteapi-core . /oteapi-core
 RUN pip install --force-reinstall -e /oteapi-core
 
 # Copy development parts
-COPY .dev/requirements_dev.txt .dev/requirements_ci.txt .pre-commit-config_docker.yaml pyproject.toml ./
+COPY .dev/requirements_dev.txt .dev/requirements_docker_dev.txt .pre-commit-config_docker.yaml pyproject.toml ./
 
 # Install additional development tools in a separate virtual environment
 RUN apt-get -qqy update && apt-get -qqy upgrade \
@@ -50,11 +50,12 @@ RUN apt-get -qqy update && apt-get -qqy upgrade \
 # Install additional development requirements
 RUN python -m venv /tmp/dev_venv \
   && /tmp/dev_venv/bin/pip install -q --upgrade pip setuptools wheel \
-  && /tmp/dev_venv/bin/pip install -q -r requirements_ci.txt
+  && /tmp/dev_venv/bin/pip install -q -r requirements_docker_dev.txt
 
 # Run static security check, linters, and pytest with code coverage
 RUN --mount=type=cache,target=/root/.cache/pre-commit \
   git init && git add . && /tmp/dev_venv/bin/pre-commit run -c .pre-commit-config_docker.yaml --all-files
+RUN /tmp/dev_venv/bin/pip-audit -r /app/requirements.txt --desc on
 
 # Install extra (non-dev tools) development requirements in main environment
 RUN pip install -q -U -r requirements_dev.txt
