@@ -1,12 +1,12 @@
-version: '3.0'
+version: '3'
 
 scanning-settings:
   exclude:
     - '.github/**'
   include-files:
     - path: .dev/requirements_ci.txt
-      type: requirements.txt
+      file-type: requirements.txt
     - path: .dev/requirements_dev.txt
-      type: requirements.txt
+      file-type: requirements.txt
     - path: .dev/requirements_release.txt
-      type: requirements.txt
+      file-type: requirements.txt
