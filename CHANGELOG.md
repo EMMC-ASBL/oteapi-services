@@ -1,13 +1,5 @@
 # Changelog
 
-## [Unreleased](https://github.com/EMMC-ASBL/oteapi-services/tree/HEAD)
-
-[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20250410.410...HEAD)
-
-**Merged pull requests:**
-
-- Use GitHub Action for running safety in CI [\#600](https://github.com/EMMC-ASBL/oteapi-services/pull/600) ([CasperWA](https://github.com/CasperWA))
-
 ## [v1.20250410.410](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20250410.410) (2025-04-10)
 
 [Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20230324.302...v1.20250410.410)
