@@ -8,7 +8,7 @@ on:
       - 'push-action/**'  # Allow pushing to protected branches (using CasperWA/push-protected)
 
 jobs:
-  pre-commit:
+  pre-commit_audit:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,22 @@ jobs:
         pip install -U -r .dev/requirements_ci.txt
 
     - name: Run pre-commit
+      continue-on-error: true
+      id: pre_commit
       run: pre-commit run --all-files
+
+    - name: Run pip-audit
+      uses: pypa/gh-action-pip-audit@v1.1.0
+      with:
+        inputs: requirements.txt .dev/requirements_ci.txt .dev/requirements_dev.txt .dev/requirements_release.txt
+        require-hashes: true
+
+    - name: Fail if pre-commit failed
+      run: |
+        if [ "${{ steps.pre_commit.outcome }}" = 'failure' ]; then
+          echo "Pre-commit failed (see above)"
+          exit 1
+        fi
 
   pytest:
     name: "pytest (Python ${{ matrix.python-version}} - Live Redis: ${{ matrix.live-redis }})"
