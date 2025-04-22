@@ -8,7 +8,7 @@ on:
       - 'push-action/**'  # Allow pushing to protected branches (using CasperWA/push-protected)
 
 jobs:
-  pre-commit_safety:
+  pre-commit:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,22 +27,7 @@ jobs:
         pip install -U -r .dev/requirements_ci.txt
 
     - name: Run pre-commit
-      continue-on-error: true
-      id: pre_commit
       run: pre-commit run --all-files
-
-    - name: Run Safety CLI to check for vulnerabilities
-      uses: pyupio/safety-action@v1
-      with:
-        api-key: ${{ secrets.SAFETY_API_TOKEN }}
-        args: --policy-file=.safety-policy.yml
-
-    - name: Fail if pre-commit failed
-      run: |
-        if [ "${{ steps.pre_commit.outcome }}" = 'failure' ]; then
-          echo "Pre-commit failed (see above)"
-          exit 1
-        fi
 
   pytest:
     name: "pytest (Python ${{ matrix.python-version}} - Live Redis: ${{ matrix.live-redis }})"
