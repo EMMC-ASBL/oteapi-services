@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/EMMC-ASBL/oteapi-services/tree/HEAD)
 
-[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20230324.302...HEAD)
+[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20250410.410...HEAD)
+
+**Merged pull requests:**
+
+- Use GitHub Action for running safety in CI [\#600](https://github.com/EMMC-ASBL/oteapi-services/pull/600) ([CasperWA](https://github.com/CasperWA))
+
+## [v1.20250410.410](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20250410.410) (2025-04-10)
+
+[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20230324.302...v1.20250410.410)
 
 **Implemented enhancements:**
 
@@ -32,7 +40,6 @@
 
 **Merged pull requests:**
 
-- Compound updates to use OTEAPI Core v1 [\#597](https://github.com/EMMC-ASBL/oteapi-services/pull/597) ([CasperWA](https://github.com/CasperWA))
 - \[Auto-generated\] Update dependencies [\#459](https://github.com/EMMC-ASBL/oteapi-services/pull/459) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#452](https://github.com/EMMC-ASBL/oteapi-services/pull/452) ([TEAM4-0](https://github.com/TEAM4-0))
 - \[Auto-generated\] Update dependencies [\#429](https://github.com/EMMC-ASBL/oteapi-services/pull/429) ([TEAM4-0](https://github.com/TEAM4-0))
