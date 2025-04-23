@@ -8,7 +8,7 @@ on:
       - 'push-action/**'  # Allow pushing to protected branches (using CasperWA/push-protected)
 
 jobs:
-  pre-commit_safety:
+  pre-commit_audit:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,8 +31,10 @@ jobs:
       id: pre_commit
       run: pre-commit run --all-files
 
-    - name: Run safety
-      run: safety check -r requirements.txt -r .dev/requirements_ci.txt -r .dev/requirements_dev.txt -r .dev/requirements_release.txt
+    - name: Run pip-audit
+      uses: pypa/gh-action-pip-audit@v1.1.0
+      with:
+        inputs: requirements.txt .dev/requirements_ci.txt .dev/requirements_dev.txt .dev/requirements_docker_dev.txt .dev/requirements_release.txt
 
     - name: Fail if pre-commit failed
       run: |
