@@ -4,8 +4,8 @@ anyio==4.9.0
 async-timeout==5.0.1
 bcrypt==4.3.0
 billiard==4.2.1
-celery==5.5.1
-certifi==2025.1.31
+celery==5.5.2
+certifi==2025.4.26
 cffi==1.17.1
 charset-normalizer==3.4.1
 click==8.1.8
@@ -17,7 +17,7 @@ diskcache==5.6.3
 et_xmlfile==2.0.0
 exceptiongroup==1.2.2
 fastapi-slim==0.115.12
-h11==0.14.0
+h11==0.16.0
 h2==4.2.0
 hpack==4.1.0
 Hypercorn==0.17.3
