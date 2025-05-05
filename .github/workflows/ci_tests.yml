@@ -147,4 +147,4 @@ jobs:
         curl -X "GET" -i "http://localhost:${{ env.OTEAPI_PORT }}${{ env.OTEAPI_PREFIX }}/session"
       env:
         CONTAINER_PLUGIN_PATH: /local-oteapi-core
-        OTEAPI_PLUGIN_PACKAGES: "--force-reinstall -v -e /local-oteapi-core[dev]"
+        OTEAPI_PLUGIN_PACKAGES: "--force-reinstall -v -e /local-oteapi-core[docs]"
