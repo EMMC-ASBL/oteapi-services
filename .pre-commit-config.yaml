@@ -53,7 +53,7 @@ repos:
       additional_dependencies: [black]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.9
+    rev: v0.11.10
     hooks:
     - id: ruff
       args:
@@ -80,7 +80,7 @@ repos:
         - "types-redis"
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.18.0
+    rev: v0.18.1
     hooks:
     - id: markdownlint-cli2
       name: markdownlint
