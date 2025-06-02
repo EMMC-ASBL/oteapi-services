@@ -1,13 +1,5 @@
 # Changelog
 
-## [Unreleased](https://github.com/EMMC-ASBL/oteapi-services/tree/HEAD)
-
-[Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20250410.410...HEAD)
-
-**Merged pull requests:**
-
-- \[pre-commit.ci\] pre-commit autoupdate [\#611](https://github.com/EMMC-ASBL/oteapi-services/pull/611) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
-
 ## [v1.20250410.410](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20250410.410) (2025-04-10)
 
 [Full Changelog](https://github.com/EMMC-ASBL/oteapi-services/compare/v1.20230324.302...v1.20250410.410)
