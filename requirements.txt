@@ -50,7 +50,7 @@ taskgroup==0.2.2
 tenacity==9.1.2
 tomli==2.2.1
 typing-inspection==0.4.1
-typing_extensions==4.13.2
+typing_extensions==4.14.0
 tzdata==2025.2
 urllib3==2.4.0
 vine==5.1.0
