@@ -3,7 +3,7 @@ fakeredis~=2.29
 httpx~=0.28.1
 invoke~=2.2
 pre-commit~=4.2
-pytest~=8.3
+pytest~=8.4
 pytest-cov~=6.1
 
 # httpx is necessary due to the use of fastapi/starlette's TestClient
