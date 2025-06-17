@@ -6,6 +6,6 @@ The server should be deployed via the `Dockerfile`.
 
 from __future__ import annotations
 
-__version__ = "1.20250603.425"
+__version__ = "1.20250617.426"
 __author__ = "SINTEF"
 __author_email__ = "Team4.0@SINTEF.no"
