@@ -1,2 +1,2 @@
 invoke~=2.2
-pre-commit~=4.2
+pre-commit~=4.3
