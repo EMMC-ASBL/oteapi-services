@@ -1,5 +1,5 @@
 debugpy>=1.8.0
-fakeredis~=2.30
+fakeredis~=2.31
 httpx~=0.28.1
 invoke~=2.2
 pre-commit~=4.3
