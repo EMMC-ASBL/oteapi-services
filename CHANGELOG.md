@@ -6,7 +6,6 @@
 
 **Merged pull requests:**
 
-- \[pre-commit.ci\] pre-commit autoupdate [\#633](https://github.com/EMMC-ASBL/oteapi-services/pull/633) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
 - \[pre-commit.ci\] pre-commit autoupdate [\#616](https://github.com/EMMC-ASBL/oteapi-services/pull/616) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
 
 ## [v1.20250410.410](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20250410.410) (2025-04-10)
