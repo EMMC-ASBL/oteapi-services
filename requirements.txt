@@ -31,7 +31,7 @@ packaging==25.0
 paramiko==4.0.0
 pillow==11.3.0
 priority==2.0.0
-prompt_toolkit==3.0.51
+prompt_toolkit==3.0.52
 psycopg==3.2.9
 psycopg-binary==3.2.9
 pycparser==2.22
@@ -51,7 +51,7 @@ taskgroup==0.2.2
 tenacity==9.1.2
 tomli==2.2.1
 typing-inspection==0.4.1
-typing_extensions==4.14.1
+typing_extensions==4.15.0
 tzdata==2025.2
 urllib3==2.5.0
 vine==5.1.0
