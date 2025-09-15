@@ -4,7 +4,7 @@ httpx~=0.28.1
 invoke~=2.2
 pre-commit~=4.3
 pytest~=8.4
-pytest-cov~=6.3
+pytest-cov~=7.0
 
 # httpx is necessary due to the use of fastapi/starlette's TestClient
 # See https://fastapi.tiangolo.com/tutorial/testing/?h=testclient#using-testclient
