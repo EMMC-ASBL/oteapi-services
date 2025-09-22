@@ -45,7 +45,7 @@ def httpexception_404_item_id_does_not_exist(
 def httpexception_422_resource_id_is_unprocessable(resource_id: str) -> HTTPException:
     """return 422 Exception with resource_id."""
     return HTTPException(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         detail=[
             {
                 "loc": ["resource_id"],

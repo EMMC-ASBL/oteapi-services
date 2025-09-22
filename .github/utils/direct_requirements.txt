@@ -1,7 +1,7 @@
-fastapi-slim>=0.116.1
+fastapi-slim>=0.117.1
 hypercorn>=0.17.3
 oteapi-core>=1.0.0
-pydantic>=2.11.7
+pydantic>=2.11.9
 pydantic-settings>=2.10.1
 redis>=6.4.0
 tenacity>=9.1.2

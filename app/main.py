@@ -149,7 +149,7 @@ This service is based on [**oteapi-core**](https://github.com/EMMC-ASBL/oteapi-c
         app.include_router(
             router,
             responses={
-                status.HTTP_422_UNPROCESSABLE_ENTITY: {
+                status.HTTP_422_UNPROCESSABLE_CONTENT: {
                     "description": "Validation Error",
                     "model": HTTPValidationError,
                 },

@@ -29,7 +29,7 @@ ROUTER = APIRouter(
     tags=["dataresource"],
     responses={
         status.HTTP_404_NOT_FOUND: {"model": HTTPNotFoundError},
-        status.HTTP_422_UNPROCESSABLE_ENTITY: {"model": HTTPValidationError},
+        status.HTTP_422_UNPROCESSABLE_CONTENT: {"model": HTTPValidationError},
     },
 )
 
