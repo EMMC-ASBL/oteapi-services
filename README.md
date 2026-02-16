@@ -4,6 +4,11 @@
 To use a version of the `oteapi` Docker image that runs only on the latest stable version of `oteapi-core`, use the version tag `1.20240228.345` or earlier.
 Example: `ghcr.io/emmc-asbl/oteapi:1.20240228.345`.
 
+> **Warning**: There is currently a security vulnerability in the `oteapi` Docker image that is caused by the use of `diskcache` version 5.6.3.
+> This vulnerability is tracked as [CVE-2025-69872](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2025-69872).
+> The vulnerability is mitigated by the fact that an attacker would need write access to the cache directory to achieve arbitrary code execution, and this is not the case for the default configuration of the `oteapi` Docker image.
+> However, if you are using a custom configuration that allows write access to the cache directory, please be aware of this vulnerability and take appropriate measures to secure your system.
+
 ## Run in Docker
 
 ### Development target
