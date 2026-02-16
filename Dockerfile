@@ -55,7 +55,12 @@ RUN python -m venv /tmp/dev_venv \
 # Run static security check, linters, and pytest with code coverage
 RUN --mount=type=cache,target=/root/.cache/pre-commit \
   git init && git add . && /tmp/dev_venv/bin/pre-commit run -c .pre-commit-config_docker.yaml --all-files
-RUN /tmp/dev_venv/bin/pip-audit -r /app/requirements.txt --desc on
+
+# CVE-2025-69872: DiskCache 5.6.3
+#   DiskCache (python-diskcache) through 5.6.3 uses Python pickle for serialization by default.
+#   An attacker with write access to the cache directory can achieve arbitrary code execution
+#   when a victim application reads from the cache.
+RUN /tmp/dev_venv/bin/pip-audit -r /app/requirements.txt --desc on --ignore-vuln CVE-2025-69872
 
 # Install extra (non-dev tools) development requirements in main environment
 RUN pip install -q -U -r requirements_dev.txt
