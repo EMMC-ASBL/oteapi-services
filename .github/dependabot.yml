@@ -14,10 +14,10 @@ updates:
     - CI/CD
     - skip-changelog
   groups:
-    packages:
+    python:
       applies-to: version-updates
       patterns: ["*"]
-    security:
+    python-security:
       applies-to: security-updates
       patterns: ["*"]
 
@@ -31,3 +31,10 @@ updates:
   labels:
     - CI/CD
     - skip-changelog
+  groups:
+    actions:
+      applies-to: version-updates
+      patterns: ["*"]
+    actions-security:
+      applies-to: security-updates
+      patterns: ["*"]
