@@ -77,7 +77,7 @@ jobs:
 
       - name: Docker metadata (development)
         id: docker_metadata_dev
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ${{ inputs.registry_url || 'ghcr.io' }}/${{ inputs.image_owner || 'emmc-asbl' }}/${{ inputs.image_name || 'oteapi' }}
@@ -100,7 +100,7 @@ jobs:
 
       - name: Docker metadata (production)
         id: docker_metadata_prod
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ${{ inputs.registry_url || 'ghcr.io' }}/${{ inputs.image_owner || 'emmc-asbl' }}/${{ inputs.image_name || 'oteapi' }}
