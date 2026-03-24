@@ -46,7 +46,7 @@ python-dotenv==1.2.2
 redis==7.3.0
 requests==2.32.5
 six==1.17.0
-starlette==0.52.1
+starlette==1.0.0
 taskgroup==0.2.2
 tenacity==9.1.4
 tomli==2.4.0
