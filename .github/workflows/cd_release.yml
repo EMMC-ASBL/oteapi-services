@@ -71,11 +71,11 @@ jobs:
       if: steps.update_version_step.outputs.continue_workflow == 'true'
       run: |
         git add app/__init__.py CHANGELOG.md
-        git commit -m "[bot] Update version and CHANGELOG"
+        git commit --amend -C HEAD
 
     - name: Update '${{ env.DEFAULT_REPO_BRANCH }}'
       if: steps.update_version_step.outputs.continue_workflow == 'true'
-      run: git push origin ${{ env.DEFAULT_REPO_BRANCH }}
+      run: git push --force-with-lease origin ${{ env.DEFAULT_REPO_BRANCH }}
 
   publish_container_image:
     name: Publish Container image on GH Packages
