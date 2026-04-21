@@ -78,9 +78,9 @@ jobs:
       with:
         token: ${{ secrets.RELEASE_PAT }}
         branch: ${{ env.DEFAULT_REPO_BRANCH }}
-        sleep: 15
+        pre_sleep: 15
         force: true
-        unprotect_reviews: false
+        unprotect_reviews: true
 
   publish_container_image:
     name: Publish Container image on GH Packages
