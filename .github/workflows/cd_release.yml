@@ -27,6 +27,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         fetch-depth: 0
+        token: ${{ secrets.RELEASE_PAT }}
 
     - name: Set up git config
       run: |
@@ -74,9 +75,7 @@ jobs:
 
     - name: Update '${{ env.DEFAULT_REPO_BRANCH }}'
       if: steps.update_version_step.outputs.continue_workflow == 'true'
-      run: |
-        git remote set-url origin "https://TEAM4-0:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
-        git push origin ${{ env.DEFAULT_REPO_BRANCH }}
+      run: git push origin ${{ env.DEFAULT_REPO_BRANCH }}
 
   publish_container_image:
     name: Publish Container image on GH Packages
