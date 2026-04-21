@@ -570,3 +570,5 @@ MigrationBackup/
 constraints.txt
 
 .*_cache/
+
+.claude/
