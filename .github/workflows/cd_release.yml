@@ -14,7 +14,7 @@ env:
 jobs:
   update_version:
     name: Update the version
-    if: github.repository_owner == 'EMMC-ASBL'
+    if: github.repository_owner == 'EMMC-ASBL' && !startsWith(github.event.head_commit.message, '[bot]')
     runs-on: ubuntu-latest
     outputs:
       continue_workflow: ${{ steps.update_version_step.outputs.continue_workflow }}
