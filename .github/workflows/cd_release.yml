@@ -74,13 +74,9 @@ jobs:
 
     - name: Update '${{ env.DEFAULT_REPO_BRANCH }}'
       if: steps.update_version_step.outputs.continue_workflow == 'true'
-      uses: CasperWA/push-protected@v2
-      with:
-        token: ${{ secrets.RELEASE_PAT }}
-        branch: ${{ env.DEFAULT_REPO_BRANCH }}
-        pre_sleep: 15
-        force: false
-        unprotect_reviews: true
+      run: |
+        git remote set-url origin "https://TEAM4-0:${{ secrets.RELEASE_PAT }}@github.com/${{ github.repository }}.git"
+        git push origin ${{ env.DEFAULT_REPO_BRANCH }}
 
   publish_container_image:
     name: Publish Container image on GH Packages
