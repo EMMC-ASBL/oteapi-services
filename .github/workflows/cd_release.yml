@@ -70,7 +70,7 @@ jobs:
       if: steps.update_version_step.outputs.continue_workflow == 'true'
       run: |
         git add app/__init__.py CHANGELOG.md
-        git commit -m "[bot] Update version and CHANGELOG"
+        git commit -m "[bot] Update version and CHANGELOG [skip ci]"
 
     - name: Update '${{ env.DEFAULT_REPO_BRANCH }}'
       if: steps.update_version_step.outputs.continue_workflow == 'true'
