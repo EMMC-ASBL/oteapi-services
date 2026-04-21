@@ -6,6 +6,27 @@
 
 **Merged pull requests:**
 
+- Replace push-protected with direct push via TEAM4-0 bypass [\#721](https://github.com/EMMC-ASBL/oteapi-services/pull/721) ([CasperWA](https://github.com/CasperWA))
+- Remove \[skip ci\] from bot commit message in CD release [\#720](https://github.com/EMMC-ASBL/oteapi-services/pull/720) ([CasperWA](https://github.com/CasperWA))
+- \[pre-commit.ci\] pre-commit autoupdate [\#717](https://github.com/EMMC-ASBL/oteapi-services/pull/717) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#715](https://github.com/EMMC-ASBL/oteapi-services/pull/715) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#711](https://github.com/EMMC-ASBL/oteapi-services/pull/711) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#708](https://github.com/EMMC-ASBL/oteapi-services/pull/708) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#705](https://github.com/EMMC-ASBL/oteapi-services/pull/705) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#703](https://github.com/EMMC-ASBL/oteapi-services/pull/703) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- Update dependabot's gh-actions section [\#700](https://github.com/EMMC-ASBL/oteapi-services/pull/700) ([CasperWA](https://github.com/CasperWA))
+- \[pre-commit.ci\] pre-commit autoupdate [\#695](https://github.com/EMMC-ASBL/oteapi-services/pull/695) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#693](https://github.com/EMMC-ASBL/oteapi-services/pull/693) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#690](https://github.com/EMMC-ASBL/oteapi-services/pull/690) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#688](https://github.com/EMMC-ASBL/oteapi-services/pull/688) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#685](https://github.com/EMMC-ASBL/oteapi-services/pull/685) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#683](https://github.com/EMMC-ASBL/oteapi-services/pull/683) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#682](https://github.com/EMMC-ASBL/oteapi-services/pull/682) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#679](https://github.com/EMMC-ASBL/oteapi-services/pull/679) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#676](https://github.com/EMMC-ASBL/oteapi-services/pull/676) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#673](https://github.com/EMMC-ASBL/oteapi-services/pull/673) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#670](https://github.com/EMMC-ASBL/oteapi-services/pull/670) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
+- \[pre-commit.ci\] pre-commit autoupdate [\#668](https://github.com/EMMC-ASBL/oteapi-services/pull/668) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
 - \[pre-commit.ci\] pre-commit autoupdate [\#616](https://github.com/EMMC-ASBL/oteapi-services/pull/616) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
 
 ## [v1.20250410.410](https://github.com/EMMC-ASBL/oteapi-services/tree/v1.20250410.410) (2025-04-10)
