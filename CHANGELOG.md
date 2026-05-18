@@ -6,7 +6,6 @@
 
 **Merged pull requests:**
 
-- \[pre-commit.ci\] pre-commit autoupdate [\#729](https://github.com/EMMC-ASBL/oteapi-services/pull/729) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))
 - Replace push-protected with direct push via TEAM4-0 bypass [\#721](https://github.com/EMMC-ASBL/oteapi-services/pull/721) ([CasperWA](https://github.com/CasperWA))
 - Remove \[skip ci\] from bot commit message in CD release [\#720](https://github.com/EMMC-ASBL/oteapi-services/pull/720) ([CasperWA](https://github.com/CasperWA))
 - \[pre-commit.ci\] pre-commit autoupdate [\#717](https://github.com/EMMC-ASBL/oteapi-services/pull/717) ([pre-commit-ci[bot]](https://github.com/apps/pre-commit-ci))

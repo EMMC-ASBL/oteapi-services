@@ -9,7 +9,7 @@ celery==5.6.3
 certifi==2026.4.22
 cffi==2.0.0
 charset-normalizer==3.4.7
-click==8.3.3
+click==8.4.0
 click-didyoumean==0.3.1
 click-plugins==1.1.1.2
 click-repl==0.3.0
@@ -24,7 +24,7 @@ h2==4.3.0
 hpack==4.1.0
 Hypercorn==0.18.0
 hyperframe==6.1.0
-idna==3.14
+idna==3.15
 invoke==3.0.3
 kombu==5.6.2
 openpyxl==3.1.5
@@ -44,7 +44,7 @@ PyNaCl==1.6.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 redis==7.4.0
-requests==2.33.1
+requests==2.34.2
 six==1.17.0
 starlette==1.0.0
 taskgroup==0.2.2
