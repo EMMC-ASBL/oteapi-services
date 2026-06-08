@@ -1,4 +1,4 @@
-debugpy>=1.8.20
+debugpy>=1.8.21
 fakeredis~=2.36
 httpx~=0.28.1
 invoke~=3.0
